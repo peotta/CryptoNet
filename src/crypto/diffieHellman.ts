@@ -85,14 +85,14 @@ export interface MitmSession {
   e: bigint;
   A: bigint;
   B: bigint;
-  /** Valor público de Eve, enviado a Alice e a Bob no lugar de B e de A. */
+  /** Valor público de Eva, enviado a Alice e a Bob no lugar de B e de A. */
   E: bigint;
   kAlice: bigint; // E^a = K_AE
   kBob: bigint; // E^b = K_EB
-  kEveAlice: bigint; // A^e
-  kEveBob: bigint; // B^e
-  aliceMatchesEve: boolean;
-  bobMatchesEve: boolean;
+  kEvaAlice: bigint; // A^e
+  kEvaBob: bigint; // B^e
+  aliceMatchesEva: boolean;
+  bobMatchesEva: boolean;
   aliceMatchesBob: boolean;
 }
 
@@ -103,8 +103,8 @@ export function runMitmSession(p: bigint, g: bigint, a: bigint, b: bigint, e: bi
   const E = modPow(g, e, p);
   const kAlice = modPow(E, a, p);
   const kBob = modPow(E, b, p);
-  const kEveAlice = modPow(base.A, e, p);
-  const kEveBob = modPow(base.B, e, p);
+  const kEvaAlice = modPow(base.A, e, p);
+  const kEvaBob = modPow(base.B, e, p);
   return {
     p, g, a, b, e,
     A: base.A,
@@ -112,10 +112,10 @@ export function runMitmSession(p: bigint, g: bigint, a: bigint, b: bigint, e: bi
     E,
     kAlice,
     kBob,
-    kEveAlice,
-    kEveBob,
-    aliceMatchesEve: kAlice === kEveAlice,
-    bobMatchesEve: kBob === kEveBob,
+    kEvaAlice,
+    kEvaBob,
+    aliceMatchesEva: kAlice === kEvaAlice,
+    bobMatchesEva: kBob === kEvaBob,
     aliceMatchesBob: kAlice === kBob,
   };
 }

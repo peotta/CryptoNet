@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 import { initialPlayer, playerReducer } from '../simulation/player';
 
 /** Tempo de permanência em cada etapa na execução automática, na velocidade 1x. */
@@ -11,7 +11,13 @@ export const BASE_STEP_MS = 4200;
 export function useStepPlayer(total: number, speed: number, resetKey: string) {
   const [state, dispatch] = useReducer(playerReducer, total, initialPlayer);
 
+  // Reinicia somente quando o protocolo ou os parâmetros mudam depois da montagem; reiniciar na
+  // montagem apagaria uma interação do estudante que ocorresse antes de o efeito ser executado.
+  const lastKey = useRef(`${total}|${resetKey}`);
   useEffect(() => {
+    const key = `${total}|${resetKey}`;
+    if (key === lastKey.current) return;
+    lastKey.current = key;
     dispatch({ type: 'setTotal', total });
   }, [total, resetKey]);
 

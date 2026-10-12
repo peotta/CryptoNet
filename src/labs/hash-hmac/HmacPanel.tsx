@@ -116,7 +116,7 @@ export function HmacPanel() {
         </div>
         <label className="flex items-center gap-2 text-base">
           <input type="checkbox" className="h-5 w-5" checked={tamper} onChange={(e) => setTamper(e.target.checked)} />
-          Adulterar a mensagem em trânsito (atacante sem a chave)
+          Adulterar a mensagem em trânsito (Eva, que não conhece a chave)
         </label>
         {info.legacy && (
           <Callout variant="warn" title="SHA-1 é legado">
@@ -178,8 +178,8 @@ export function HmacPanel() {
             </div>
             <Callout variant="info" title="Por que o hash simples não autentica">
               <p>
-                O hash simples H(m) não depende de segredo: um atacante que altera a mensagem também recalcula H da nova mensagem, e Bob não percebe. No HMAC, a etiqueta depende de
-                K, que o atacante não possui.
+                O hash simples H(m) não depende de segredo: Eva, ao alterar a mensagem de Alice, também recalcula H da nova mensagem, e Bob não percebe. No HMAC, a etiqueta depende de
+                K, que Eva não possui.
               </p>
             </Callout>
           </LabSection>

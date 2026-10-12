@@ -48,7 +48,7 @@ export const LABS: LabMeta[] = [
     id: 'diffie-hellman',
     category: 'assimetrica',
     title: 'Diffie-Hellman',
-    summary: 'Acordo de chaves por um canal público, visão de Eve, derivação de chave com HKDF e o ataque do homem do meio.',
+    summary: 'Acordo de chaves por um canal público, visão de Eva, derivação de chave com HKDF e o ataque do homem do meio.',
     objectives: ['Calcular o segredo compartilhado', 'Entender o logaritmo discreto', 'Reconhecer o MITM e a necessidade de autenticação'],
     status: 'available',
     component: lazy(() => import('./diffie-hellman/DhLab')),

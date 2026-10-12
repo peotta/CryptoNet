@@ -76,3 +76,24 @@ describe('protocolo HMAC animado', () => {
     }
   });
 });
+
+describe('HMAC: Eva como atacante entre Alice e Bob', () => {
+  it('Eva participa com Alice e Bob e nunca conhece a chave K', async () => {
+    const def = buildHmacProtocol(await flow('olá', true, 'SHA-256', 'chave-super-secreta'));
+    expect(def.parties.map((p) => p.id)).toEqual(['alice', 'bob', 'eva']);
+    const last = ProtocolSimulationEngine.build(def).states[def.steps.length];
+    expect(last.entries.eva.K).toBeUndefined();
+    expect(JSON.stringify(last.entries.eva)).not.toContain('chave-super-secreta');
+  });
+  it('sem adulteração Eva só observa; com adulteração intercepta e reenvia', async () => {
+    const calm = buildHmacProtocol(await flow('olá', false));
+    const attack = buildHmacProtocol(await flow('olá', true));
+    expect(calm.steps.map((s) => s.id)).not.toContain('intercept');
+    expect(attack.steps.map((s) => s.id)).toEqual(['key', 'write', 'inner', 'outer', 'intercept', 'transit', 'receive', 'recompute', 'compare']);
+    const log = ProtocolSimulationEngine.build(attack).states[attack.steps.length].log;
+    expect(log.map((m) => `${m.from}>${m.to}${m.tampered ? '*' : ''}`)).toEqual(['alice>eva', 'eva>bob*']);
+    const watch = ProtocolSimulationEngine.build(calm).states[calm.steps.length];
+    expect(watch.entries.eva.m.value).toBe('olá');
+    expect(watch.log[0].observers).toContain('eva');
+  });
+});

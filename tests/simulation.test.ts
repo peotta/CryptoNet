@@ -85,29 +85,29 @@ describe('segredos privados nunca atravessam o canal', () => {
       expect(m.summary).not.toMatch(/\ba\s*=\s*6\b|\bb\s*=\s*15\b/);
     }
   });
-  it('Eve observa p, g, A e B, mas nunca a, b nem K (cenário passivo)', () => {
+  it('Eva observa p, g, A e B, mas nunca a, b nem K (cenário passivo)', () => {
     const t = ProtocolSimulationEngine.build(dh());
-    const eve = t.states[t.states.length - 1].entries.eve;
-    expect(Object.keys(eve).sort()).toEqual(['A', 'B', 'g', 'p']);
+    const eva = t.states[t.states.length - 1].entries.eva;
+    expect(Object.keys(eva).sort()).toEqual(['A', 'B', 'g', 'p']);
   });
   it('as entradas privadas só existem no dono', () => {
     const t = ProtocolSimulationEngine.build(dh());
     const last = t.states[t.states.length - 1];
     expect(last.entries.alice.a.kind).toBe('private');
     expect(last.entries.bob.a).toBeUndefined();
-    expect(last.entries.eve.a).toBeUndefined();
-    expect(last.entries.eve.b).toBeUndefined();
+    expect(last.entries.eva.a).toBeUndefined();
+    expect(last.entries.eva.b).toBeUndefined();
   });
 });
 
 describe('cenário MITM', () => {
-  it('Eve substitui os valores e Alice e Bob recebem E', () => {
+  it('Eva substitui os valores e Alice e Bob recebem E', () => {
     const t = ProtocolSimulationEngine.build(mitm());
     const last = t.states[t.states.length - 1];
-    expect(last.entries.alice.Brec.value).toBe(last.entries.eve.E.value);
-    expect(last.entries.bob.Arec.value).toBe(last.entries.eve.E.value);
-    expect(last.entries.alice.K.value).toBe(last.entries.eve.KAE.value);
-    expect(last.entries.bob.K.value).toBe(last.entries.eve.KEB.value);
+    expect(last.entries.alice.Brec.value).toBe(last.entries.eva.E.value);
+    expect(last.entries.bob.Arec.value).toBe(last.entries.eva.E.value);
+    expect(last.entries.alice.K.value).toBe(last.entries.eva.KAE.value);
+    expect(last.entries.bob.K.value).toBe(last.entries.eva.KEB.value);
     expect(last.entries.alice.K.value).not.toBe(last.entries.bob.K.value);
     expect(last.verdict?.ok).toBe(false);
   });
@@ -198,5 +198,59 @@ describe('movimento reduzido e velocidade', () => {
   it('a velocidade escala a duração', () => {
     expect(motionDuration(2, 2, false)).toBe(1);
     expect(motionDuration(2, 0.5, false)).toBe(4);
+  });
+});
+
+describe('atores: Alice e Bob legítimos, Eva atacante (somente com Alice e Bob na comunicação)', () => {
+  const rsaFlow = (scenario: 'cifragem' | 'assinatura', tamper: boolean) =>
+    runDidactic(engines.rsaDidactic, { p: 61n, q: 53n, e: 17n, m: 65n, scenario, tamper }).then((r) => buildRsaProtocol(r.flow));
+
+  it('todo protocolo com Eva tem Alice e Bob, e Eva é a única adversária', async () => {
+    const defs = [
+      dh(),
+      mitm(),
+      await rsaFlow('cifragem', false),
+      await rsaFlow('cifragem', true),
+      await rsaFlow('assinatura', false),
+      await rsaFlow('assinatura', true),
+    ];
+    for (const def of defs) {
+      const ids = def.parties.map((p) => p.id);
+      expect(ids).toContain('alice');
+      expect(ids).toContain('bob');
+      expect(ids).toContain('eva');
+      expect(def.parties.filter((p) => p.adversary).map((p) => p.id)).toEqual(['eva']);
+      expect(def.parties.find((p) => p.id === 'eva')?.name).toBe('Eva');
+      expect(def.parties.filter((p) => !p.adversary).map((p) => p.name).sort()).toEqual(['Alice', 'Bob']);
+    }
+  });
+  it('sem adulteração, Eva só observa: nada é enviado por ela e a mensagem chega direto a Bob', async () => {
+    for (const scenario of ['cifragem', 'assinatura'] as const) {
+      const def = await rsaFlow(scenario, false);
+      const log = ProtocolSimulationEngine.build(def).states[def.steps.length].log;
+      expect(log.some((m) => m.from === 'eva' || m.to === 'eva')).toBe(false);
+      expect(log.some((m) => m.observers.includes('eva'))).toBe(true);
+    }
+  });
+  it('com adulteração, Eva intercepta (Alice para Eva) e reenvia (Eva para Bob) uma mensagem marcada como adulterada', async () => {
+    for (const scenario of ['cifragem', 'assinatura'] as const) {
+      const def = await rsaFlow(scenario, true);
+      expect(def.steps.map((s) => s.id)).toContain('intercept');
+      const log = ProtocolSimulationEngine.build(def).states[def.steps.length].log;
+      const toEva = log.find((m) => m.from === 'alice' && m.to === 'eva');
+      const toBob = log.find((m) => m.from === 'eva' && m.to === 'bob');
+      expect(toEva?.tampered).toBe(false);
+      expect(toBob?.tampered).toBe(true);
+      expect(log.some((m) => m.from === 'alice' && m.to === 'bob' && m.kind !== 'public')).toBe(false); // a mensagem original nunca chega a Bob (só a chave pública, que é pública)
+    }
+  });
+  it('Eva nunca possui chaves privadas', async () => {
+    for (const def of [dh(), mitm(), await rsaFlow('cifragem', true), await rsaFlow('assinatura', true)]) {
+      const eva = ProtocolSimulationEngine.build(def).states[def.steps.length].entries.eva;
+      for (const entry of Object.values(eva)) {
+        if (def.id === 'dh-mitm' && entry.key === 'e') continue; // o segredo e é da própria Eva
+        expect(entry.kind).not.toBe('private');
+      }
+    }
   });
 });

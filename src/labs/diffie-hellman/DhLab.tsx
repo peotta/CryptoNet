@@ -6,7 +6,7 @@ import { checkDhParameters, checkPrivateExponent, DH_GROUPS, generatePrivateExpo
 import { engines } from '../../crypto/engines';
 import { Callout, Field, LabSection, ReviewQuestions, Tabs, buttonClass } from '../../components/ui';
 import { DH_OBJECTIVES, DH_QUESTIONS } from './content';
-import { EveObserver } from './EveObserver';
+import { EvaObserver } from './EvaObserver';
 import { buildDhProtocol, buildMitmProtocol } from './flows';
 import { KeyDerivationDemo } from './KeyDerivationDemo';
 
@@ -147,7 +147,7 @@ export default function DhLab() {
         <div className="grid gap-4 sm:grid-cols-3">
           <Field id="dh-a" label="Segredo privado de Alice (a)" value={a} onChange={setA} error={errA} hint="2 ≤ a ≤ p - 2" />
           <Field id="dh-b" label="Segredo privado de Bob (b)" value={b} onChange={setB} error={errB} hint="2 ≤ b ≤ p - 2" />
-          <Field id="dh-e" label="Segredo privado de Eve (e), usado no MITM" value={e} onChange={setE} error={errE} hint="2 ≤ e ≤ p - 2" />
+          <Field id="dh-e" label="Segredo privado de Eva (e), usado no MITM" value={e} onChange={setE} error={errE} hint="2 ≤ e ≤ p - 2" />
         </div>
         <div className="flex flex-wrap gap-3">
           <button type="button" className={buttonClass} onClick={() => randomize('a')}>
@@ -179,7 +179,7 @@ export default function DhLab() {
           value={scenario}
           onChange={setScenario}
           tabs={[
-            { id: 'basico', label: 'Troca de chaves (com Eve observando)' },
+            { id: 'basico', label: 'Troca de chaves (com Eva observando)' },
             { id: 'mitm', label: 'Ataque do homem do meio (MITM)' },
           ]}
         />
@@ -197,8 +197,8 @@ export default function DhLab() {
 
       {session && (
         <>
-          <LabSection id="dh-eve" title="5. Visão do observador (Eve)">
-            <EveObserver session={session} />
+          <LabSection id="dh-eva" title="5. Visão do observador (Eva)">
+            <EvaObserver session={session} />
           </LabSection>
 
           <LabSection id="dh-results" title="6. Painel de resultados">
@@ -234,8 +234,8 @@ function ResultTable({ session: s, mitm }: { session: DhSession; mitm: MitmSessi
       ['MITM: E = g^e mod p', mitm.E.toString()],
       ['MITM: segredo de Alice (E^a)', mitm.kAlice.toString()],
       ['MITM: segredo de Bob (E^b)', mitm.kBob.toString()],
-      ['MITM: Eve conhece o segredo de Alice?', mitm.aliceMatchesEve ? 'Sim' : 'Não'],
-      ['MITM: Eve conhece o segredo de Bob?', mitm.bobMatchesEve ? 'Sim' : 'Não'],
+      ['MITM: Eva conhece o segredo de Alice?', mitm.aliceMatchesEva ? 'Sim' : 'Não'],
+      ['MITM: Eva conhece o segredo de Bob?', mitm.bobMatchesEva ? 'Sim' : 'Não'],
       ['MITM: Alice e Bob compartilham segredo?', mitm.aliceMatchesBob ? 'Sim (por acaso, a = b)' : 'Não'],
     );
   }

@@ -48,7 +48,73 @@ const parties: PartyDef[] = [
       { key: 'res', label: 'Resultado da comparação', kind: 'param' },
     ],
   },
+  {
+    id: 'eva',
+    name: 'Eva',
+    role: 'Atacante (observa e, se puder, altera o canal)',
+    position: 'center',
+    adversary: true,
+    slots: [
+      { key: 'm', label: 'Mensagem observada ou capturada', kind: 'plain' },
+      { key: 'tag', label: 'Etiqueta observada ou capturada', kind: 'signature' },
+      { key: 'forged', label: "Mensagem alterada m' (enviada a Bob)", kind: 'plain' },
+      { key: 'K', label: 'Chave K: desconhecida para Eva', kind: 'secret' },
+    ],
+  },
 ];
+
+/** Sem adulteração, Eva apenas observa; com adulteração, ela intercepta e reenvia uma mensagem alterada. */
+function transitSteps(d: HmacFlowData): ProtocolStep[] {
+  if (!d.tampered) {
+    return [
+      {
+        id: 'transit',
+        title: 'A mensagem e a etiqueta atravessam o canal',
+        description:
+          'A mensagem segue em claro e acompanhada da etiqueta. Eva lê tudo, pois o HMAC não cifra: ele garante integridade e autenticidade, não sigilo. Sem K, ela não consegue forjar etiquetas.',
+        operation: 'Transmissão do par (m, tag).',
+        events: [
+          {
+            type: 'send',
+            message: { from: 'alice', to: 'bob', label: '(m, tag)', summary: `${quote(d.message)} | ${short(d.tagHex)}`, kind: 'signature', observers: ['eva'] },
+            deliver: [],
+            observerEntries: [entry('m', 'Mensagem observada', d.message, 'plain'), entry('tag', 'Etiqueta observada', short(d.tagHex), 'signature')],
+          },
+        ],
+      },
+    ];
+  }
+  return [
+    {
+      id: 'intercept',
+      title: 'Eva intercepta a mensagem e a etiqueta',
+      description: 'O par (m, tag) enviado por Alice chega a Eva, e não a Bob.',
+      operation: 'Interceptação do par (m, tag).',
+      events: [
+        {
+          type: 'send',
+          message: { from: 'alice', to: 'eva', label: '(m, tag)', summary: `${quote(d.message)} | ${short(d.tagHex)}`, kind: 'signature' },
+          deliver: [entry('m', 'Mensagem capturada', d.message, 'plain'), entry('tag', 'Etiqueta capturada', short(d.tagHex), 'signature')],
+        },
+      ],
+    },
+    {
+      id: 'transit',
+      title: 'Eva altera a mensagem e reenvia a Bob',
+      description:
+        "Eva troca m por m' e reaproveita a etiqueta original, pois sem a chave K ela não consegue calcular a etiqueta correta de m'.",
+      operation: "Reenvio de (m', tag).",
+      events: [
+        { type: 'set', party: 'eva', entry: entry('forged', "Mensagem alterada m' (enviada a Bob)", d.receivedMessage, 'plain') },
+        {
+          type: 'send',
+          message: { from: 'eva', to: 'bob', label: "(m', tag)", summary: `${quote(d.receivedMessage)} | ${short(d.tagHex)}`, kind: 'signature', tampered: true },
+          deliver: [],
+        },
+      ],
+    },
+  ];
+}
 
 export function buildHmacProtocol(d: HmacFlowData): ProtocolDefinition {
   const H = d.algo;
@@ -60,7 +126,7 @@ export function buildHmacProtocol(d: HmacFlowData): ProtocolDefinition {
       id: 'key',
       title: 'Alice e Bob compartilham a chave K',
       description:
-        'O HMAC é um mecanismo de chave simétrica: os dois participantes já possuem a mesma chave K, obtida antes por outro meio (por exemplo, um Diffie-Hellman seguido de HKDF). Quem não conhece K não consegue produzir etiquetas válidas.',
+        'O HMAC é um mecanismo de chave simétrica: os dois participantes já possuem a mesma chave K, obtida antes por outro meio (por exemplo, um Diffie-Hellman seguido de HKDF). Eva, que não conhece K, não consegue produzir etiquetas válidas.',
       operation: 'Nenhum cálculo: K já é conhecida por ambos e não trafega pelo canal.',
       events: [
         { type: 'set', party: 'alice', entry: entry('K', 'Chave compartilhada K', d.keyText, 'secret') },
@@ -116,21 +182,7 @@ export function buildHmacProtocol(d: HmacFlowData): ProtocolDefinition {
       ],
       info: ['A estrutura em duas passagens impede o ataque de extensão de comprimento, que afeta H(K ‖ m) calculado de forma ingênua.'],
     },
-    {
-      id: 'transit',
-      title: 'A mensagem e a etiqueta atravessam o canal',
-      description: d.tampered
-        ? 'Um atacante altera a mensagem em trânsito. Como ele não conhece K, não consegue recalcular a etiqueta: ela segue inalterada.'
-        : 'A mensagem segue em claro e acompanhada da etiqueta. O HMAC não cifra: ele garante integridade e autenticidade, não sigilo.',
-      operation: 'Transmissão do par (m, tag).',
-      events: [
-        {
-          type: 'send',
-          message: { from: 'alice', to: 'bob', label: '(m, tag)', summary: `${quote(d.receivedMessage)} | ${short(d.tagHex)}`, kind: 'signature', tampered: d.tampered },
-          deliver: [],
-        },
-      ],
-    },
+    ...transitSteps(d),
     {
       id: 'receive',
       title: 'Bob recebe a mensagem e a etiqueta',
@@ -166,7 +218,7 @@ export function buildHmacProtocol(d: HmacFlowData): ProtocolDefinition {
       title: d.ok ? 'As etiquetas coincidem: mensagem autêntica' : 'As etiquetas diferem: mensagem rejeitada',
       description: d.ok
         ? 'tag = tag\': a mensagem não foi alterada e foi produzida por quem conhece K. Na prática, a comparação deve ser em tempo constante, para não vazar informação por temporização.'
-        : 'tag ≠ tag\': a mensagem (ou a etiqueta) foi alterada. Bob a descarta. Sem K, o atacante não consegue produzir uma etiqueta válida para a mensagem alterada.',
+        : 'tag ≠ tag\': a mensagem (ou a etiqueta) foi alterada. Bob a descarta. Sem K, Eva não consegue produzir uma etiqueta válida para a mensagem alterada.',
       operation: "Comparação em tempo constante entre tag e tag'.",
       events: [
         { type: 'set', party: 'bob', entry: entry('res', 'Resultado da comparação', d.ok ? 'iguais: aceita' : 'diferentes: rejeitada', 'param') },

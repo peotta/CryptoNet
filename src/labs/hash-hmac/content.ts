@@ -10,9 +10,9 @@ export const HASH_OBJECTIVES = [
 
 export const HASH_QUESTIONS: ReviewQuestion[] = [
   {
-    question: 'Eve intercepta (m, H(m)), troca m por m\' e recalcula H(m\'). Bob detecta a alteração? E se fosse (m, HMAC(K, m))?',
+    question: 'Alice envia (m, H(m)) a Bob, e Eva intercepta, troca m por m\' e recalcula H(m\'). Bob detecta a alteração? E se Alice enviasse (m, HMAC(K, m))?',
     answer:
-      'Com hash simples, não: qualquer pessoa calcula H(m\') e o par alterado parece válido. O hash só detecta alterações acidentais. Com HMAC, Eve não conhece K e, por isso, não consegue gerar a etiqueta correta de m\'. Bob recalcula o HMAC, encontra valor diferente e rejeita a mensagem.',
+      'Com hash simples, não: qualquer pessoa calcula H(m\') e o par alterado parece válido. O hash só detecta alterações acidentais. Com HMAC, Eva não conhece K e, por isso, não consegue gerar a etiqueta correta de m\'. Bob recalcula o HMAC, encontra valor diferente e rejeita a mensagem.',
   },
   {
     question: 'Por que não se usa simplesmente H(K ‖ m) como código de autenticação?',

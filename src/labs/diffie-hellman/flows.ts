@@ -3,7 +3,7 @@ import type { Entry, ItemKind, PartyDef, ProtocolDefinition, ProtocolStep } from
 
 const entry = (key: string, label: string, value: bigint | string, kind: ItemKind): Entry => ({ key, label, value: value.toString(), kind });
 
-const EVE_SLOTS_PASSIVE = [
+const EVA_SLOTS_PASSIVE = [
   { key: 'p', label: 'p (observado)', kind: 'param' as const },
   { key: 'g', label: 'g (observado)', kind: 'param' as const },
   { key: 'A', label: 'A (observado)', kind: 'public' as const },
@@ -73,7 +73,7 @@ function partiesBasic(): PartyDef[] {
         { key: 'b', label: 'b (segredo privado)', kind: 'private' },
       ],
     },
-    { id: 'eve', name: 'Eve', role: 'Observadora passiva da rede', position: 'center', adversary: true, slots: EVE_SLOTS_PASSIVE },
+    { id: 'eva', name: 'Eva', role: 'Observadora passiva da rede', position: 'center', adversary: true, slots: EVA_SLOTS_PASSIVE },
   ];
 }
 
@@ -83,12 +83,12 @@ export function buildDhProtocol(s: DhSession): ProtocolDefinition {
     {
       id: 'params',
       title: 'Parâmetros públicos',
-      description: 'Alice e Bob concordam, abertamente, em um primo p e em um gerador g. Esses valores não são secretos: Eve também os conhece.',
+      description: 'Alice e Bob concordam, abertamente, em um primo p e em um gerador g. Esses valores não são secretos: Eva também os conhece.',
       operation: 'Acordo sobre o grupo (p, g).',
       events: [
         {
           type: 'send',
-          message: { from: 'alice', to: 'bob', label: '(p, g)', summary: `p = ${p}, g = ${g}`, kind: 'param', observers: ['eve'] },
+          message: { from: 'alice', to: 'bob', label: '(p, g)', summary: `p = ${p}, g = ${g}`, kind: 'param', observers: ['eva'] },
           deliver: [entry('p', 'p (público)', p, 'param'), entry('g', 'g (público)', g, 'param')],
           observerEntries: [entry('p', 'p (observado)', p, 'param'), entry('g', 'g (observado)', g, 'param')],
         },
@@ -129,11 +129,11 @@ export function buildDhProtocol(s: DhSession): ProtocolDefinition {
     {
       id: 'exchange',
       title: 'Troca dos valores públicos',
-      description: 'Alice envia A a Bob e Bob envia B a Alice, pelo canal público. Eve registra ambos, mas a e b nunca trafegam.',
+      description: 'Alice envia A a Bob e Bob envia B a Alice, pelo canal público. Eva registra ambos, mas a e b nunca trafegam.',
       operation: 'Transmissão de A e de B pelo canal.',
       events: [
-        { type: 'send', message: { from: 'alice', to: 'bob', label: 'A', summary: `A = ${A}`, kind: 'public', observers: ['eve'] }, deliver: [entry('Arec', 'A (valor público recebido)', A, 'public')], observerEntries: [entry('A', 'A (observado)', A, 'public')] },
-        { type: 'send', message: { from: 'bob', to: 'alice', label: 'B', summary: `B = ${B}`, kind: 'public', observers: ['eve'] }, deliver: [entry('Brec', 'B (valor público recebido)', B, 'public')], observerEntries: [entry('B', 'B (observado)', B, 'public')] },
+        { type: 'send', message: { from: 'alice', to: 'bob', label: 'A', summary: `A = ${A}`, kind: 'public', observers: ['eva'] }, deliver: [entry('Arec', 'A (valor público recebido)', A, 'public')], observerEntries: [entry('A', 'A (observado)', A, 'public')] },
+        { type: 'send', message: { from: 'bob', to: 'alice', label: 'B', summary: `B = ${B}`, kind: 'public', observers: ['eva'] }, deliver: [entry('Brec', 'B (valor público recebido)', B, 'public')], observerEntries: [entry('B', 'B (observado)', B, 'public')] },
       ],
     },
     {
@@ -159,7 +159,7 @@ export function buildDhProtocol(s: DhSession): ProtocolDefinition {
       id: 'compare',
       title: 'Comparação dos segredos',
       description: s.match
-        ? 'K_A = K_B: os dois participantes obtiveram o mesmo segredo, e Eve, que conhece p, g, A e B, não o calculou.'
+        ? 'K_A = K_B: os dois participantes obtiveram o mesmo segredo, e Eva, que conhece p, g, A e B, não o calculou.'
         : 'Os segredos diferem. Isso não deveria ocorrer com parâmetros válidos.',
       operation: 'Verificação de K_A = K_B.',
       events: [
@@ -201,8 +201,8 @@ export function buildDhProtocol(s: DhSession): ProtocolDefinition {
       { id: 'public-b', title: 'Bob calcula B', description: 'Bob faz o cálculo equivalente com o seu próprio segredo.', operation: 'B = g^b mod p.', take: 1 },
     ],
     exchange: [
-      { id: 'send-a', title: 'Alice envia A a Bob', description: 'O valor público A atravessa o canal. Eve o registra, mas a continua secreto.', operation: 'Transmissão de A pelo canal público.', take: 1 },
-      { id: 'send-b', title: 'Bob envia B a Alice', description: 'Agora B percorre o caminho inverso. Eve também o registra; b nunca trafega.', operation: 'Transmissão de B pelo canal público.', take: 1 },
+      { id: 'send-a', title: 'Alice envia A a Bob', description: 'O valor público A atravessa o canal. Eva o registra, mas a continua secreto.', operation: 'Transmissão de A pelo canal público.', take: 1 },
+      { id: 'send-b', title: 'Bob envia B a Alice', description: 'Agora B percorre o caminho inverso. Eva também o registra; b nunca trafega.', operation: 'Transmissão de B pelo canal público.', take: 1 },
     ],
     shared: [
       { id: 'shared-a', title: 'Alice calcula o segredo compartilhado K_A', description: 'Alice eleva o B recebido ao seu segredo a. O resultado é g^(ab) mod p.', operation: 'K_A = B^a mod p.', take: 1 },
@@ -243,8 +243,8 @@ function partiesMitm(): PartyDef[] {
       ],
     },
     {
-      id: 'eve',
-      name: 'Eve',
+      id: 'eva',
+      name: 'Eva',
       role: 'Atacante ativa (homem do meio)',
       position: 'center',
       adversary: true,
@@ -254,24 +254,24 @@ function partiesMitm(): PartyDef[] {
         { key: 'E', label: 'E (valor falso enviado)', kind: 'public' },
         { key: 'KAE', label: 'K_{AE} (segredo com Alice)', kind: 'secret' },
         { key: 'KEB', label: 'K_{EB} (segredo com Bob)', kind: 'secret' },
-        { key: 'e', label: 'e (segredo privado de Eve)', kind: 'private' },
+        { key: 'e', label: 'e (segredo privado de Eva)', kind: 'private' },
       ],
     },
   ];
 }
 
 export function buildMitmProtocol(s: MitmSession): ProtocolDefinition {
-  const { p, g, a, b, e, A, B, E, kAlice, kBob, kEveAlice, kEveBob } = s;
+  const { p, g, a, b, e, A, B, E, kAlice, kBob, kEvaAlice, kEvaBob } = s;
   const steps: ProtocolStep[] = [
     {
       id: 'params',
       title: 'Parâmetros públicos',
-      description: 'Alice e Bob combinam (p, g) pelo canal. Eve, que controla o canal, repassa a mensagem sem alterá-la.',
+      description: 'Alice e Bob combinam (p, g) pelo canal. Eva, que controla o canal, repassa a mensagem sem alterá-la.',
       operation: 'Acordo sobre o grupo (p, g).',
       events: [
         {
           type: 'send',
-          message: { from: 'alice', to: 'bob', label: '(p, g)', summary: `p = ${p}, g = ${g}`, kind: 'param', observers: ['eve'] },
+          message: { from: 'alice', to: 'bob', label: '(p, g)', summary: `p = ${p}, g = ${g}`, kind: 'param', observers: ['eva'] },
           deliver: [entry('p', 'p (público)', p, 'param'), entry('g', 'g (público)', g, 'param')],
         },
         { type: 'set', party: 'alice', entry: entry('p', 'p (público)', p, 'param') },
@@ -281,18 +281,18 @@ export function buildMitmProtocol(s: MitmSession): ProtocolDefinition {
     {
       id: 'secrets',
       title: 'Escolha dos segredos',
-      description: 'Alice, Bob e também Eve escolhem expoentes privados. Eve participa do protocolo como se fosse um terceiro participante legítimo.',
+      description: 'Alice, Bob e também Eva escolhem expoentes privados. Eva participa do protocolo como se fosse um terceiro participante legítimo.',
       operation: 'Escolha de a, b e e.',
       events: [
         { type: 'set', party: 'alice', entry: entry('a', 'a (segredo privado)', a, 'private') },
         { type: 'set', party: 'bob', entry: entry('b', 'b (segredo privado)', b, 'private') },
-        { type: 'set', party: 'eve', entry: entry('e', 'e (segredo privado de Eve)', e, 'private') },
+        { type: 'set', party: 'eva', entry: entry('e', 'e (segredo privado de Eva)', e, 'private') },
       ],
     },
     {
       id: 'publics',
       title: 'Cálculo dos valores públicos',
-      description: 'Alice calcula A, Bob calcula B e Eve calcula o seu próprio valor público E, que usará para se passar por ambos.',
+      description: 'Alice calcula A, Bob calcula B e Eva calcula o seu próprio valor público E, que usará para se passar por ambos.',
       operation: 'A = g^a, B = g^b e E = g^e (mod p).',
       events: [
         {
@@ -307,35 +307,35 @@ export function buildMitmProtocol(s: MitmSession): ProtocolDefinition {
         },
         {
           type: 'compute',
-          operation: { party: 'eve', title: 'Eve calcula E', formula: 'E = g^{e} mod p', substituted: `E = ${g}^{${e}} mod ${p}`, result: `E = ${E}`, kind: 'public' },
+          operation: { party: 'eva', title: 'Eva calcula E', formula: 'E = g^{e} mod p', substituted: `E = ${g}^{${e}} mod ${p}`, result: `E = ${E}`, kind: 'public' },
           entry: entry('E', 'E (valor falso enviado)', E, 'public'),
         },
       ],
     },
     {
       id: 'intercept-a',
-      title: 'Eve intercepta A e entrega E a Bob',
-      description: 'Alice envia A, mas a mensagem chega a Eve. Eve guarda A e envia a Bob o seu valor E, como se fosse o A de Alice. Bob não tem como perceber a troca.',
+      title: 'Eva intercepta A e entrega E a Bob',
+      description: 'Alice envia A, mas a mensagem chega a Eva. Eva guarda A e envia a Bob o seu valor E, como se fosse o A de Alice. Bob não tem como perceber a troca.',
       operation: 'Substituição de A por E no canal.',
       events: [
-        { type: 'send', message: { from: 'alice', to: 'eve', label: 'A', summary: `A = ${A}`, kind: 'public' }, deliver: [entry('A', 'A (capturado de Alice)', A, 'public')] },
-        { type: 'send', message: { from: 'eve', to: 'bob', label: "A' = E", summary: `E = ${E}`, kind: 'public', tampered: true }, deliver: [entry('Arec', 'Valor recebido (suposto A)', E, 'public')] },
+        { type: 'send', message: { from: 'alice', to: 'eva', label: 'A', summary: `A = ${A}`, kind: 'public' }, deliver: [entry('A', 'A (capturado de Alice)', A, 'public')] },
+        { type: 'send', message: { from: 'eva', to: 'bob', label: "A' = E", summary: `E = ${E}`, kind: 'public', tampered: true }, deliver: [entry('Arec', 'Valor recebido (suposto A)', E, 'public')] },
       ],
     },
     {
       id: 'intercept-b',
-      title: 'Eve intercepta B e entrega E a Alice',
-      description: 'O mesmo ocorre no sentido contrário: Eve guarda B e entrega E a Alice no lugar de B.',
+      title: 'Eva intercepta B e entrega E a Alice',
+      description: 'O mesmo ocorre no sentido contrário: Eva guarda B e entrega E a Alice no lugar de B.',
       operation: 'Substituição de B por E no canal.',
       events: [
-        { type: 'send', message: { from: 'bob', to: 'eve', label: 'B', summary: `B = ${B}`, kind: 'public' }, deliver: [entry('B', 'B (capturado de Bob)', B, 'public')] },
-        { type: 'send', message: { from: 'eve', to: 'alice', label: "B' = E", summary: `E = ${E}`, kind: 'public', tampered: true }, deliver: [entry('Brec', 'Valor recebido (suposto B)', E, 'public')] },
+        { type: 'send', message: { from: 'bob', to: 'eva', label: 'B', summary: `B = ${B}`, kind: 'public' }, deliver: [entry('B', 'B (capturado de Bob)', B, 'public')] },
+        { type: 'send', message: { from: 'eva', to: 'alice', label: "B' = E", summary: `E = ${E}`, kind: 'public', tampered: true }, deliver: [entry('Brec', 'Valor recebido (suposto B)', E, 'public')] },
       ],
     },
     {
       id: 'shared',
-      title: 'Cada lado calcula um segredo, mas com Eve',
-      description: 'Alice e Bob aplicam a fórmula normalmente, sem suspeitar. Eve calcula os dois segredos correspondentes.',
+      title: 'Cada lado calcula um segredo, mas com Eva',
+      description: 'Alice e Bob aplicam a fórmula normalmente, sem suspeitar. Eva calcula os dois segredos correspondentes.',
       operation: 'K_A = E^a, K_B = E^b, K_AE = A^e, K_EB = B^e (mod p).',
       events: [
         {
@@ -350,13 +350,13 @@ export function buildMitmProtocol(s: MitmSession): ProtocolDefinition {
         },
         {
           type: 'compute',
-          operation: { party: 'eve', title: 'Eve calcula K_{AE} (com Alice)', formula: 'K_{AE} = A^{e} mod p', substituted: `K_{AE} = ${A}^{${e}} mod ${p}`, result: `K_{AE} = ${kEveAlice}`, kind: 'secret' },
-          entry: entry('KAE', 'K_{AE} (segredo com Alice)', kEveAlice, 'secret'),
+          operation: { party: 'eva', title: 'Eva calcula K_{AE} (com Alice)', formula: 'K_{AE} = A^{e} mod p', substituted: `K_{AE} = ${A}^{${e}} mod ${p}`, result: `K_{AE} = ${kEvaAlice}`, kind: 'secret' },
+          entry: entry('KAE', 'K_{AE} (segredo com Alice)', kEvaAlice, 'secret'),
         },
         {
           type: 'compute',
-          operation: { party: 'eve', title: 'Eve calcula K_{EB} (com Bob)', formula: 'K_{EB} = B^{e} mod p', substituted: `K_{EB} = ${B}^{${e}} mod ${p}`, result: `K_{EB} = ${kEveBob}`, kind: 'secret' },
-          entry: entry('KEB', 'K_{EB} (segredo com Bob)', kEveBob, 'secret'),
+          operation: { party: 'eva', title: 'Eva calcula K_{EB} (com Bob)', formula: 'K_{EB} = B^{e} mod p', substituted: `K_{EB} = ${B}^{${e}} mod ${p}`, result: `K_{EB} = ${kEvaBob}`, kind: 'secret' },
+          entry: entry('KEB', 'K_{EB} (segredo com Bob)', kEvaBob, 'secret'),
         },
       ],
     },
@@ -365,17 +365,17 @@ export function buildMitmProtocol(s: MitmSession): ProtocolDefinition {
       title: 'Resultado do ataque',
       description: s.aliceMatchesBob
         ? 'Neste caso os segredos coincidiram porque a = b (módulo a ordem do grupo). Escolha valores diferentes para ver o ataque completo.'
-        : 'Alice compartilha K_AE com Eve; Bob compartilha K_EB com Eve; Alice e Bob não compartilham nada entre si. Eve decifra, lê, altera e recifra todo o tráfego, sem ser notada.',
+        : 'Alice compartilha K_AE com Eva; Bob compartilha K_EB com Eva; Alice e Bob não compartilham nada entre si. Eva decifra, lê, altera e recifra todo o tráfego, sem ser notada.',
       operation: 'Comparação: K_A = K_AE? K_B = K_EB? K_A = K_B?',
       events: [
         {
           type: 'compute',
           operation: {
-            party: 'eve',
+            party: 'eva',
             title: 'Comparação dos segredos',
             formula: 'K_{A} = K_{AE},  K_{B} = K_{EB},  K_{A} = K_{B} ?',
-            substituted: `${kAlice} = ${kEveAlice},  ${kBob} = ${kEveBob},  ${kAlice} = ${kBob} ?`,
-            result: `${s.aliceMatchesEve ? 'sim' : 'não'},  ${s.bobMatchesEve ? 'sim' : 'não'},  ${s.aliceMatchesBob ? 'sim' : 'não'}`,
+            substituted: `${kAlice} = ${kEvaAlice},  ${kBob} = ${kEvaBob},  ${kAlice} = ${kBob} ?`,
+            result: `${s.aliceMatchesEva ? 'sim' : 'não'},  ${s.bobMatchesEva ? 'sim' : 'não'},  ${s.aliceMatchesBob ? 'sim' : 'não'}`,
             kind: 'secret',
           },
         },
@@ -385,7 +385,7 @@ export function buildMitmProtocol(s: MitmSession): ProtocolDefinition {
             ok: false,
             text: s.aliceMatchesBob
               ? 'Os segredos de Alice e Bob coincidiram por acaso (a = b); o ataque exige expoentes distintos.'
-              : 'Ataque bem-sucedido: Alice e Bob estabeleceram segredos distintos, ambos conhecidos por Eve.',
+              : 'Ataque bem-sucedido: Alice e Bob estabeleceram segredos distintos, ambos conhecidos por Eva.',
           },
         },
       ],
@@ -407,18 +407,18 @@ export function buildMitmProtocol(s: MitmSession): ProtocolDefinition {
     secrets: [
       { id: 'secret-a', title: 'Alice escolhe o segredo a', description: 'Alice guarda a na área protegida. Ela acredita estar falando apenas com Bob.', operation: 'Escolha de a.', take: 1 },
       { id: 'secret-b', title: 'Bob escolhe o segredo b', description: 'Bob guarda b na sua área protegida.', operation: 'Escolha de b.', take: 1 },
-      { id: 'secret-e', title: 'Eve escolhe o segredo e', description: 'Eve participa do protocolo como se fosse um terceiro participante legítimo, com o seu próprio segredo e.', operation: 'Escolha de e.', take: 1 },
+      { id: 'secret-e', title: 'Eva escolhe o segredo e', description: 'Eva participa do protocolo como se fosse um terceiro participante legítimo, com o seu próprio segredo e.', operation: 'Escolha de e.', take: 1 },
     ],
     publics: [
       { id: 'public-a', title: 'Alice calcula A', description: 'Alice calcula o seu valor público normalmente.', operation: 'A = g^a mod p.', take: 1 },
       { id: 'public-b', title: 'Bob calcula B', description: 'Bob calcula o seu valor público normalmente.', operation: 'B = g^b mod p.', take: 1 },
-      { id: 'public-e', title: 'Eve calcula E', description: 'Eve calcula o valor E, que usará para se passar por Alice e por Bob.', operation: 'E = g^e mod p.', take: 1 },
+      { id: 'public-e', title: 'Eva calcula E', description: 'Eva calcula o valor E, que usará para se passar por Alice e por Bob.', operation: 'E = g^e mod p.', take: 1 },
     ],
     shared: [
-      { id: 'shared-a', title: 'Alice calcula K_A sem suspeitar', description: 'Alice aplica a fórmula ao valor que recebeu, que é o E de Eve, e não o B de Bob.', operation: "K_A = (B')^a mod p, com B' = E.", take: 1 },
-      { id: 'shared-b', title: 'Bob calcula K_B sem suspeitar', description: 'Bob também usa o valor recebido, que é o E de Eve, e não o A de Alice.', operation: "K_B = (A')^b mod p, com A' = E.", take: 1 },
-      { id: 'shared-ae', title: 'Eve calcula K_AE, o segredo que divide com Alice', description: 'Eve combina o A capturado com o seu segredo e: obtém exatamente o mesmo número que Alice.', operation: 'K_AE = A^e mod p.', take: 1 },
-      { id: 'shared-eb', title: 'Eve calcula K_EB, o segredo que divide com Bob', description: 'Eve combina o B capturado com e: obtém o mesmo número que Bob.', operation: 'K_EB = B^e mod p.', take: 1 },
+      { id: 'shared-a', title: 'Alice calcula K_A sem suspeitar', description: 'Alice aplica a fórmula ao valor que recebeu, que é o E de Eva, e não o B de Bob.', operation: "K_A = (B')^a mod p, com B' = E.", take: 1 },
+      { id: 'shared-b', title: 'Bob calcula K_B sem suspeitar', description: 'Bob também usa o valor recebido, que é o E de Eva, e não o A de Alice.', operation: "K_B = (A')^b mod p, com A' = E.", take: 1 },
+      { id: 'shared-ae', title: 'Eva calcula K_AE, o segredo que divide com Alice', description: 'Eva combina o A capturado com o seu segredo e: obtém exatamente o mesmo número que Alice.', operation: 'K_AE = A^e mod p.', take: 1 },
+      { id: 'shared-eb', title: 'Eva calcula K_EB, o segredo que divide com Bob', description: 'Eva combina o B capturado com e: obtém o mesmo número que Bob.', operation: 'K_EB = B^e mod p.', take: 1 },
     ],
   };
   return { id: 'dh-mitm', title: 'Diffie-Hellman: ataque do homem do meio', parties: partiesMitm(), steps: refine(steps, plan) };

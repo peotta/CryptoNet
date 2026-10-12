@@ -33,7 +33,7 @@ export interface RsaFlowData {
 
 const entry = (key: string, label: string, value: string, kind: ItemKind): Entry => ({ key, label, value, kind });
 
-function parties(scenario: RsaScenario): PartyDef[] {
+function legitimateParties(scenario: RsaScenario): PartyDef[] {
   if (scenario === 'cifragem') {
     return [
       {
@@ -89,6 +89,135 @@ function parties(scenario: RsaScenario): PartyDef[] {
   ];
 }
 
+/** Eva é a atacante em todos os laboratórios: observa o canal e, quando há adulteração, intercepta e altera. */
+function evaParty(scenario: RsaScenario): PartyDef {
+  return {
+    id: 'eva',
+    name: 'Eva',
+    role: 'Atacante (observa e, se puder, altera o canal)',
+    position: 'center',
+    adversary: true,
+    slots:
+      scenario === 'cifragem'
+        ? [
+            { key: 'pub', label: 'Chave pública de Bob (observada)', kind: 'public' },
+            { key: 'c', label: 'Cifra observada ou capturada', kind: 'cipher' },
+            { key: 'forged', label: "Cifra alterada c' (enviada a Bob)", kind: 'cipher' },
+          ]
+        : [
+            { key: 'pub', label: 'Chave pública de Alice (observada)', kind: 'public' },
+            { key: 'm', label: 'Mensagem observada ou capturada', kind: 'plain' },
+            { key: 's', label: 'Assinatura observada ou capturada', kind: 'signature' },
+            { key: 'forged', label: "Mensagem alterada m' (enviada a Bob)", kind: 'plain' },
+          ],
+  };
+}
+
+function parties(scenario: RsaScenario): PartyDef[] {
+  return [...legitimateParties(scenario), evaParty(scenario)];
+}
+
+/** Sem adulteração, Eva apenas observa; com adulteração, ela intercepta e reenvia uma versão alterada. */
+function cipherTransit(d: RsaFlowData): ProtocolStep[] {
+  if (!d.tampered) {
+    return [
+      {
+        id: 'transit',
+        title: 'A cifra atravessa o canal',
+        description: 'Apenas a cifra c trafega pelo canal. Eva a observa, mas não obtém m sem a chave privada de Bob.',
+        operation: 'Transmissão da cifra pelo canal público.',
+        events: [
+          {
+            type: 'send',
+            message: { from: 'alice', to: 'bob', label: 'Cifra c', summary: d.payload, kind: 'cipher', observers: ['eva'] },
+            deliver: [],
+            observerEntries: [entry('c', 'Cifra observada', d.payload, 'cipher')],
+          },
+        ],
+      },
+    ];
+  }
+  return [
+    {
+      id: 'intercept',
+      title: 'Eva intercepta a cifra',
+      description: 'O canal é público e Eva o controla: a cifra enviada por Alice chega a Eva, e não a Bob.',
+      operation: 'Interceptação da cifra c.',
+      events: [
+        {
+          type: 'send',
+          message: { from: 'alice', to: 'eva', label: 'Cifra c', summary: d.payload, kind: 'cipher' },
+          deliver: [entry('c', 'Cifra capturada', d.payload, 'cipher')],
+        },
+      ],
+    },
+    {
+      id: 'transit',
+      title: 'Eva altera a cifra e a reenvia a Bob',
+      description: 'Eva modifica a cifra e a entrega a Bob como se fosse de Alice. Ela não precisa conhecer a chave privada para alterar o tráfego.',
+      operation: 'Reenvio de uma cifra alterada.',
+      events: [
+        { type: 'set', party: 'eva', entry: entry('forged', "Cifra alterada c' (enviada a Bob)", d.receivedPayload, 'cipher') },
+        {
+          type: 'send',
+          message: { from: 'eva', to: 'bob', label: "Cifra c'", summary: d.receivedPayload, kind: 'cipher', tampered: true },
+          deliver: [],
+        },
+      ],
+    },
+  ];
+}
+
+function signatureTransit(d: RsaFlowData): ProtocolStep[] {
+  if (!d.tampered) {
+    return [
+      {
+        id: 'transit',
+        title: 'Mensagem e assinatura atravessam o canal',
+        description: 'A mensagem segue em claro junto com a assinatura: assinar não é cifrar, e Eva lê tudo. Mas ela não consegue alterar a mensagem sem invalidar a assinatura.',
+        operation: 'Transmissão do par (m, s).',
+        events: [
+          {
+            type: 'send',
+            message: { from: 'alice', to: 'bob', label: '(m, s)', summary: `${d.message} | ${d.payload}`, kind: 'signature', observers: ['eva'] },
+            deliver: [],
+            observerEntries: [entry('m', 'Mensagem observada', d.message, 'plain'), entry('s', 'Assinatura observada', d.payload, 'signature')],
+          },
+        ],
+      },
+    ];
+  }
+  return [
+    {
+      id: 'intercept',
+      title: 'Eva intercepta a mensagem e a assinatura',
+      description: 'O par (m, s) enviado por Alice chega a Eva, e não a Bob.',
+      operation: 'Interceptação do par (m, s).',
+      events: [
+        {
+          type: 'send',
+          message: { from: 'alice', to: 'eva', label: '(m, s)', summary: `${d.message} | ${d.payload}`, kind: 'signature' },
+          deliver: [entry('m', 'Mensagem capturada', d.message, 'plain'), entry('s', 'Assinatura capturada', d.payload, 'signature')],
+        },
+      ],
+    },
+    {
+      id: 'transit',
+      title: 'Eva altera a mensagem e reenvia a Bob',
+      description: "Eva troca m por m' e mantém a assinatura original. Sem a chave privada de Alice, ela não consegue produzir uma assinatura válida para m'.",
+      operation: "Reenvio de (m', s).",
+      events: [
+        { type: 'set', party: 'eva', entry: entry('forged', "Mensagem alterada m' (enviada a Bob)", d.receivedMessage, 'plain') },
+        {
+          type: 'send',
+          message: { from: 'eva', to: 'bob', label: "(m', s)", summary: `${d.receivedMessage} | ${d.receivedPayload}`, kind: 'signature', tampered: true },
+          deliver: [],
+        },
+      ],
+    },
+  ];
+}
+
 function encryptionSteps(d: RsaFlowData): ProtocolStep[] {
   const didactic = d.mode === 'didatico';
   return [
@@ -111,13 +240,14 @@ function encryptionSteps(d: RsaFlowData): ProtocolStep[] {
     {
       id: 'publish',
       title: 'A chave pública fica disponível para Alice',
-      description: 'A chave pública pode ser divulgada livremente (diretório, certificado, site). Quem a conhece pode cifrar para Bob, mas não decifrar.',
+      description: 'A chave pública pode ser divulgada livremente (diretório, certificado, site). Quem a conhece (inclusive Eva) pode cifrar para Bob, mas não decifrar.',
       operation: 'Distribuição da chave pública de Bob.',
       events: [
         {
           type: 'send',
-          message: { from: 'bob', to: 'alice', label: 'Chave pública', summary: d.publicKey, kind: 'public' },
+          message: { from: 'bob', to: 'alice', label: 'Chave pública', summary: d.publicKey, kind: 'public', observers: ['eva'] },
           deliver: [entry('pub', 'Chave pública de Bob', d.publicKey, 'public')],
+          observerEntries: [entry('pub', 'Chave pública de Bob (observada)', d.publicKey, 'public')],
         },
       ],
     },
@@ -147,15 +277,7 @@ function encryptionSteps(d: RsaFlowData): ProtocolStep[] {
       operation: didactic ? 'Cifragem RSA sem padding.' : 'Cifragem RSA-OAEP.',
       events: [{ type: 'compute', operation: { party: 'alice', title: 'Cifragem', ...d.forward, kind: 'cipher' }, entry: entry('c', 'Cifra c', d.payload, 'cipher') }],
     },
-    {
-      id: 'transit',
-      title: 'A cifra atravessa o canal',
-      description: d.tampered
-        ? 'Um atacante altera a cifra durante o trânsito. O canal é público: nada impede a modificação.'
-        : 'Apenas a cifra c trafega pelo canal. Quem a observa não obtém m sem a chave privada.',
-      operation: 'Transmissão da cifra pelo canal público.',
-      events: [{ type: 'send', message: { from: 'alice', to: 'bob', label: 'Cifra c', summary: d.receivedPayload, kind: 'cipher', tampered: d.tampered }, deliver: [] }],
-    },
+    ...cipherTransit(d),
     {
       id: 'receive',
       title: 'Bob recebe a cifra',
@@ -200,13 +322,14 @@ function signatureSteps(d: RsaFlowData): ProtocolStep[] {
     {
       id: 'publish',
       title: 'A chave pública é entregue a Bob',
-      description: 'Bob precisa obter a chave pública de Alice por um meio confiável (por exemplo, um certificado). Sem isso, não há como saber a quem a chave pertence.',
+      description: 'Bob precisa obter a chave pública de Alice por um meio confiável (por exemplo, um certificado). Eva também a vê, o que não é problema; o risco seria Eva entregar a Bob uma chave pública dela, passando-se por Alice.',
       operation: 'Distribuição da chave pública de Alice.',
       events: [
         {
           type: 'send',
-          message: { from: 'alice', to: 'bob', label: 'Chave pública', summary: d.publicKey, kind: 'public' },
+          message: { from: 'alice', to: 'bob', label: 'Chave pública', summary: d.publicKey, kind: 'public', observers: ['eva'] },
           deliver: [entry('pub', 'Chave pública de Alice', d.publicKey, 'public')],
+          observerEntries: [entry('pub', 'Chave pública de Alice (observada)', d.publicKey, 'public')],
         },
       ],
     },
@@ -226,21 +349,7 @@ function signatureSteps(d: RsaFlowData): ProtocolStep[] {
       operation: didactic ? 'Assinatura RSA sem hash e sem padding.' : 'Assinatura RSA-PSS (SHA-256).',
       events: [{ type: 'compute', operation: { party: 'alice', title: 'Assinatura', ...d.forward, kind: 'signature' }, entry: entry('s', 'Assinatura s', d.payload, 'signature') }],
     },
-    {
-      id: 'transit',
-      title: 'Mensagem e assinatura atravessam o canal',
-      description: d.tampered
-        ? 'Um atacante altera a mensagem em trânsito, mantendo a assinatura original.'
-        : 'A mensagem segue em claro junto com a assinatura: assinar não é cifrar, não há confidencialidade.',
-      operation: 'Transmissão do par (m, s).',
-      events: [
-        {
-          type: 'send',
-          message: { from: 'alice', to: 'bob', label: '(m, s)', summary: `${d.receivedMessage} | ${d.receivedPayload}`, kind: 'signature', tampered: d.tampered },
-          deliver: [],
-        },
-      ],
-    },
+    ...signatureTransit(d),
     {
       id: 'receive',
       title: 'Bob recebe a mensagem e a assinatura',

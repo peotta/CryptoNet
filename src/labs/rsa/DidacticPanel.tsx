@@ -110,7 +110,7 @@ export function DidacticPanel() {
           </button>
           <label className="flex items-center gap-2 text-base">
             <input type="checkbox" className="h-5 w-5" checked={tamper} onChange={(ev) => setTamper(ev.target.checked)} />
-            {scenario === 'cifragem' ? 'Adulterar a cifra em trânsito' : 'Adulterar a mensagem em trânsito'}
+            {scenario === 'cifragem' ? 'Adulterar a cifra em trânsito (Eva)' : 'Adulterar a mensagem em trânsito (Eva)'}
           </label>
         </div>
         {error && (
@@ -261,14 +261,14 @@ function FactoringDemo({ n, e, d }: { n: bigint; e: bigint; d: bigint }) {
       return;
     }
     const dd = modInverse(e, (f[0] - 1n) * (f[1] - 1n));
-    setResult(`Um atacante fatora n = ${n} em ${f[0]} × ${f[1]} (${ms} ms), recalcula φ(n) e obtém d = ${dd}${dd === d ? ', idêntico à chave privada de Bob' : ''}.`);
+    setResult(`Eva fatora n = ${n} em ${f[0]} × ${f[1]} (${ms} ms), recalcula φ(n) e obtém d = ${dd}${dd === d ? ', idêntico à chave privada de Bob' : ''}.`);
   }
   return (
     <div className="space-y-2 rounded-xl border border-line bg-surface p-4">
       <h3 className="text-xl font-bold">Por que primos pequenos não protegem nada</h3>
       <p className="text-base">A segurança do RSA vem da dificuldade de fatorar n. Aqui n é pequeno e a fatoração é instantânea.</p>
       <button type="button" className={buttonClass} onClick={attack}>
-        Fatorar n como um atacante
+        Fatorar n como Eva
       </button>
       {result && (
         <p role="status" className="text-lg">

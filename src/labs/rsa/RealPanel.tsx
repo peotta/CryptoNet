@@ -128,7 +128,7 @@ export function RealPanel() {
           </button>
           <label className="flex items-center gap-2 text-base">
             <input type="checkbox" className="h-5 w-5" checked={tamper} onChange={(e) => setTamper(e.target.checked)} />
-            {scenario === 'cifragem' ? 'Teste de falha: adulterar 1 bit da cifra' : 'Teste de falha: adulterar a mensagem assinada'}
+            {scenario === 'cifragem' ? 'Teste de falha: Eva adultera 1 bit da cifra' : 'Teste de falha: Eva adultera a mensagem assinada'}
           </label>
         </div>
         <p aria-live="polite" className="text-base text-muted">

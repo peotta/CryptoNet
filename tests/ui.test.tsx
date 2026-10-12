@@ -132,14 +132,14 @@ describe('laboratório Diffie-Hellman', () => {
     expect(screen.getAllByRole('alert').some((a) => /apenas dígitos/.test(a.textContent ?? ''))).toBe(true);
   });
 
-  it('o cenário MITM mostra segredos diferentes e Eve no centro', async () => {
+  it('o cenário MITM mostra segredos diferentes e Eva no centro', async () => {
     renderAt('/lab/diffie-hellman');
     await screen.findByText(/Estado inicial/);
     fireEvent.click(screen.getByRole('radio', { name: /homem do meio/ }));
     for (let i = 0; i < 14; i++) next();
     expect(screen.getByText(/Ataque bem-sucedido/)).toBeTruthy();
     expect(slot('alice', 'K').textContent).not.toBe(slot('bob', 'K').textContent);
-    expect(slot('eve', 'KAE')).toBeTruthy();
+    expect(slot('eva', 'KAE')).toBeTruthy();
   });
 
   it('não tem violações de acessibilidade', async () => {
@@ -208,8 +208,9 @@ describe('laboratório RSA', () => {
     renderAt('/lab/rsa');
     await screen.findByText(/Estado inicial/);
     fireEvent.click(screen.getByLabelText(/Adulterar a cifra em trânsito/));
+    await screen.findByRole('button', { name: /Eva intercepta a cifra/ }); // o fluxo com Eva ativa já foi calculado
     await screen.findByText(/Estado inicial/);
-    for (let i = 0; i < 9; i++) next();
+    for (let i = 0; i < 10; i++) next(); // Eva intercepta e reenvia: uma etapa a mais
     expect(screen.getAllByText(/Sem padding não existe verificação de integridade/).length).toBeGreaterThan(0);
   });
 
@@ -247,8 +248,9 @@ describe('laboratório de hash e HMAC', () => {
     for (let i = 0; i < 8; i++) next();
     expect(screen.getByText(/Mensagem autêntica e íntegra/)).toBeTruthy();
     fireEvent.click(screen.getByLabelText(/Adulterar a mensagem em trânsito/));
+    await screen.findByRole('button', { name: /Eva intercepta a mensagem/ }); // o fluxo com Eva ativa já foi calculado
     await screen.findByText(/Estado inicial/);
-    for (let i = 0; i < 8; i++) next();
+    for (let i = 0; i < 9; i++) next(); // Eva intercepta e reenvia: uma etapa a mais
     expect(screen.getByText(/Falha de autenticação/)).toBeTruthy();
   });
   it('exige uma chave e confere o HMAC com a implementação nativa', async () => {

@@ -90,28 +90,28 @@ describe('validação de parâmetros e entradas inválidas', () => {
 });
 
 describe('ataque do homem do meio (MITM)', () => {
-  it('Eve compartilha um segredo distinto com cada lado', () => {
+  it('Eva compartilha um segredo distinto com cada lado', () => {
     const m = runMitmSession(23n, 5n, 6n, 15n, 13n);
     expect(m.E).toBe(modPow(5n, 13n, 23n));
-    expect(m.aliceMatchesEve).toBe(true);
-    expect(m.bobMatchesEve).toBe(true);
+    expect(m.aliceMatchesEva).toBe(true);
+    expect(m.bobMatchesEva).toBe(true);
     expect(m.aliceMatchesBob).toBe(false);
     expect(m.kAlice).toBe(modPow(5n, 6n * 13n, 23n));
     expect(m.kBob).toBe(modPow(5n, 15n * 13n, 23n));
   });
-  it('Alice e Bob divergem quando a != b (mod ordem) e Eve sempre acompanha cada lado', () => {
+  it('Alice e Bob divergem quando a != b (mod ordem) e Eva sempre acompanha cada lado', () => {
     for (let a = 2n; a <= 21n; a++) {
       const m = runMitmSession(23n, 5n, a, 7n, 3n);
-      expect(m.aliceMatchesEve && m.bobMatchesEve).toBe(true);
+      expect(m.aliceMatchesEva && m.bobMatchesEva).toBe(true);
     }
   });
-  it('rejeita o segredo inválido de Eve', () => {
+  it('rejeita o segredo inválido de Eva', () => {
     expect(() => runMitmSession(23n, 5n, 6n, 15n, 1n)).toThrow(CryptoInputError);
   });
 });
 
 describe('logaritmo discreto por força bruta', () => {
-  it('Eve recupera um expoente equivalente em grupos pequenos', () => {
+  it('Eva recupera um expoente equivalente em grupos pequenos', () => {
     const s = runDhSession(467n, 2n, 153n, 292n);
     const r = bruteForceDiscreteLog(2n, s.A, 467n);
     expect(r.found).toBe(true);
