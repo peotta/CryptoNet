@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Paleta sóbria, com contraste AA para projetor. Cada tipo de item tem cor e forma próprias. */
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --text: #0f172a;
+  --muted: #475569;
+  --line: #cbd5e1;
+  --accent: #1d4ed8;
+  --accent-ink: #ffffff;
+  --k-param: #334155;
+  --k-public: #1d4ed8;
+  --k-private: #b91c1c;
+  --k-secret: #047857;
+  --k-plain: #6d28d9;
+  --k-cipher: #b45309;
+  --k-signature: #0e7490;
+  --danger: #b91c1c;
+}
+
+.dark {
+  --bg: #0b1220;
+  --surface: #111a2e;
+  --surface-2: #17223a;
+  --text: #e2e8f0;
+  --muted: #a3b1c6;
+  --line: #334155;
+  --accent: #60a5fa;
+  --accent-ink: #0b1220;
+  --k-param: #cbd5e1;
+  --k-public: #60a5fa;
+  --k-private: #f87171;
+  --k-secret: #34d399;
+  --k-plain: #a78bfa;
+  --k-cipher: #fbbf24;
+  --k-signature: #22d3ee;
+  --danger: #f87171;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface-2);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-danger: var(--danger);
+  --color-k-param: var(--k-param);
+  --color-k-public: var(--k-public);
+  --color-k-private: var(--k-private);
+  --color-k-secret: var(--k-secret);
+  --color-k-plain: var(--k-plain);
+  --color-k-cipher: var(--k-cipher);
+  --color-k-signature: var(--k-signature);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Inter", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+}
+
+html {
+  font-size: 17px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.55;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Preferência por movimento reduzido: remove transições e animações CSS. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
