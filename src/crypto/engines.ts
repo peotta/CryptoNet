@@ -12,6 +12,7 @@ import {
   type RsaPrivateKey,
   type RsaPublicKey,
 } from './rsaDidactic';
+import { avalancheStats, digest, hmacTrace, hmacWebCrypto, constantTimeEqual, type AvalancheStats, type HashAlgo, type HmacTrace } from './hash';
 import { runDhSession, runMitmSession, type DhSession, type MitmSession } from './diffieHellman';
 import {
   decryptOaep,
@@ -63,10 +64,19 @@ export interface DiffieHellmanEngine extends CryptoEngine {
   runMitm(p: bigint, g: bigint, a: bigint, b: bigint, e: bigint): Promise<MitmSession>;
 }
 
+/** Funções hash e HMAC (operações reais). */
+export interface HashEngine extends CryptoEngine {
+  digest(algo: HashAlgo, data: Uint8Array): Promise<Uint8Array>;
+  /** HMAC com valores intermediários e conferência contra a implementação nativa. */
+  hmac(algo: HashAlgo, key: Uint8Array, message: Uint8Array): Promise<{ trace: HmacTrace; matchesReference: boolean }>;
+  avalanche(algo: HashAlgo, trials: number): Promise<AvalancheStats>;
+}
+
 export interface EngineSet {
   rsaDidactic: RsaDidacticEngine;
   rsaReal: RsaRealEngine;
   diffieHellman: DiffieHellmanEngine;
+  hash: HashEngine;
 }
 
 const rsaDidactic: RsaDidacticEngine = {
@@ -101,5 +111,16 @@ const diffieHellman: DiffieHellmanEngine = {
   runMitm: async (p, g, a, b, e) => runMitmSession(p, g, a, b, e),
 };
 
+const hash: HashEngine = {
+  id: 'local-webcrypto-hash',
+  kind: 'webcrypto',
+  digest,
+  hmac: async (algo, key, message) => {
+    const trace = await hmacTrace(algo, key, message);
+    return { trace, matchesReference: constantTimeEqual(trace.tag, await hmacWebCrypto(algo, key, message)) };
+  },
+  avalanche: avalancheStats,
+};
+
 /** Motores ativos. Para usar uma API remota, substitua os valores por clientes que implementem as mesmas interfaces. */
-export const engines: EngineSet = { rsaDidactic, rsaReal, diffieHellman };
+export const engines: EngineSet = { rsaDidactic, rsaReal, diffieHellman, hash };

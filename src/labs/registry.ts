@@ -97,9 +97,10 @@ export const LABS: LabMeta[] = [
     id: 'hash-hmac',
     category: 'simetrica',
     title: 'Primitivas: funções hash e HMAC',
-    summary: 'SHA-2, SHA-3, efeito avalanche, HMAC e HKDF.',
-    objectives: [],
-    status: 'planned',
+    summary: 'SHA-2 reais, efeito avalanche visualizado bit a bit e HMAC calculado passo a passo (RFC 2104).',
+    objectives: ['Observar o efeito avalanche', 'Calcular o HMAC em duas passagens', 'Distinguir hash de autenticação de mensagem'],
+    status: 'available',
+    component: lazy(() => import('./hash-hmac/HashHmacLab')),
   },
 ];
 

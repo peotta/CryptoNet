@@ -221,3 +221,58 @@ describe('laboratório RSA', () => {
     expect(await violations(container)).toEqual([]);
   });
 });
+
+describe('laboratório de hash e HMAC', () => {
+  it('mostra o efeito avalanche para a entrada padrão', async () => {
+    renderAt('/lab/hash-hmac');
+    await screen.findByText(/As entradas diferem em/);
+    expect(screen.getByText(/As entradas diferem em/).textContent).toMatch(/1\s+bit de 72/);
+    const status = await screen.findByText(/bits diferem \(/);
+    const m = status.textContent!.match(/(\d+) de 256 bits/);
+    expect(m).not.toBeNull();
+    expect(Number(m![1])).toBeGreaterThan(90);
+    expect(Number(m![1])).toBeLessThan(166);
+  });
+  it('a mesma entrada nos dois campos não difere em nenhum bit', async () => {
+    renderAt('/lab/hash-hmac');
+    await screen.findByText(/As entradas diferem em/);
+    fireEvent.change(screen.getByLabelText('Entrada B'), { target: { value: 'CryptoNet' } });
+    expect(await screen.findByText(/^0 de 256 bits diferem/)).toBeTruthy();
+  });
+  it('HMAC passo a passo: aceita a mensagem íntegra e rejeita a adulterada', async () => {
+    renderAt('/lab/hash-hmac');
+    await screen.findByText(/As entradas diferem em/);
+    fireEvent.click(screen.getByRole('radio', { name: /Parte B/ }));
+    await screen.findByText(/Estado inicial/);
+    for (let i = 0; i < 8; i++) next();
+    expect(screen.getByText(/Mensagem autêntica e íntegra/)).toBeTruthy();
+    fireEvent.click(screen.getByLabelText(/Adulterar a mensagem em trânsito/));
+    await screen.findByText(/Estado inicial/);
+    for (let i = 0; i < 8; i++) next();
+    expect(screen.getByText(/Falha de autenticação/)).toBeTruthy();
+  });
+  it('exige uma chave e confere o HMAC com a implementação nativa', async () => {
+    renderAt('/lab/hash-hmac');
+    await screen.findByText(/As entradas diferem em/);
+    fireEvent.click(screen.getByRole('radio', { name: /Parte B/ }));
+    await screen.findByText(/Estado inicial/);
+    expect(await screen.findByText(/Idêntico ao HMAC nativo/)).toBeTruthy();
+    fireEvent.change(screen.getByLabelText(/Chave secreta compartilhada/), { target: { value: '' } });
+    expect((await screen.findAllByRole('alert')).some((a) => /Informe uma chave/.test(a.textContent ?? ''))).toBe(true);
+    expect(screen.getByText(/Informe uma chave para iniciar/)).toBeTruthy();
+  });
+  it('não tem violações de acessibilidade (partes A e B)', async () => {
+    const { container } = renderAt('/lab/hash-hmac');
+    await screen.findByText(/bits diferem \(/);
+    expect(await violations(container)).toEqual([]);
+    fireEvent.click(screen.getByRole('radio', { name: /Parte B/ }));
+    await screen.findByText(/Estado inicial/);
+    next();
+    next();
+    expect(await violations(container)).toEqual([]);
+  });
+  it('a categoria simétrica agora lista o laboratório como disponível', () => {
+    renderAt('/categoria/simetrica');
+    expect(screen.getAllByRole('link', { name: /Abrir laboratório\s*: Primitivas/ }).length).toBe(1);
+  });
+});
