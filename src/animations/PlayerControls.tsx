@@ -18,18 +18,21 @@ const primary = 'min-h-11 rounded-lg bg-accent px-5 text-base font-semibold text
 
 export function PlayerControls({ state, dispatch, speed, onSpeed, showMath, onShowMath }: Props) {
   const { index, total, playing } = state;
-  const playLabel = playing ? 'Pausar' : index === 0 ? 'Iniciar' : index >= total ? 'Executar novamente' : 'Continuar';
   return (
     <div role="group" aria-label="Controles da animação" className="rounded-xl border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center gap-3">
-        <button type="button" className={primary} onClick={() => dispatch({ type: playing ? 'pause' : 'play' })}>
-          {playLabel}
-        </button>
+        {/* Passo a passo é o padrão: nada avança sem a confirmação explícita do estudante. */}
+        {index === 0 ? (
+          <button type="button" className={primary} onClick={() => dispatch({ type: 'next' })}>
+            Iniciar
+          </button>
+        ) : (
+          <button type="button" className={primary} onClick={() => dispatch({ type: 'next' })} disabled={index >= total}>
+            Próxima etapa →
+          </button>
+        )}
         <button type="button" className={btn} onClick={() => dispatch({ type: 'prev' })} disabled={index === 0}>
           ← Etapa anterior
-        </button>
-        <button type="button" className={btn} onClick={() => dispatch({ type: 'next' })} disabled={index >= total}>
-          Próxima etapa →
         </button>
         <button type="button" className={btn} onClick={() => dispatch({ type: 'reset' })} disabled={index === 0 && !playing}>
           Reiniciar
@@ -50,12 +53,18 @@ export function PlayerControls({ state, dispatch, speed, onSpeed, showMath, onSh
         </label>
       </div>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-base">
-        <label className="flex items-center gap-2">
-          <input type="checkbox" className="h-5 w-5" checked={showMath} onChange={(e) => onShowMath(e.target.checked)} />
-          Mostrar explicações matemáticas
-        </label>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <label className="flex items-center gap-2">
+            <input type="checkbox" className="h-5 w-5" checked={showMath} onChange={(e) => onShowMath(e.target.checked)} />
+            Mostrar explicações matemáticas
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" className="h-5 w-5" checked={playing} disabled={index >= total} onChange={(e) => dispatch({ type: e.target.checked ? 'play' : 'pause' })} />
+            Execução automática (opcional)
+          </label>
+        </div>
         <p aria-live="polite" className="text-muted">
-          Etapa {index} de {total} · {playing ? 'execução automática' : 'passo a passo'}
+          Etapa {index} de {total} · {playing ? 'execução automática (desmarque para retomar o controle)' : 'passo a passo: cada etapa avança só com a sua confirmação'}
         </p>
       </div>
     </div>

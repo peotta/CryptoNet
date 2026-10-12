@@ -51,7 +51,7 @@ export function ProtocolPlayer({ definition, resetKey, footer }: Props) {
           </>
         ) : (
           <p className="text-lg">
-            Estado inicial. Pressione <strong>Iniciar</strong> para a execução automática ou <strong>Próxima etapa</strong> para avançar passo a passo.
+            Estado inicial. Pressione <strong>Iniciar</strong> para ver a etapa 1. Em seguida, leia a explicação e use <strong>Próxima etapa</strong> quando estiver pronto: nada avança sozinho.
           </p>
         )}
       </div>

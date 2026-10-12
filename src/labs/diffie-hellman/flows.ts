@@ -10,6 +10,39 @@ const EVE_SLOTS_PASSIVE = [
   { key: 'B', label: 'B (observado)', kind: 'public' as const },
 ];
 
+interface Part {
+  id: string;
+  title: string;
+  description: string;
+  operation: string;
+  /** Quantidade de eventos da etapa original que pertencem a esta parte. */
+  take: number;
+}
+
+/**
+ * Divide uma etapa em partes menores, uma por cálculo ou mensagem, para que o estudante
+ * confirme cada operação separadamente (o padrão da interface é passo a passo).
+ */
+function split(step: ProtocolStep, parts: Part[]): ProtocolStep[] {
+  let at = 0;
+  return parts.map((part, i) => {
+    const events = step.events.slice(at, at + part.take);
+    at += part.take;
+    return {
+      id: part.id,
+      title: part.title,
+      description: part.description,
+      operation: part.operation,
+      events,
+      info: i === parts.length - 1 ? step.info : undefined,
+    };
+  });
+}
+
+function refine(steps: ProtocolStep[], plan: Record<string, Part[]>): ProtocolStep[] {
+  return steps.flatMap((st) => (plan[st.id] ? split(st, plan[st.id]) : [st]));
+}
+
 function partiesBasic(): PartyDef[] {
   return [
     {
@@ -158,7 +191,25 @@ export function buildDhProtocol(s: DhSession): ProtocolDefinition {
       ],
     },
   ];
-  return { id: 'dh-basic', title: 'Diffie-Hellman: troca de chaves', parties: partiesBasic(), steps };
+  const plan: Record<string, Part[]> = {
+    secrets: [
+      { id: 'secret-a', title: 'Alice escolhe o segredo a', description: 'Alice sorteia um expoente secreto a e o guarda na área protegida. Ele nunca será enviado a ninguém.', operation: 'Escolha de a em [2, p - 2].', take: 1 },
+      { id: 'secret-b', title: 'Bob escolhe o segredo b', description: 'Bob faz o mesmo, de forma independente: escolhe b e o guarda na sua área protegida. Alice não conhece b.', operation: 'Escolha de b em [2, p - 2].', take: 1 },
+    ],
+    publics: [
+      { id: 'public-a', title: 'Alice calcula A', description: 'Alice eleva g ao seu segredo, módulo p. A exponenciação é fácil de calcular, mas difícil de inverter em grupos adequados.', operation: 'A = g^a mod p.', take: 1 },
+      { id: 'public-b', title: 'Bob calcula B', description: 'Bob faz o cálculo equivalente com o seu próprio segredo.', operation: 'B = g^b mod p.', take: 1 },
+    ],
+    exchange: [
+      { id: 'send-a', title: 'Alice envia A a Bob', description: 'O valor público A atravessa o canal. Eve o registra, mas a continua secreto.', operation: 'Transmissão de A pelo canal público.', take: 1 },
+      { id: 'send-b', title: 'Bob envia B a Alice', description: 'Agora B percorre o caminho inverso. Eve também o registra; b nunca trafega.', operation: 'Transmissão de B pelo canal público.', take: 1 },
+    ],
+    shared: [
+      { id: 'shared-a', title: 'Alice calcula o segredo compartilhado K_A', description: 'Alice eleva o B recebido ao seu segredo a. O resultado é g^(ab) mod p.', operation: 'K_A = B^a mod p.', take: 1 },
+      { id: 'shared-b', title: 'Bob calcula o segredo compartilhado K_B', description: 'Bob eleva o A recebido ao seu segredo b e obtém o mesmo número, sem que ele tenha passado pelo canal.', operation: 'K_B = A^b mod p.', take: 1 },
+    ],
+  };
+  return { id: 'dh-basic', title: 'Diffie-Hellman: troca de chaves', parties: partiesBasic(), steps: refine(steps, plan) };
 }
 
 function partiesMitm(): PartyDef[] {
@@ -352,5 +403,23 @@ export function buildMitmProtocol(s: MitmSession): ProtocolDefinition {
       ],
     },
   ];
-  return { id: 'dh-mitm', title: 'Diffie-Hellman: ataque do homem do meio', parties: partiesMitm(), steps };
+  const plan: Record<string, Part[]> = {
+    secrets: [
+      { id: 'secret-a', title: 'Alice escolhe o segredo a', description: 'Alice guarda a na área protegida. Ela acredita estar falando apenas com Bob.', operation: 'Escolha de a.', take: 1 },
+      { id: 'secret-b', title: 'Bob escolhe o segredo b', description: 'Bob guarda b na sua área protegida.', operation: 'Escolha de b.', take: 1 },
+      { id: 'secret-e', title: 'Eve escolhe o segredo e', description: 'Eve participa do protocolo como se fosse um terceiro participante legítimo, com o seu próprio segredo e.', operation: 'Escolha de e.', take: 1 },
+    ],
+    publics: [
+      { id: 'public-a', title: 'Alice calcula A', description: 'Alice calcula o seu valor público normalmente.', operation: 'A = g^a mod p.', take: 1 },
+      { id: 'public-b', title: 'Bob calcula B', description: 'Bob calcula o seu valor público normalmente.', operation: 'B = g^b mod p.', take: 1 },
+      { id: 'public-e', title: 'Eve calcula E', description: 'Eve calcula o valor E, que usará para se passar por Alice e por Bob.', operation: 'E = g^e mod p.', take: 1 },
+    ],
+    shared: [
+      { id: 'shared-a', title: 'Alice calcula K_A sem suspeitar', description: 'Alice aplica a fórmula ao valor que recebeu, que é o E de Eve, e não o B de Bob.', operation: "K_A = (B')^a mod p, com B' = E.", take: 1 },
+      { id: 'shared-b', title: 'Bob calcula K_B sem suspeitar', description: 'Bob também usa o valor recebido, que é o E de Eve, e não o A de Alice.', operation: "K_B = (A')^b mod p, com A' = E.", take: 1 },
+      { id: 'shared-ae', title: 'Eve calcula K_AE, o segredo que divide com Alice', description: 'Eve combina o A capturado com o seu segredo e: obtém exatamente o mesmo número que Alice.', operation: 'K_AE = A^e mod p.', take: 1 },
+      { id: 'shared-eb', title: 'Eve calcula K_EB, o segredo que divide com Bob', description: 'Eve combina o B capturado com e: obtém o mesmo número que Bob.', operation: 'K_EB = B^e mod p.', take: 1 },
+    ],
+  };
+  return { id: 'dh-mitm', title: 'Diffie-Hellman: ataque do homem do meio', parties: partiesMitm(), steps: refine(steps, plan) };
 }

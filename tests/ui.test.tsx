@@ -25,7 +25,8 @@ async function violations(container: HTMLElement) {
 }
 
 const slot = (party: string, key: string) => screen.getByTestId(`slot-${party}-${key}`);
-const next = () => fireEvent.click(screen.getByRole('button', { name: /Próxima etapa/ }));
+// Passo a passo: "Iniciar" abre a etapa 1; depois, "Próxima etapa" confirma cada avanço.
+const next = () => fireEvent.click(screen.queryByRole('button', { name: 'Iniciar' }) ?? screen.getByRole('button', { name: /Próxima etapa/ }));
 
 describe('página inicial e categorias', () => {
   it('mostra título, subtítulo e laboratórios', () => {
@@ -65,25 +66,36 @@ describe('laboratório Diffie-Hellman', () => {
 
     expect(within(slot('alice', 'A')).getByText('ainda não definido')).toBeTruthy();
     next(); // 1 parâmetros
-    next(); // 2 segredos
+    next(); // 2 Alice escolhe a
     expect(within(slot('alice', 'a')).getByText('6')).toBeTruthy();
+    expect(within(slot('bob', 'b')).getByText('ainda não definido')).toBeTruthy(); // Bob ainda não escolheu
+    next(); // 3 Bob escolhe b
     expect(within(slot('bob', 'b')).getByText('15')).toBeTruthy();
-    next(); // 3 valores públicos
+    next(); // 4 Alice calcula A
     expect(within(slot('alice', 'A')).getByText('8')).toBeTruthy();
+    expect(within(slot('bob', 'B')).getByText('ainda não definido')).toBeTruthy();
+    next(); // 5 Bob calcula B
     expect(within(slot('bob', 'B')).getByText('19')).toBeTruthy();
-    next(); // 4 troca
-    expect(screen.getAllByTestId('transit-message')).toHaveLength(2);
+    next(); // 6 Alice envia A
+    expect(screen.getAllByTestId('transit-message')).toHaveLength(1);
     expect(within(slot('bob', 'Arec')).getByText('8')).toBeTruthy();
+    expect(within(slot('alice', 'Brec')).getByText('ainda não definido')).toBeTruthy();
+    next(); // 7 Bob envia B
+    expect(screen.getAllByTestId('transit-message')).toHaveLength(1);
     expect(within(slot('alice', 'Brec')).getByText('19')).toBeTruthy();
-    next(); // 5 segredo
+    next(); // 8 K_A
     expect(within(slot('alice', 'K')).getByText('2')).toBeTruthy();
+    expect(within(slot('bob', 'K')).getByText('ainda não definido')).toBeTruthy();
+    next(); // 9 K_B
     expect(within(slot('bob', 'K')).getByText('2')).toBeTruthy();
-    next(); // 6 comparação
+    next(); // 10 comparação
     expect(screen.getByText(/Segredo compartilhado estabelecido com sucesso/)).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: /Etapa anterior/ })); // volta à 5
+    fireEvent.click(screen.getByRole('button', { name: /Etapa anterior/ })); // volta à 9
     expect(screen.queryByText(/Segredo compartilhado estabelecido com sucesso/)).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /Etapa anterior/ })); // volta à 4
+    fireEvent.click(screen.getByRole('button', { name: /Etapa anterior/ })); // volta à 8
+    expect(within(slot('bob', 'K')).getByText('ainda não definido')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Etapa anterior/ })); // volta à 7
     expect(within(slot('alice', 'K')).getByText('ainda não definido')).toBeTruthy();
     expect(within(slot('alice', 'Brec')).getByText('19')).toBeTruthy();
 
@@ -95,7 +107,7 @@ describe('laboratório Diffie-Hellman', () => {
   it('a linha do tempo permite saltar para uma etapa', async () => {
     renderAt('/lab/diffie-hellman');
     await screen.findByText(/Estado inicial/);
-    fireEvent.click(screen.getByRole('button', { name: /Cálculo do segredo compartilhado/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Bob calcula o segredo compartilhado/ }));
     expect(within(slot('bob', 'K')).getByText('2')).toBeTruthy();
   });
 
@@ -124,7 +136,7 @@ describe('laboratório Diffie-Hellman', () => {
     renderAt('/lab/diffie-hellman');
     await screen.findByText(/Estado inicial/);
     fireEvent.click(screen.getByRole('radio', { name: /homem do meio/ }));
-    for (let i = 0; i < 7; i++) next();
+    for (let i = 0; i < 14; i++) next();
     expect(screen.getByText(/Ataque bem-sucedido/)).toBeTruthy();
     expect(slot('alice', 'K').textContent).not.toBe(slot('bob', 'K').textContent);
     expect(slot('eve', 'KAE')).toBeTruthy();
@@ -138,6 +150,30 @@ describe('laboratório Diffie-Hellman', () => {
     next();
     next();
     expect(await violations(container)).toEqual([]);
+  });
+});
+
+describe('interação passo a passo (confirmação do estudante)', () => {
+  it('nada avança sozinho: a execução automática começa desligada e exige confirmação a cada etapa', async () => {
+    renderAt('/lab/diffie-hellman');
+    await screen.findByText(/Estado inicial/);
+    const auto = screen.getByLabelText('Execução automática (opcional)') as HTMLInputElement;
+    expect(auto.checked).toBe(false);
+    next();
+    await new Promise((r) => setTimeout(r, 300));
+    expect(screen.getByText(/Etapa 1 de 11 · passo a passo/)).toBeTruthy();
+    next();
+    expect(screen.getByText(/Etapa 2 de 11/)).toBeTruthy();
+    expect(auto.checked).toBe(false);
+  });
+  it('a execução automática só ocorre se o estudante a ativar e pode ser interrompida', async () => {
+    renderAt('/lab/diffie-hellman');
+    await screen.findByText(/Estado inicial/);
+    const auto = screen.getByLabelText('Execução automática (opcional)') as HTMLInputElement;
+    fireEvent.click(auto);
+    expect(auto.checked).toBe(true);
+    fireEvent.click(auto);
+    expect(auto.checked).toBe(false);
   });
 });
 

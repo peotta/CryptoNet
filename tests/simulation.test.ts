@@ -12,8 +12,10 @@ const dh = () => buildDhProtocol(runDhSession(23n, 5n, 6n, 15n));
 const mitm = () => buildMitmProtocol(runMitmSession(23n, 5n, 6n, 15n, 13n));
 
 describe('linha do tempo determinística', () => {
-  it('o Diffie-Hellman tem as 7 etapas obrigatórias, na ordem', () => {
-    expect(dh().steps.map((s) => s.id)).toEqual(['params', 'secrets', 'publics', 'exchange', 'shared', 'compare', 'apply']);
+  it('o Diffie-Hellman cobre as 7 fases obrigatórias, com cada cálculo e mensagem em sua própria etapa', () => {
+    expect(dh().steps.map((s) => s.id)).toEqual([
+      'params', 'secret-a', 'secret-b', 'public-a', 'public-b', 'send-a', 'send-b', 'shared-a', 'shared-b', 'compare', 'apply',
+    ]);
   });
   it('toda etapa tem identificador, título, descrição e operação', () => {
     for (const def of [dh(), mitm()]) {
@@ -42,21 +44,33 @@ describe('linha do tempo determinística', () => {
     ProtocolSimulationEngine.build(dh());
     expect(JSON.stringify(t.states[3])).toBe(snapshot);
   });
-  it('a etapa 3 produz A = 8 e B = 19; a etapa 5 produz K = 2 nos dois lados', () => {
+  it('Alice e Bob calculam em etapas separadas: A na 4, B na 5; K_A na 8 e K_B na 9 (K = 2)', () => {
     const t = ProtocolSimulationEngine.build(dh());
-    expect(t.states[3].entries.alice.A.value).toBe('8');
-    expect(t.states[3].entries.bob.B.value).toBe('19');
-    expect(t.states[5].entries.alice.K.value).toBe('2');
-    expect(t.states[5].entries.bob.K.value).toBe('2');
+    expect(t.states[4].entries.alice.A.value).toBe('8');
+    expect(t.states[4].entries.bob.B).toBeUndefined();
+    expect(t.states[5].entries.bob.B.value).toBe('19');
+    expect(t.states[8].entries.alice.K.value).toBe('2');
+    expect(t.states[8].entries.bob.K).toBeUndefined();
+    expect(t.states[9].entries.bob.K.value).toBe('2');
+  });
+  it('cada etapa executa no máximo uma operação de um único participante', () => {
+    for (const def of [dh(), mitm()]) {
+      for (const st of def.steps) {
+        const ops = st.events.filter((e) => e.type === 'compute');
+        expect(ops.length).toBeLessThanOrEqual(1);
+        const sends = st.events.filter((e) => e.type === 'send');
+        expect(sends.length).toBeLessThanOrEqual(2); // o MITM usa dois envios em sequência: captura e reenvio
+      }
+    }
   });
   it('o veredito de sucesso só aparece na etapa de comparação', () => {
     const t = ProtocolSimulationEngine.build(dh());
-    expect(t.states[5].verdict).toBeNull();
-    expect(t.states[6].verdict).toEqual({ ok: true, text: 'Segredo compartilhado estabelecido com sucesso.' });
+    expect(t.states[9].verdict).toBeNull();
+    expect(t.states[10].verdict).toEqual({ ok: true, text: 'Segredo compartilhado estabelecido com sucesso.' });
   });
   it('destaca o que mudou em cada etapa', () => {
     const t = ProtocolSimulationEngine.build(dh());
-    expect(changedKeys(t.states[2], t.states[3])).toEqual(new Set(['alice:A', 'bob:B']));
+    expect(changedKeys(t.states[3], t.states[4])).toEqual(new Set(['alice:A']));
   });
 });
 
