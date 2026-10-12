@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { initialPlayer, playerReducer } from '../simulation/player';
 
 /** Tempo de permanência em cada etapa na execução automática, na velocidade 1x. */
@@ -11,15 +11,15 @@ export const BASE_STEP_MS = 4200;
 export function useStepPlayer(total: number, speed: number, resetKey: string) {
   const [state, dispatch] = useReducer(playerReducer, total, initialPlayer);
 
-  // Reinicia somente quando o protocolo ou os parâmetros mudam depois da montagem; reiniciar na
-  // montagem apagaria uma interação do estudante que ocorresse antes de o efeito ser executado.
-  const lastKey = useRef(`${total}|${resetKey}`);
-  useEffect(() => {
-    const key = `${total}|${resetKey}`;
-    if (key === lastKey.current) return;
-    lastKey.current = key;
+  // Reinicia quando o protocolo ou os parâmetros mudam (nunca na montagem). O reinício ocorre durante
+  // a própria renderização, e não em um efeito: assim o total correto já vale no primeiro quadro exibido
+  // e nenhuma interação do estudante é perdida entre a renderização e a execução do efeito.
+  const key = `${total}|${resetKey}`;
+  const [lastKey, setLastKey] = useState(key);
+  if (key !== lastKey) {
+    setLastKey(key);
     dispatch({ type: 'setTotal', total });
-  }, [total, resetKey]);
+  }
 
   useEffect(() => {
     if (!state.playing) return;

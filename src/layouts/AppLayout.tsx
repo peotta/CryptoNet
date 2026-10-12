@@ -41,8 +41,8 @@ export function AppLayout() {
         <Outlet />
       </main>
       <footer className="border-t border-line bg-surface">
-        <p className="mx-auto max-w-7xl px-4 py-4 text-base text-muted">
-          Projeto acadêmico de código aberto (licença MIT). Universidade de Brasília (UnB), Departamento de Engenharia Elétrica. Uso educacional: os laboratórios não devem
+        <p className="mx-auto max-w-7xl px-4 py-4 text-center text-base text-muted">
+          Projeto acadêmico de código aberto (licença MIT). Responsável: Prof. Dr. Laerte Peotta de Melo. Universidade de Brasília (UnB), Departamento de Engenharia Elétrica. Uso educacional: os laboratórios não devem
           proteger dados reais.
         </p>
       </footer>
