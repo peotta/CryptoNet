@@ -12,6 +12,20 @@ import {
   type RsaPrivateKey,
   type RsaPublicKey,
 } from './rsaDidactic';
+import {
+  aesBlockWebCrypto,
+  cbcDecrypt,
+  cbcEncrypt,
+  ctrXor,
+  ecbDecrypt,
+  ecbEncrypt,
+  expandKey,
+  gcmDecrypt,
+  gcmEncrypt,
+  traceEncrypt,
+  type AesMode,
+  type RoundStep,
+} from './aes';
 import { avalancheStats, digest, hmacTrace, hmacWebCrypto, constantTimeEqual, type AvalancheStats, type HashAlgo, type HmacTrace } from './hash';
 import { runDhSession, runMitmSession, type DhSession, type MitmSession } from './diffieHellman';
 import {
@@ -72,11 +86,25 @@ export interface HashEngine extends CryptoEngine {
   avalanche(algo: HashAlgo, trials: number): Promise<AvalancheStats>;
 }
 
+/**
+ * AES e modos de operação. ECB, CBC e CTR usam a implementação didática (sem preenchimento);
+ * o GCM usa a Web Crypto. O iv é de 16 bytes no CBC e de 12 bytes no CTR e no GCM.
+ */
+export interface AesEngine extends CryptoEngine {
+  /** No GCM, o resultado é o texto cifrado seguido da etiqueta de 16 bytes. */
+  encrypt(mode: AesMode, key: Uint8Array, iv: Uint8Array | null, plaintext: Uint8Array): Promise<Uint8Array>;
+  /** No GCM, lança erro quando a etiqueta de autenticação não confere. */
+  decrypt(mode: AesMode, key: Uint8Array, iv: Uint8Array | null, data: Uint8Array): Promise<Uint8Array>;
+  /** Rastro das rodadas de um bloco, conferido com a Web Crypto. */
+  traceBlock(key: Uint8Array, block: Uint8Array): Promise<{ steps: RoundStep[]; roundKeys: Uint8Array[]; matchesReference: boolean }>;
+}
+
 export interface EngineSet {
   rsaDidactic: RsaDidacticEngine;
   rsaReal: RsaRealEngine;
   diffieHellman: DiffieHellmanEngine;
   hash: HashEngine;
+  aes: AesEngine;
 }
 
 const rsaDidactic: RsaDidacticEngine = {
@@ -122,5 +150,46 @@ const hash: HashEngine = {
   avalanche: avalancheStats,
 };
 
+function need(iv: Uint8Array | null, length: number, mode: AesMode): Uint8Array {
+  if (!iv || iv.length !== length) throw new Error(`O ${mode === 'CBC' ? 'IV' : 'nonce'} do ${mode} deve ter ${length} bytes.`);
+  return iv;
+}
+
+const aes: AesEngine = {
+  id: 'local-aes',
+  kind: 'educational',
+  encrypt: async (mode, key, iv, pt) => {
+    switch (mode) {
+      case 'ECB':
+        return ecbEncrypt(key, pt);
+      case 'CBC':
+        return cbcEncrypt(key, need(iv, 16, mode), pt);
+      case 'CTR':
+        return ctrXor(key, need(iv, 12, mode), pt);
+      case 'GCM':
+        return gcmEncrypt(key, need(iv, 12, mode), pt);
+    }
+  },
+  decrypt: async (mode, key, iv, data) => {
+    switch (mode) {
+      case 'ECB':
+        return ecbDecrypt(key, data);
+      case 'CBC':
+        return cbcDecrypt(key, need(iv, 16, mode), data);
+      case 'CTR':
+        return ctrXor(key, need(iv, 12, mode), data);
+      case 'GCM':
+        return gcmDecrypt(key, need(iv, 12, mode), data);
+    }
+  },
+  traceBlock: async (key, block) => {
+    const roundKeys = expandKey(key);
+    const steps = traceEncrypt(roundKeys, block);
+    const reference = await aesBlockWebCrypto(key, block);
+    const last = steps[steps.length - 1].state;
+    return { steps, roundKeys, matchesReference: reference.every((b, i) => b === last[i]) };
+  },
+};
+
 /** Motores ativos. Para usar uma API remota, substitua os valores por clientes que implementem as mesmas interfaces. */
-export const engines: EngineSet = { rsaDidactic, rsaReal, diffieHellman, hash };
+export const engines: EngineSet = { rsaDidactic, rsaReal, diffieHellman, hash, aes };

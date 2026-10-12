@@ -44,13 +44,13 @@ describe('página inicial e categorias', () => {
   it('separa as categorias simétrica e assimétrica', () => {
     renderAt('/categoria/simetrica');
     expect(screen.getByRole('heading', { level: 1, name: 'Criptografia Simétrica' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'AES' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'AES e modos de operação' })).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'RSA' })).toBeNull();
     cleanup();
     renderAt('/categoria/assimetrica');
     expect(screen.getByRole('heading', { name: 'RSA' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Diffie-Hellman' })).toBeTruthy();
-    expect(screen.queryByRole('heading', { name: 'AES' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'AES e modos de operação' })).toBeNull();
   });
   it('rotas inexistentes exibem página de erro', () => {
     renderAt('/lab/nao-existe');
