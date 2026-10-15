@@ -53,9 +53,10 @@ export const LABS: LabMeta[] = [
     id: 'substituicao-frequencia',
     category: 'classica',
     title: 'Substituição simples e análise de frequência',
-    summary: 'Chave de 26 letras (26! chaves) e a quebra por histograma de frequências e índice de coincidência.',
-    objectives: [],
-    status: 'planned',
+    summary: 'Chave de 26 letras (26! chaves) e a quebra por frequência, índice de coincidência e bigramas, com Eva como criptoanalista.',
+    objectives: ['Entender por que 26! chaves não bastam', 'Calcular o índice de coincidência', 'Refinar o palpite com pares de letras'],
+    status: 'available',
+    component: lazy(() => import('./substituicao/SubstituicaoLab')),
   },
   {
     id: 'vigenere',

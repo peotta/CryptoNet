@@ -75,12 +75,15 @@ export function CipherDisk({ shift, highlight = null, speed = 1 }: DiskProps) {
 }
 
 interface StripProps {
-  cipherKey: ClassicalKey;
+  /** Chave do César ou afim. Ignorada se `table` for informada. */
+  cipherKey?: ClassicalKey;
+  /** Tabela de substituição: a letra na posição i é a cifrada da letra i (26 letras). */
+  table?: string;
   highlight?: number | null;
 }
 
-/** Tira de alfabeto: cada letra clara e a sua cifrada, lado a lado. Serve ao César e à cifra afim. */
-export function AlphabetStrip({ cipherKey, highlight = null }: StripProps) {
+/** Tira de alfabeto: cada letra clara e a sua cifrada, lado a lado. Serve ao César, à cifra afim e à substituição simples. */
+export function AlphabetStrip({ cipherKey, table, highlight = null }: StripProps) {
   return (
     <div className="overflow-x-auto">
       <table className="border-separate border-spacing-0.5 font-mono text-base">
@@ -102,7 +105,7 @@ export function AlphabetStrip({ cipherKey, highlight = null }: StripProps) {
             </th>
             {[...ALPHABET].map((ch, i) => (
               <td key={ch} className={`min-w-7 rounded border px-1 text-center ${highlight === i ? 'border-k-cipher bg-k-cipher/25 font-bold' : 'border-line'}`}>
-                {ALPHABET[mapLetter(cipherKey, i)]}
+                {table ? table[i] : ALPHABET[mapLetter(cipherKey ?? { a: 1, b: 0 }, i)]}
               </td>
             ))}
           </tr>

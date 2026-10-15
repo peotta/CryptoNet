@@ -34,6 +34,12 @@ import {
   type ClassicalKey,
   type CrackCandidate,
 } from './classical';
+import {
+  crackSubstitution as crackSub,
+  substitutionDecrypt,
+  substitutionEncrypt,
+  type SubstitutionCrack,
+} from './substitution';
 import { avalancheStats, digest, hmacTrace, hmacWebCrypto, constantTimeEqual, type AvalancheStats, type HashAlgo, type HmacTrace } from './hash';
 import { runDhSession, runMitmSession, type DhSession, type MitmSession } from './diffieHellman';
 import {
@@ -113,6 +119,11 @@ export interface ClassicalEngine extends CryptoEngine {
   decrypt(cipher: ClassicalCipher, key: ClassicalKey, ciphertext: string): Promise<string>;
   /** Todas as chaves possíveis, ordenadas da mais para a menos provável (menor χ² primeiro). */
   crack(cipher: ClassicalCipher, ciphertext: string): Promise<CrackCandidate[]>;
+  /** Substituição simples: a chave é uma permutação das 26 letras. */
+  encryptSubstitution(key: string, plaintext: string): Promise<string>;
+  decryptSubstitution(key: string, ciphertext: string): Promise<string>;
+  /** Criptoanálise por frequência e refinamento com bigramas (sem conhecer a chave). */
+  crackSubstitution(ciphertext: string): Promise<SubstitutionCrack>;
 }
 
 export interface EngineSet {
@@ -214,6 +225,9 @@ const classical: ClassicalEngine = {
   encrypt: async (cipher, key, plaintext) => encryptClassical(cipher, key, plaintext),
   decrypt: async (cipher, key, ciphertext) => decryptClassical(cipher, key, ciphertext),
   crack: async (cipher, ciphertext) => crackClassical(cipher, ciphertext),
+  encryptSubstitution: async (key, plaintext) => substitutionEncrypt(key, plaintext),
+  decryptSubstitution: async (key, ciphertext) => substitutionDecrypt(key, ciphertext),
+  crackSubstitution: async (ciphertext) => crackSub(ciphertext),
 };
 
 /** Motores ativos. Para usar uma API remota, substitua os valores por clientes que implementem as mesmas interfaces. */
