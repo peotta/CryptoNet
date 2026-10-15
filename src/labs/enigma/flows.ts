@@ -73,7 +73,7 @@ export async function runEnigmaFlow(engine: ClassicalEngine, input: { config: En
   let verdictText =
     `Eva alinhou o texto provável "${crib}" em ${offsets.length} posições e descartou ${impossible} por conterem uma letra igual à cifrada (a Enigma nunca cifra uma letra em si mesma). ` +
     `Restam ${offsets.length - impossible} posições, e ela ainda não conhece a configuração: o espaço de chaves é cerca de ${bigText(space.withoutRings)} (com 10 pares de plugues, sem contar os anéis). ` +
-    'Historicamente, a quebra da Enigma combinou essa propriedade com textos prováveis e com as Bombes de Turing; esta simulação não inclui a Bombe.';
+    'Historicamente, a quebra da Enigma combinou essa propriedade com textos prováveis e com as Bombes de Turing; esta fase não inclui a Bombe, que está no laboratório "Enigma, fase 2".';
   if (input.tamper) verdictText += ' Além disso, Bob decifrou a mensagem alterada sem perceber: não há verificação de integridade (somente a letra atingida fica errada).';
 
   return {

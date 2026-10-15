@@ -95,6 +95,15 @@ export const LABS: LabMeta[] = [
     component: lazy(() => import('./enigma/EnigmaLab')),
   },
   {
+    id: 'enigma-bombe',
+    category: 'classica',
+    title: 'Enigma, fase 2: a Bombe',
+    summary: 'O ataque de Turing e Welchman: menu do texto provável, hipótese de plugue, propagação, contradição e paradas falsas, com Alice, Bob e Eva.',
+    objectives: ['Montar o menu do texto provável', 'Acompanhar a propagação até a contradição', 'Entender por que os laços eliminam paradas falsas'],
+    status: 'available',
+    component: lazy(() => import('./enigma-bombe/EnigmaBombeLab')),
+  },
+  {
     id: 'otp',
     category: 'classica',
     title: 'One-time pad',

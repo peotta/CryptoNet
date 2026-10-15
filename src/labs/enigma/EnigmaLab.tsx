@@ -349,7 +349,7 @@ export default function EnigmaLab() {
                 <p className="text-lg">A posição real nunca é descartada, mas muitas outras são. Com o texto provável alinhado, as Bombes de Turing testavam as configurações compatíveis.</p>
                 <Callout variant="info" title="O que esta simulação não faz">
                   <p>
-                    Eva aqui só elimina alinhamentos. A Bombe, que procurava a configuração testando as consequências do texto provável nos circuitos da máquina, não está implementada. Os erros dos
+                    Eva aqui só elimina alinhamentos. A Bombe, que procurava a configuração testando as consequências do texto provável nos circuitos da máquina, está no laboratório "Enigma, fase 2: a Bombe". Os erros dos
                     operadores (chaves repetidas, textos previsíveis como "nada a reportar") também foram decisivos na história.
                   </p>
                 </Callout>

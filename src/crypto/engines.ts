@@ -57,6 +57,7 @@ import {
   type HillBlock,
   type Matrix,
 } from './hill';
+import { bombeAttack, type BombeAttack, type BombeSetup } from './bombe';
 import { cribOffsets, enigmaRun, type CribOffset, type EnigmaConfig, type EnigmaResult } from './enigma';
 import { cribDrag, otpDecrypt, otpEncrypt, type DragResult } from './otp';
 import {
@@ -172,6 +173,8 @@ export interface ClassicalEngine extends CryptoEngine {
   runEnigma(config: EnigmaConfig, text: string): Promise<EnigmaResult>;
   /** Alinhamentos de um texto provável com a cifra, descartando os impossíveis (letra igual à cifrada). */
   analyzeCrib(ciphertext: string, crib: string): Promise<CribOffset[]>;
+  /** Bombe: menu, busca nas 17.576 posições iniciais e verificação das paradas (sem conhecer as posições nem os plugues). */
+  runBombe(setup: BombeSetup, ciphertext: string, crib: string, offset: number): Promise<BombeAttack>;
   /** One-time pad: soma módulo 26, com chave do tamanho da mensagem (lança erro se a chave for curta). */
   encryptOtp(key: string, plaintext: string): Promise<string>;
   decryptOtp(key: string, ciphertext: string): Promise<string>;
@@ -320,6 +323,7 @@ const classical: ClassicalEngine = {
   attackHill: async (n, knownPlain, cipherPrefix) => hillAttack(n, knownPlain, cipherPrefix),
   runEnigma: async (config, text) => enigmaRun(config, text),
   analyzeCrib: async (ciphertext, crib) => cribOffsets(ciphertext, crib),
+  runBombe: async (setup, ciphertext, crib, offset) => bombeAttack(setup, ciphertext, crib, offset),
   encryptOtp: async (key, plaintext) => otpEncrypt(key, plaintext),
   decryptOtp: async (key, ciphertext) => otpDecrypt(key, ciphertext),
   dragOtp: async (cipher1, cipher2, crib, inFirst) => cribDrag(cipher1, cipher2, crib, inFirst),
