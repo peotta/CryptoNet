@@ -57,6 +57,7 @@ import {
   type Matrix,
 } from './hill';
 import { cribOffsets, enigmaRun, type CribOffset, type EnigmaConfig, type EnigmaResult } from './enigma';
+import { cribDrag, otpDecrypt, otpEncrypt, type DragResult } from './otp';
 import { avalancheStats, digest, hmacTrace, hmacWebCrypto, constantTimeEqual, type AvalancheStats, type HashAlgo, type HmacTrace } from './hash';
 import { runDhSession, runMitmSession, type DhSession, type MitmSession } from './diffieHellman';
 import {
@@ -158,6 +159,11 @@ export interface ClassicalEngine extends CryptoEngine {
   runEnigma(config: EnigmaConfig, text: string): Promise<EnigmaResult>;
   /** Alinhamentos de um texto provável com a cifra, descartando os impossíveis (letra igual à cifrada). */
   analyzeCrib(ciphertext: string, crib: string): Promise<CribOffset[]>;
+  /** One-time pad: soma módulo 26, com chave do tamanho da mensagem (lança erro se a chave for curta). */
+  encryptOtp(key: string, plaintext: string): Promise<string>;
+  decryptOtp(key: string, ciphertext: string): Promise<string>;
+  /** Arrasto de texto provável sobre duas cifras feitas com a MESMA chave (two-time pad). */
+  dragOtp(cipher1: string, cipher2: string, crib: string, inFirst: boolean): Promise<DragResult[]>;
 }
 
 export interface EngineSet {
@@ -280,6 +286,9 @@ const classical: ClassicalEngine = {
   attackHill: async (n, knownPlain, cipherPrefix) => hillAttack(n, knownPlain, cipherPrefix),
   runEnigma: async (config, text) => enigmaRun(config, text),
   analyzeCrib: async (ciphertext, crib) => cribOffsets(ciphertext, crib),
+  encryptOtp: async (key, plaintext) => otpEncrypt(key, plaintext),
+  decryptOtp: async (key, ciphertext) => otpDecrypt(key, ciphertext),
+  dragOtp: async (cipher1, cipher2, crib, inFirst) => cribDrag(cipher1, cipher2, crib, inFirst),
 };
 
 /** Motores ativos. Para usar uma API remota, substitua os valores por clientes que implementem as mesmas interfaces. */

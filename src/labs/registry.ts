@@ -97,9 +97,10 @@ export const LABS: LabMeta[] = [
     id: 'otp',
     category: 'classica',
     title: 'One-time pad',
-    summary: 'Sigilo perfeito e o perigo de reutilizar a chave.',
-    objectives: [],
-    status: 'planned',
+    summary: 'Sigilo perfeito de Shannon, a maleabilidade e a destruição do sigilo quando a chave é reutilizada, com o arrasto de texto provável de Eva.',
+    objectives: ['Demonstrar o sigilo perfeito', 'Ver por que a chave não pode ser reutilizada', 'Executar o arrasto de texto provável'],
+    status: 'available',
+    component: lazy(() => import('./otp/OtpLab')),
   },
   {
     id: 'rsa',

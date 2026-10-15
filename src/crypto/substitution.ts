@@ -64,7 +64,7 @@ export const IC_RANDOM = 1 / 26;
 
 // ---------------- Modelo de bigramas do português ----------------
 const corpus = normalizeText(PT_CORPUS);
-const unigram = (() => {
+export const unigram = (() => {
   const c = new Array<number>(26).fill(1);
   for (const ch of corpus) c[code(ch)]++;
   const total = c.reduce((a, b) => a + b, 0);
@@ -72,7 +72,7 @@ const unigram = (() => {
 })();
 
 /** log P(b | a), com suavização por interpolação com o modelo de uma letra. */
-const LOG_BIGRAM: number[][] = (() => {
+export const LOG_BIGRAM: number[][] = (() => {
   const cnt = Array.from({ length: 26 }, () => new Array<number>(26).fill(0));
   for (let i = 0; i + 1 < corpus.length; i++) cnt[code(corpus[i])][code(corpus[i + 1])]++;
   return cnt.map((row) => {
