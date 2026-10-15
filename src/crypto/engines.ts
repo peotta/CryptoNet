@@ -2,6 +2,23 @@
 // Todos os métodos são assíncronos de propósito: a implementação local (navegador) pode ser
 // substituída ou complementada por um cliente REST/WebSocket para uma API Python/FastAPI
 // (ver docs/arquitetura.md) sem alterar nenhum componente.
+import {
+  discreteLogBruteForce,
+  ecdh as eccDh,
+  ecdsaSign as eccSign,
+  ecdsaVerify as eccVerify,
+  publicKey as eccPublic,
+  realSignatureDemo,
+  realSigSupported,
+  recoverFromNonceReuse,
+  TOY_CURVE,
+  type Curve,
+  type EcdsaSignature,
+  type EcdsaVerification,
+  type Point,
+  type RealSigAlgo,
+  type RealSigRun,
+} from './ecc';
 import { simulateHandshake, type TlsHandshake, type TlsInput } from './tls13';
 import { chachaBlock, chachaCrypt, type ChaChaBlock } from './chacha20';
 import {
@@ -208,6 +225,20 @@ export interface TlsEngine extends CryptoEngine {
   handshake(input: TlsInput): Promise<TlsHandshake>;
 }
 
+/** Curvas elípticas: aritmética didática (curva minúscula, BigInt) e assinaturas reais (ECDSA P-256 e Ed25519). */
+export interface EccEngine extends CryptoEngine {
+  readonly curve: Curve;
+  publicKey(d: bigint): Promise<Point>;
+  ecdh(d: bigint, Q: Point): Promise<Point>;
+  /** Força bruta do logaritmo discreto: possível só porque a curva didática é minúscula. */
+  discreteLog(Q: Point): Promise<{ k: bigint | null; tries: number }>;
+  sign(d: bigint, z: bigint, k: bigint): Promise<EcdsaSignature>;
+  verify(Q: Point, z: bigint, r: bigint, s: bigint): Promise<EcdsaVerification>;
+  recoverNonceReuse(z1: bigint, s1: bigint, z2: bigint, s2: bigint, r: bigint): Promise<{ k: bigint; d: bigint } | null>;
+  realSupported(algo: RealSigAlgo): Promise<boolean>;
+  realSignature(algo: RealSigAlgo, message: Uint8Array, tamper: boolean): Promise<RealSigRun>;
+}
+
 export interface EngineSet {
   rsaDidactic: RsaDidacticEngine;
   rsaReal: RsaRealEngine;
@@ -217,6 +248,7 @@ export interface EngineSet {
   classical: ClassicalEngine;
   chacha: ChaChaEngine;
   tls: TlsEngine;
+  ecc: EccEngine;
 }
 
 const rsaDidactic: RsaDidacticEngine = {
@@ -357,5 +389,19 @@ const tls: TlsEngine = {
   handshake: async (input) => simulateHandshake(input),
 };
 
+const ecc: EccEngine = {
+  id: 'local-ecc',
+  kind: 'educational',
+  curve: TOY_CURVE,
+  publicKey: async (d) => eccPublic(TOY_CURVE, d),
+  ecdh: async (d, Q) => eccDh(TOY_CURVE, d, Q),
+  discreteLog: async (Q) => discreteLogBruteForce(TOY_CURVE, Q),
+  sign: async (d, z, k) => eccSign(TOY_CURVE, d, z, k),
+  verify: async (Q, z, r, s) => eccVerify(TOY_CURVE, Q, z, r, s),
+  recoverNonceReuse: async (z1, s1, z2, s2, r) => recoverFromNonceReuse(TOY_CURVE, z1, s1, z2, s2, r),
+  realSupported: async (algo) => realSigSupported(algo),
+  realSignature: async (algo, message, tamper) => realSignatureDemo(algo, message, tamper),
+};
+
 /** Motores ativos. Para usar uma API remota, substitua os valores por clientes que implementem as mesmas interfaces. */
-export const engines: EngineSet = { rsaDidactic, rsaReal, diffieHellman, hash, aes, classical, chacha, tls };
+export const engines: EngineSet = { rsaDidactic, rsaReal, diffieHellman, hash, aes, classical, chacha, tls, ecc };

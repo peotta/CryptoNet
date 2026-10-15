@@ -134,9 +134,10 @@ export const LABS: LabMeta[] = [
     id: 'ecdh-assinaturas',
     category: 'assimetrica',
     title: 'ECDH, ECDSA e Ed25519',
-    summary: 'Curvas elípticas para acordo de chaves e assinaturas.',
-    objectives: [],
-    status: 'planned',
+    summary: 'Aritmética de curvas elípticas passo a passo, ECDH e ECDSA em uma curva didática (com o ataque ao nonce reutilizado) e assinaturas reais ECDSA P-256 e Ed25519.',
+    objectives: ['Somar pontos e multiplicar por escalar', 'Ver por que o ECDH depende do tamanho do grupo', 'Quebrar o ECDSA com o nonce reutilizado'],
+    status: 'available',
+    component: lazy(() => import('./ecc/EccLab')),
   },
   {
     id: 'tls13',
