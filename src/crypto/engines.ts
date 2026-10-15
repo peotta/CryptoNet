@@ -26,6 +26,14 @@ import {
   type AesMode,
   type RoundStep,
 } from './aes';
+import {
+  crack as crackClassical,
+  decrypt as decryptClassical,
+  encrypt as encryptClassical,
+  type ClassicalCipher,
+  type ClassicalKey,
+  type CrackCandidate,
+} from './classical';
 import { avalancheStats, digest, hmacTrace, hmacWebCrypto, constantTimeEqual, type AvalancheStats, type HashAlgo, type HmacTrace } from './hash';
 import { runDhSession, runMitmSession, type DhSession, type MitmSession } from './diffieHellman';
 import {
@@ -99,12 +107,21 @@ export interface AesEngine extends CryptoEngine {
   traceBlock(key: Uint8Array, block: Uint8Array): Promise<{ steps: RoundStep[]; roundKeys: Uint8Array[]; matchesReference: boolean }>;
 }
 
+/** Cifras clássicas (César e afim) e a sua criptoanálise por força bruta com análise de frequência. */
+export interface ClassicalEngine extends CryptoEngine {
+  encrypt(cipher: ClassicalCipher, key: ClassicalKey, plaintext: string): Promise<string>;
+  decrypt(cipher: ClassicalCipher, key: ClassicalKey, ciphertext: string): Promise<string>;
+  /** Todas as chaves possíveis, ordenadas da mais para a menos provável (menor χ² primeiro). */
+  crack(cipher: ClassicalCipher, ciphertext: string): Promise<CrackCandidate[]>;
+}
+
 export interface EngineSet {
   rsaDidactic: RsaDidacticEngine;
   rsaReal: RsaRealEngine;
   diffieHellman: DiffieHellmanEngine;
   hash: HashEngine;
   aes: AesEngine;
+  classical: ClassicalEngine;
 }
 
 const rsaDidactic: RsaDidacticEngine = {
@@ -191,5 +208,13 @@ const aes: AesEngine = {
   },
 };
 
+const classical: ClassicalEngine = {
+  id: 'local-classical',
+  kind: 'educational',
+  encrypt: async (cipher, key, plaintext) => encryptClassical(cipher, key, plaintext),
+  decrypt: async (cipher, key, ciphertext) => decryptClassical(cipher, key, ciphertext),
+  crack: async (cipher, ciphertext) => crackClassical(cipher, ciphertext),
+};
+
 /** Motores ativos. Para usar uma API remota, substitua os valores por clientes que implementem as mesmas interfaces. */
-export const engines: EngineSet = { rsaDidactic, rsaReal, diffieHellman, hash, aes };
+export const engines: EngineSet = { rsaDidactic, rsaReal, diffieHellman, hash, aes, classical };

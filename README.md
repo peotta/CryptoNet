@@ -39,7 +39,9 @@ O **CryptoNet** é um projeto desenvolvido para experimentação, implementaçã
 
 Aplicação web (React, TypeScript, Vite, Tailwind CSS e Motion) que anima operações criptográficas passo a passo. Funciona inteiramente no navegador, sem backend.
 
-**Laboratórios disponíveis:** RSA (modo didático com BigInt e modo real com RSA-OAEP e RSA-PSS via Web Crypto), Diffie-Hellman (troca de chaves, visão de Eva, cenário de homem do meio e extensão HKDF + AES-GCM) funções hash e HMAC (efeito avalanche e HMAC passo a passo) e AES e modos de operação (rodadas do AES operação por operação e comparação de ECB, CBC, CTR e GCM diante de Eva). ChaCha20, ECDH e o handshake do TLS 1.3 estão preparados para laboratórios futuros.
+**Categorias:** Criptografia Clássica, Criptografia Simétrica e Criptografia Assimétrica e Acordo de Chaves.
+
+**Laboratórios disponíveis:** cifras de César e afim (disco de cifra, aritmética modular e criptoanálise de Eva por força bruta e frequência das letras), RSA (modo didático com BigInt e modo real com RSA-OAEP e RSA-PSS via Web Crypto), Diffie-Hellman (troca de chaves, visão de Eva, cenário de homem do meio e extensão HKDF + AES-GCM), funções hash e HMAC (efeito avalanche e HMAC passo a passo) e AES e modos de operação (rodadas do AES operação por operação e comparação de ECB, CBC, CTR e GCM diante de Eva). Estão preparados para laboratórios futuros: substituição simples, Vigenère, Playfair e Hill, transposição, Enigma e one-time pad (clássica), ChaCha20, ECDH e o handshake do TLS 1.3.
 
 **Atores:** em todos os laboratórios, Alice e Bob são os participantes legítimos e Eva é a atacante (observadora passiva ou, quando há adulteração, ativa).
 

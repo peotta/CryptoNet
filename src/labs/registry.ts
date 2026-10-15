@@ -1,6 +1,6 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 
-export type CategoryId = 'simetrica' | 'assimetrica';
+export type CategoryId = 'classica' | 'simetrica' | 'assimetrica';
 
 export interface Category {
   id: CategoryId;
@@ -21,6 +21,11 @@ export interface LabMeta {
 
 export const CATEGORIES: Category[] = [
   {
+    id: 'classica',
+    title: 'Criptografia Clássica',
+    description: 'Cifras de substituição e de transposição anteriores aos computadores, e a criptoanálise que as quebra: força bruta, análise de frequência e máquinas.',
+  },
+  {
     id: 'simetrica',
     title: 'Criptografia Simétrica',
     description: 'Uma única chave compartilhada cifra e decifra. Base da proteção de dados em trânsito e em repouso.',
@@ -35,6 +40,63 @@ export const CATEGORIES: Category[] = [
 // Para adicionar um laboratório: crie a pasta em src/labs/<nome>/, exporte o componente
 // por default e acrescente uma entrada aqui. Nenhum outro arquivo precisa mudar.
 export const LABS: LabMeta[] = [
+  {
+    id: 'cesar-afim',
+    category: 'classica',
+    title: 'Cifras de César e afim',
+    summary: 'Disco de cifra, aritmética modular e a criptoanálise de Eva por força bruta e frequência das letras.',
+    objectives: ['Cifrar e decifrar módulo 26', 'Entender por que mdc(a, 26) = 1', 'Quebrar a cifra por força bruta e por frequência'],
+    status: 'available',
+    component: lazy(() => import('./classica/CesarAfimLab')),
+  },
+  {
+    id: 'substituicao-frequencia',
+    category: 'classica',
+    title: 'Substituição simples e análise de frequência',
+    summary: 'Chave de 26 letras (26! chaves) e a quebra por histograma de frequências e índice de coincidência.',
+    objectives: [],
+    status: 'planned',
+  },
+  {
+    id: 'vigenere',
+    category: 'classica',
+    title: 'Vigenère, Kasiski e índice de coincidência',
+    summary: 'Cifra polialfabética e como Eva descobre o tamanho da chave.',
+    objectives: [],
+    status: 'planned',
+  },
+  {
+    id: 'playfair-hill',
+    category: 'classica',
+    title: 'Playfair e Hill',
+    summary: 'Cifras poligráficas: digrafos em uma grade 5 × 5 e multiplicação por matriz módulo 26.',
+    objectives: [],
+    status: 'planned',
+  },
+  {
+    id: 'transposicao',
+    category: 'classica',
+    title: 'Transposição e cifra produto',
+    summary: 'Cerca de trilhos, transposição colunar e a combinação com substituição (confusão e difusão).',
+    objectives: [],
+    status: 'planned',
+  },
+  {
+    id: 'enigma',
+    category: 'classica',
+    title: 'Máquina Enigma',
+    summary: 'Rotores, refletor e painel de plugues: o caminho do sinal e a criptoanálise.',
+    objectives: [],
+    status: 'planned',
+  },
+  {
+    id: 'otp',
+    category: 'classica',
+    title: 'One-time pad',
+    summary: 'Sigilo perfeito e o perigo de reutilizar a chave.',
+    objectives: [],
+    status: 'planned',
+  },
   {
     id: 'rsa',
     category: 'assimetrica',

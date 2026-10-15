@@ -22,7 +22,7 @@ export function Home() {
         <h2 id="categorias" className="text-2xl font-bold">
           Categorias
         </h2>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-3">
           {CATEGORIES.map((c) => {
             const labs = labsByCategory(c.id);
             return (

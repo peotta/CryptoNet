@@ -20,6 +20,9 @@ export function AppLayout() {
             <NavLink to="/" end className={link}>
               Início
             </NavLink>
+            <NavLink to="/categoria/classica" className={link}>
+              Clássica
+            </NavLink>
             <NavLink to="/categoria/simetrica" className={link}>
               Simétrica
             </NavLink>
