@@ -58,6 +58,18 @@ import {
 } from './hill';
 import { cribOffsets, enigmaRun, type CribOffset, type EnigmaConfig, type EnigmaResult } from './enigma';
 import { cribDrag, otpDecrypt, otpEncrypt, type DragResult } from './otp';
+import {
+  columnarDecrypt,
+  columnarEncrypt,
+  crackColumnar as crackCol,
+  crackRail as crackRl,
+  productDecrypt,
+  productEncrypt,
+  railDecrypt,
+  railEncrypt,
+  type ColumnarCandidate,
+  type RailCandidate,
+} from './transposition';
 import { avalancheStats, digest, hmacTrace, hmacWebCrypto, constantTimeEqual, type AvalancheStats, type HashAlgo, type HmacTrace } from './hash';
 import { runDhSession, runMitmSession, type DhSession, type MitmSession } from './diffieHellman';
 import {
@@ -164,6 +176,18 @@ export interface ClassicalEngine extends CryptoEngine {
   decryptOtp(key: string, ciphertext: string): Promise<string>;
   /** Arrasto de texto provável sobre duas cifras feitas com a MESMA chave (two-time pad). */
   dragOtp(cipher1: string, cipher2: string, crib: string, inFirst: boolean): Promise<DragResult[]>;
+  /** Transposição: cerca de trilhos e colunar. Só reordenam as letras. */
+  encryptRail(text: string, rails: number): Promise<string>;
+  decryptRail(ciphertext: string, rails: number): Promise<string>;
+  /** Força bruta sobre o número de trilhos, ordenada pela legibilidade do texto. */
+  crackRail(ciphertext: string): Promise<RailCandidate[]>;
+  encryptColumnar(text: string, keyword: string): Promise<string>;
+  decryptColumnar(ciphertext: string, keyword: string): Promise<string>;
+  /** Anagramação: melhor ordem de colunas para 2 a 8 colunas, ordenada pela legibilidade. */
+  crackColumnar(ciphertext: string): Promise<ColumnarCandidate[]>;
+  /** Cifra produto: substituição simples seguida de transposição colunar. */
+  encryptProduct(text: string, substitutionKey: string, keyword: string): Promise<string>;
+  decryptProduct(ciphertext: string, substitutionKey: string, keyword: string): Promise<string>;
 }
 
 export interface EngineSet {
@@ -289,6 +313,14 @@ const classical: ClassicalEngine = {
   encryptOtp: async (key, plaintext) => otpEncrypt(key, plaintext),
   decryptOtp: async (key, ciphertext) => otpDecrypt(key, ciphertext),
   dragOtp: async (cipher1, cipher2, crib, inFirst) => cribDrag(cipher1, cipher2, crib, inFirst),
+  encryptRail: async (text, rails) => railEncrypt(text, rails),
+  decryptRail: async (ciphertext, rails) => railDecrypt(ciphertext, rails),
+  crackRail: async (ciphertext) => crackRl(ciphertext),
+  encryptColumnar: async (text, keyword) => columnarEncrypt(text, keyword),
+  decryptColumnar: async (ciphertext, keyword) => columnarDecrypt(ciphertext, keyword),
+  crackColumnar: async (ciphertext) => crackCol(ciphertext),
+  encryptProduct: async (text, key, keyword) => productEncrypt(text, key, keyword),
+  decryptProduct: async (ciphertext, key, keyword) => productDecrypt(ciphertext, key, keyword),
 };
 
 /** Motores ativos. Para usar uma API remota, substitua os valores por clientes que implementem as mesmas interfaces. */

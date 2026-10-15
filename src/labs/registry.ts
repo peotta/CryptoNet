@@ -80,9 +80,10 @@ export const LABS: LabMeta[] = [
     id: 'transposicao',
     category: 'classica',
     title: 'Transposição e cifra produto',
-    summary: 'Cerca de trilhos, transposição colunar e a combinação com substituição (confusão e difusão).',
-    objectives: [],
-    status: 'planned',
+    summary: 'Cerca de trilhos, transposição colunar e a combinação com substituição (confusão e difusão), com a anagramação de Eva.',
+    objectives: ['Distinguir substituição de transposição pela estatística', 'Quebrar a transposição por anagramação', 'Entender confusão e difusão na cifra produto'],
+    status: 'available',
+    component: lazy(() => import('./transposicao/TransposicaoLab')),
   },
   {
     id: 'enigma',
