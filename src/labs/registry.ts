@@ -142,9 +142,10 @@ export const LABS: LabMeta[] = [
     id: 'tls13',
     category: 'assimetrica',
     title: 'Handshake do TLS 1.3',
-    summary: 'Animação do protocolo completo reutilizando o motor de simulação.',
-    objectives: [],
-    status: 'planned',
+    summary: 'ECDHE, cronograma de chaves com HKDF, certificado, CertificateVerify e Finished, com Eva observando e como homem do meio.',
+    objectives: ['Acompanhar o handshake 1-RTT', 'Seguir o cronograma de chaves do TLS 1.3', 'Ver por que a autenticação do servidor barra o homem do meio'],
+    status: 'available',
+    component: lazy(() => import('./tls13/Tls13Lab')),
   },
   {
     id: 'aes',

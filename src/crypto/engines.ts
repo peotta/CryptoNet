@@ -2,6 +2,7 @@
 // Todos os métodos são assíncronos de propósito: a implementação local (navegador) pode ser
 // substituída ou complementada por um cliente REST/WebSocket para uma API Python/FastAPI
 // (ver docs/arquitetura.md) sem alterar nenhum componente.
+import { simulateHandshake, type TlsHandshake, type TlsInput } from './tls13';
 import { chachaBlock, chachaCrypt, type ChaChaBlock } from './chacha20';
 import {
   decryptDidactic,
@@ -202,6 +203,11 @@ export interface ChaChaEngine extends CryptoEngine {
   block(key: Uint8Array, nonce: Uint8Array, counter: number): Promise<ChaChaBlock>;
 }
 
+/** Handshake do TLS 1.3 (1-RTT) com Web Crypto: ECDHE P-256, HKDF-SHA-256, ECDSA P-256, HMAC e AES-128-GCM. */
+export interface TlsEngine extends CryptoEngine {
+  handshake(input: TlsInput): Promise<TlsHandshake>;
+}
+
 export interface EngineSet {
   rsaDidactic: RsaDidacticEngine;
   rsaReal: RsaRealEngine;
@@ -210,6 +216,7 @@ export interface EngineSet {
   aes: AesEngine;
   classical: ClassicalEngine;
   chacha: ChaChaEngine;
+  tls: TlsEngine;
 }
 
 const rsaDidactic: RsaDidacticEngine = {
@@ -344,5 +351,11 @@ const chacha: ChaChaEngine = {
   block: async (key, nonce, counter) => chachaBlock(key, nonce, counter),
 };
 
+const tls: TlsEngine = {
+  id: 'local-tls13',
+  kind: 'webcrypto',
+  handshake: async (input) => simulateHandshake(input),
+};
+
 /** Motores ativos. Para usar uma API remota, substitua os valores por clientes que implementem as mesmas interfaces. */
-export const engines: EngineSet = { rsaDidactic, rsaReal, diffieHellman, hash, aes, classical, chacha };
+export const engines: EngineSet = { rsaDidactic, rsaReal, diffieHellman, hash, aes, classical, chacha, tls };
