@@ -62,9 +62,10 @@ export const LABS: LabMeta[] = [
     id: 'vigenere',
     category: 'classica',
     title: 'Vigenère, Kasiski e índice de coincidência',
-    summary: 'Cifra polialfabética e como Eva descobre o tamanho da chave.',
-    objectives: [],
-    status: 'planned',
+    summary: 'Cifra polialfabética, tabela de Vigenère e como Eva descobre o tamanho e as letras da chave por Kasiski, IC e frequência por coluna.',
+    objectives: ['Cifrar com uma chave de várias letras', 'Aplicar o teste de Kasiski e o IC por coluna', 'Quebrar a chave coluna a coluna'],
+    status: 'available',
+    component: lazy(() => import('./vigenere/VigenereLab')),
   },
   {
     id: 'playfair-hill',

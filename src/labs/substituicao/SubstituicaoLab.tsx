@@ -8,6 +8,7 @@ import { CryptoInputError } from '../../crypto/bigmath';
 import { indexOfCoincidence, IC_PORTUGUESE, IC_RANDOM, invertKey, randomSubstitutionKey, SUBSTITUTION_KEY_SPACE, validateSubstitutionKey } from '../../crypto/substitution';
 import { useDebounced } from '../../hooks/useDebounced';
 import { Callout, Field, LabSection, ReviewQuestions, buttonClass } from '../../components/ui';
+import { TextDiff } from '../classica/TextDiff';
 import { SUBSTITUTION_OBJECTIVES, SUBSTITUTION_QUESTIONS } from './content';
 import { buildSubstitutionProtocol } from './flows';
 import { MAX_LETTERS, runSubstitution, type SubstitutionRun } from './run';
@@ -18,7 +19,6 @@ const EXAMPLE_TEXT =
 
 const num = (v: number, d = 4) => v.toFixed(d).replace('.', ',');
 const pct = (v: number) => `${v.toFixed(1).replace('.', ',')}%`;
-const CHUNK = 40;
 
 function keyProblem(key: string): string | null {
   try {
@@ -27,43 +27,6 @@ function keyProblem(key: string): string | null {
   } catch (e) {
     return e instanceof CryptoInputError ? e.message : 'Chave inválida.';
   }
-}
-
-/** Compara o texto de Eva com o texto real, em blocos; letras erradas ficam sublinhadas e em destaque. */
-function TextDiff({ guess, truth, label }: { guess: string; truth: string; label: string }) {
-  const rows = Math.ceil(truth.length / CHUNK);
-  const wrong = [...truth].filter((ch, i) => guess[i] !== ch).length;
-  return (
-    <div className="space-y-1">
-      <p className="text-base font-semibold">
-        {label}: {wrong} {wrong === 1 ? 'letra errada' : 'letras erradas'} de {truth.length}
-      </p>
-      <div className="max-h-64 overflow-auto rounded-lg border border-line bg-surface p-3 font-mono text-base leading-7" role="group" aria-label={`${label}, comparação com o texto real`}>
-        {Array.from({ length: rows }, (_, r) => {
-          const from = r * CHUNK;
-          const t = truth.slice(from, from + CHUNK);
-          const g = guess.slice(from, from + CHUNK);
-          return (
-            <div key={r} className="mb-1">
-              <div className="text-muted">
-                <span className="mr-2 inline-block w-14 font-sans">real</span>
-                {t}
-              </div>
-              <div>
-                <span className="mr-2 inline-block w-14 font-sans text-muted">Eva</span>
-                {[...g].map((ch, i) => (
-                  <span key={i} className={ch === t[i] ? '' : 'font-bold text-danger underline decoration-2'}>
-                    {ch}
-                    {ch !== t[i] && <span className="sr-only"> (errada)</span>}
-                  </span>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
 }
 
 function LetterStepper({ run, index, onIndex }: { run: SubstitutionRun; index: number | null; onIndex: (i: number | null) => void }) {

@@ -40,6 +40,7 @@ import {
   substitutionEncrypt,
   type SubstitutionCrack,
 } from './substitution';
+import { crackVigenere as crackVig, vigenereDecrypt, vigenereEncrypt, type VigenereCrack } from './vigenere';
 import { avalancheStats, digest, hmacTrace, hmacWebCrypto, constantTimeEqual, type AvalancheStats, type HashAlgo, type HmacTrace } from './hash';
 import { runDhSession, runMitmSession, type DhSession, type MitmSession } from './diffieHellman';
 import {
@@ -124,6 +125,11 @@ export interface ClassicalEngine extends CryptoEngine {
   decryptSubstitution(key: string, ciphertext: string): Promise<string>;
   /** Criptoanálise por frequência e refinamento com bigramas (sem conhecer a chave). */
   crackSubstitution(ciphertext: string): Promise<SubstitutionCrack>;
+  /** Vigenère: a chave é uma palavra de 1 a 20 letras. */
+  encryptVigenere(key: string, plaintext: string): Promise<string>;
+  decryptVigenere(key: string, ciphertext: string): Promise<string>;
+  /** Kasiski, índice de coincidência por tamanho de chave e frequência por coluna (sem conhecer a chave). */
+  crackVigenere(ciphertext: string): Promise<VigenereCrack>;
 }
 
 export interface EngineSet {
@@ -228,6 +234,9 @@ const classical: ClassicalEngine = {
   encryptSubstitution: async (key, plaintext) => substitutionEncrypt(key, plaintext),
   decryptSubstitution: async (key, ciphertext) => substitutionDecrypt(key, ciphertext),
   crackSubstitution: async (ciphertext) => crackSub(ciphertext),
+  encryptVigenere: async (key, plaintext) => vigenereEncrypt(key, plaintext),
+  decryptVigenere: async (key, ciphertext) => vigenereDecrypt(key, ciphertext),
+  crackVigenere: async (ciphertext) => crackVig(ciphertext),
 };
 
 /** Motores ativos. Para usar uma API remota, substitua os valores por clientes que implementem as mesmas interfaces. */
