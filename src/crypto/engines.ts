@@ -56,6 +56,7 @@ import {
   type HillBlock,
   type Matrix,
 } from './hill';
+import { cribOffsets, enigmaRun, type CribOffset, type EnigmaConfig, type EnigmaResult } from './enigma';
 import { avalancheStats, digest, hmacTrace, hmacWebCrypto, constantTimeEqual, type AvalancheStats, type HashAlgo, type HmacTrace } from './hash';
 import { runDhSession, runMitmSession, type DhSession, type MitmSession } from './diffieHellman';
 import {
@@ -153,6 +154,10 @@ export interface ClassicalEngine extends CryptoEngine {
   decryptHill(key: Matrix, ciphertext: string): Promise<string>;
   /** Ataque de texto claro conhecido contra o Hill (nulo se não há blocos independentes suficientes). */
   attackHill(n: number, knownPlain: string, cipherPrefix: string): Promise<HillAttack | null>;
+  /** Enigma I: passa o texto pela máquina e devolve o rastro de cada tecla. É recíproca: decifrar é cifrar de novo. */
+  runEnigma(config: EnigmaConfig, text: string): Promise<EnigmaResult>;
+  /** Alinhamentos de um texto provável com a cifra, descartando os impossíveis (letra igual à cifrada). */
+  analyzeCrib(ciphertext: string, crib: string): Promise<CribOffset[]>;
 }
 
 export interface EngineSet {
@@ -273,6 +278,8 @@ const classical: ClassicalEngine = {
   },
   decryptHill: async (key, ciphertext) => hillDecrypt(key, ciphertext),
   attackHill: async (n, knownPlain, cipherPrefix) => hillAttack(n, knownPlain, cipherPrefix),
+  runEnigma: async (config, text) => enigmaRun(config, text),
+  analyzeCrib: async (ciphertext, crib) => cribOffsets(ciphertext, crib),
 };
 
 /** Motores ativos. Para usar uma API remota, substitua os valores por clientes que implementem as mesmas interfaces. */

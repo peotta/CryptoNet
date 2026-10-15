@@ -88,9 +88,10 @@ export const LABS: LabMeta[] = [
     id: 'enigma',
     category: 'classica',
     title: 'Máquina Enigma',
-    summary: 'Rotores, refletor e painel de plugues: o caminho do sinal e a criptoanálise.',
-    objectives: [],
-    status: 'planned',
+    summary: 'Enigma I: rotores, refletor, anéis e plugues, o caminho do sinal tecla a tecla e a criptoanálise de Eva por texto provável.',
+    objectives: ['Acompanhar o sinal pelos rotores e pelo refletor', 'Entender a reciprocidade e o passo duplo', 'Usar um texto provável contra a fraqueza do refletor'],
+    status: 'available',
+    component: lazy(() => import('./enigma/EnigmaLab')),
   },
   {
     id: 'otp',
