@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { engines } from '../src/crypto/engines';
-import { randomSubstitutionKey } from '../src/crypto/substitution';
 import { buildTransProtocol, MAX_LETTERS, runTransposition, type TransMode } from '../src/labs/transposicao/flows';
 import { ProtocolSimulationEngine } from '../src/simulation/timeline';
 
@@ -8,7 +7,7 @@ const TEXTO =
   'Atacaremos a fortaleza ao amanhecer sem avisar ninguém pois a surpresa é a nossa melhor arma. Os soldados devem partir antes do nascer do sol e esperar o sinal do comandante junto à ponte velha. Quem for visto pelos moradores deverá voltar imediatamente ao acampamento e aguardar novas ordens.';
 
 const go = (mode: TransMode, over: Partial<{ text: string; rails: number; keyword: string; subKey: string; tamper: boolean }> = {}) =>
-  runTransposition(engines.classical, { mode, text: TEXTO, rails: 4, keyword: 'CHAVE', subKey: randomSubstitutionKey(), tamper: false, ...over });
+  runTransposition(engines.classical, { mode, text: TEXTO, rails: 4, keyword: 'CHAVE', subKey: 'QWERTYUIOPASDFGHJKLZXCVBNM', tamper: false, ...over });
 
 describe('transposição: Alice, Bob e Eva', () => {
   it('cerca de trilhos: Bob recupera a mensagem e Eva a quebra', async () => {

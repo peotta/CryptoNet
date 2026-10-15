@@ -150,9 +150,10 @@ export const LABS: LabMeta[] = [
     id: 'chacha20',
     category: 'simetrica',
     title: 'ChaCha20',
-    summary: 'Cifra de fluxo baseada em operações ARX.',
-    objectives: [],
-    status: 'planned',
+    summary: 'Cifra de fluxo ARX (RFC 8439): quarter round e bloco operação por operação, nonce reutilizado e maleabilidade diante de Eva.',
+    objectives: ['Executar o quarter round e as 20 rodadas', 'Ver por que o nonce não pode se repetir', 'Perceber que a cifra de fluxo sozinha não autentica'],
+    status: 'available',
+    component: lazy(() => import('./chacha20/ChaCha20Lab')),
   },
   {
     id: 'hash-hmac',

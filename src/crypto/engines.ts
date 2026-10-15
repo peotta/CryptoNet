@@ -2,6 +2,7 @@
 // Todos os métodos são assíncronos de propósito: a implementação local (navegador) pode ser
 // substituída ou complementada por um cliente REST/WebSocket para uma API Python/FastAPI
 // (ver docs/arquitetura.md) sem alterar nenhum componente.
+import { chachaBlock, chachaCrypt, type ChaChaBlock } from './chacha20';
 import {
   decryptDidactic,
   encryptDidactic,
@@ -190,6 +191,14 @@ export interface ClassicalEngine extends CryptoEngine {
   decryptProduct(ciphertext: string, substitutionKey: string, keyword: string): Promise<string>;
 }
 
+/** ChaCha20 (RFC 8439): cifra de fluxo ARX, com o bloco completo para a visualização. */
+export interface ChaChaEngine extends CryptoEngine {
+  /** Cifra ou decifra (a operação é a mesma) por XOR com o fluxo de chaves. */
+  crypt(key: Uint8Array, nonce: Uint8Array, counter: number, data: Uint8Array): Promise<Uint8Array>;
+  /** Bloco de 64 bytes com o estado inicial, as 20 rodadas e a soma final. */
+  block(key: Uint8Array, nonce: Uint8Array, counter: number): Promise<ChaChaBlock>;
+}
+
 export interface EngineSet {
   rsaDidactic: RsaDidacticEngine;
   rsaReal: RsaRealEngine;
@@ -197,6 +206,7 @@ export interface EngineSet {
   hash: HashEngine;
   aes: AesEngine;
   classical: ClassicalEngine;
+  chacha: ChaChaEngine;
 }
 
 const rsaDidactic: RsaDidacticEngine = {
@@ -323,5 +333,12 @@ const classical: ClassicalEngine = {
   decryptProduct: async (ciphertext, key, keyword) => productDecrypt(ciphertext, key, keyword),
 };
 
+const chacha: ChaChaEngine = {
+  id: 'local-chacha20',
+  kind: 'educational',
+  crypt: async (key, nonce, counter, data) => chachaCrypt(key, nonce, counter, data),
+  block: async (key, nonce, counter) => chachaBlock(key, nonce, counter),
+};
+
 /** Motores ativos. Para usar uma API remota, substitua os valores por clientes que implementem as mesmas interfaces. */
-export const engines: EngineSet = { rsaDidactic, rsaReal, diffieHellman, hash, aes, classical };
+export const engines: EngineSet = { rsaDidactic, rsaReal, diffieHellman, hash, aes, classical, chacha };

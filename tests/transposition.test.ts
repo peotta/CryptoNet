@@ -161,7 +161,7 @@ describe('cifra produto: confusão e difusão', () => {
   });
   it('os ataques isolados que quebram cada cifra sozinha falham contra o produto', () => {
     const plain = T.slice(0, 250);
-    const sk = randomSubstitutionKey();
+    const sk = 'QWERTYUIOPASDFGHJKLZXCVBNM'; // chave fixa: com chaves sorteadas, uma permutação próxima da identidade raramente deixaria a anagramação acertar por acaso
     const subst = substitutionEncrypt(sk, plain);
     const prod = productEncrypt(plain, sk, 'CHAVE');
     // a transposição sozinha cai por completo
