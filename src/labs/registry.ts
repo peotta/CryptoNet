@@ -71,9 +71,10 @@ export const LABS: LabMeta[] = [
     id: 'playfair-hill',
     category: 'classica',
     title: 'Playfair e Hill',
-    summary: 'Cifras poligráficas: digrafos em uma grade 5 × 5 e multiplicação por matriz módulo 26.',
-    objectives: [],
-    status: 'planned',
+    summary: 'Cifras poligráficas: digrafos em uma grade 5 × 5 e multiplicação por matriz módulo 26, com o ataque de texto claro conhecido contra o Hill.',
+    objectives: ['Aplicar as regras do Playfair na grade 5 × 5', 'Cifrar e decifrar com matrizes módulo 26', 'Resolver a chave do Hill com texto claro conhecido'],
+    status: 'available',
+    component: lazy(() => import('./playfair-hill/PlayfairHillLab')),
   },
   {
     id: 'transposicao',

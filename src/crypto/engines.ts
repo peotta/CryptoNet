@@ -41,6 +41,21 @@ import {
   type SubstitutionCrack,
 } from './substitution';
 import { crackVigenere as crackVig, vigenereDecrypt, vigenereEncrypt, type VigenereCrack } from './vigenere';
+import {
+  buildGrid,
+  playfairDecrypt,
+  playfairEncryptSteps,
+  type DigraphStep,
+} from './playfair';
+import {
+  hillDecrypt,
+  hillEncryptBlocks,
+  hillPrepare,
+  knownPlaintextAttack as hillAttack,
+  type HillAttack,
+  type HillBlock,
+  type Matrix,
+} from './hill';
 import { avalancheStats, digest, hmacTrace, hmacWebCrypto, constantTimeEqual, type AvalancheStats, type HashAlgo, type HmacTrace } from './hash';
 import { runDhSession, runMitmSession, type DhSession, type MitmSession } from './diffieHellman';
 import {
@@ -130,6 +145,14 @@ export interface ClassicalEngine extends CryptoEngine {
   decryptVigenere(key: string, ciphertext: string): Promise<string>;
   /** Kasiski, índice de coincidência por tamanho de chave e frequência por coluna (sem conhecer a chave). */
   crackVigenere(ciphertext: string): Promise<VigenereCrack>;
+  /** Playfair: a grade vem de uma palavra-chave; devolve os digrafos com a regra aplicada em cada um. */
+  encryptPlayfair(keyword: string, plaintext: string): Promise<{ grid: string; steps: DigraphStep[]; cipher: string }>;
+  decryptPlayfair(grid: string, ciphertext: string): Promise<string>;
+  /** Hill: matriz 2 x 2 ou 3 x 3 inversível módulo 26; devolve o texto preparado e cada bloco. */
+  encryptHill(key: Matrix, plaintext: string): Promise<{ prepared: string; blocks: HillBlock[]; cipher: string }>;
+  decryptHill(key: Matrix, ciphertext: string): Promise<string>;
+  /** Ataque de texto claro conhecido contra o Hill (nulo se não há blocos independentes suficientes). */
+  attackHill(n: number, knownPlain: string, cipherPrefix: string): Promise<HillAttack | null>;
 }
 
 export interface EngineSet {
@@ -237,6 +260,19 @@ const classical: ClassicalEngine = {
   encryptVigenere: async (key, plaintext) => vigenereEncrypt(key, plaintext),
   decryptVigenere: async (key, ciphertext) => vigenereDecrypt(key, ciphertext),
   crackVigenere: async (ciphertext) => crackVig(ciphertext),
+  encryptPlayfair: async (keyword, plaintext) => {
+    const grid = buildGrid(keyword);
+    const steps = playfairEncryptSteps(grid, plaintext);
+    return { grid, steps, cipher: steps.map((s) => s.output).join('') };
+  },
+  decryptPlayfair: async (grid, ciphertext) => playfairDecrypt(grid, ciphertext),
+  encryptHill: async (key, plaintext) => {
+    const blocks = hillEncryptBlocks(key, plaintext);
+    const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    return { prepared: hillPrepare(plaintext, key.length), blocks, cipher: blocks.map((b) => b.cipher.map((v) => ALPHA[v]).join('')).join('') };
+  },
+  decryptHill: async (key, ciphertext) => hillDecrypt(key, ciphertext),
+  attackHill: async (n, knownPlain, cipherPrefix) => hillAttack(n, knownPlain, cipherPrefix),
 };
 
 /** Motores ativos. Para usar uma API remota, substitua os valores por clientes que implementem as mesmas interfaces. */
