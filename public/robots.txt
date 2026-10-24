@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://peotta.github.io/CryptoNet/sitemap.xml
