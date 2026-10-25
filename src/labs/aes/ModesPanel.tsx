@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { BLOCK, padWithSpaces, type AesMode } from '../../crypto/aes';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/aes';
 import { utf8Encode } from '../../crypto/encoding';
 import { randomBytes } from '../../crypto/random';
 import { Callout, LabSection, Tabs, buttonClass } from '../../components/ui';

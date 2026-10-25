@@ -35,7 +35,18 @@ describe('página inicial e categorias', () => {
     expect(screen.getByText('Laboratório Virtual de Criptografia e Protocolos Seguros')).toBeTruthy();
     expect(screen.getAllByRole('link', { name: /Abrir laboratório\s*: RSA/ }).length).toBe(1);
     expect(screen.getAllByRole('link', { name: /Abrir laboratório\s*: Diffie-Hellman/ }).length).toBe(1);
-    expect(screen.getByText('Laboratórios futuros')).toBeTruthy();
+    // Sem laboratórios planejados, a seção de laboratórios futuros não aparece (nem o título vazio).
+    expect(screen.queryByText('Laboratórios futuros')).toBeNull();
+  });
+  it('atualiza o título da aba a cada página', () => {
+    renderAt('/lab/rsa');
+    expect(document.title).toBe('RSA | CryptoNet Lab');
+    cleanup();
+    renderAt('/categoria/simetrica');
+    expect(document.title).toBe('Criptografia Simétrica | CryptoNet Lab');
+    cleanup();
+    renderAt('/inexistente');
+    expect(document.title).toBe('Página não encontrada | CryptoNet Lab');
   });
   it('não tem violações de acessibilidade', async () => {
     const { container } = renderAt('/');

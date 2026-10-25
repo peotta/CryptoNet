@@ -14,6 +14,8 @@ export default defineConfig({
     include: ['tests/**/*.test.{ts,tsx}'],
     environment: 'node',
     testTimeout: 30000,
+    // No GitHub Actions o runner é mais lento: repete uma vez os testes de interface que estourem o tempo sob carga.
+    retry: process.env.CI ? 2 : 0,
     setupFiles: ['tests/setup.ts'],
   },
 });

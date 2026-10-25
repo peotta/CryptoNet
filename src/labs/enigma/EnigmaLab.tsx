@@ -4,7 +4,7 @@ import { FrequencyChart } from '../../animations/FrequencyChart';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { ALPHABET, letterPercentages, PT_FREQUENCY } from '../../crypto/classical';
 import { CryptoInputError } from '../../crypto/bigmath';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/classical';
 import { ROTOR_NAMES, REFLECTOR_NAMES, validateConfig, type EnigmaConfig, type ReflectorName, type RotorName } from '../../crypto/enigma';
 import { randomBigIntBelow } from '../../crypto/random';
 import { IC_PORTUGUESE, IC_RANDOM } from '../../crypto/substitution';

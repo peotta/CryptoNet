@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
-import { engines, type RealKeyPair } from '../../crypto/engines';
+import { engines } from '../../crypto/local/rsa';
+import type { RealKeyPair } from '../../crypto/engines';
 import { abbreviateHex } from '../../crypto/encoding';
 import { HASH_BYTES, oaepMaxMessageBytes, PSS_SALT_BYTES, RSA_KEY_SIZES, type RsaKeySize } from '../../crypto/rsaWebCrypto';
 import { Callout, LabSection, Tabs, buttonClass, primaryButtonClass } from '../../components/ui';

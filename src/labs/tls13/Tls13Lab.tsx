@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/tls';
 import type { TlsScenario } from '../../crypto/tls13';
 import { Callout, Field, LabSection, ReviewQuestions, Tabs, buttonClass } from '../../components/ui';
 import { useDebounced } from '../../hooks/useDebounced';
@@ -23,7 +23,7 @@ export default function Tls13Lab() {
 
       <LabSection id="tls-intro" title="2. Introdução conceitual">
         <p className="text-lg">
-          O <em>Transport Layer Security</em> (TLS 1.3, RFC 8446) protege quase todo o tráfego da web. O handshake faz três coisas: <strong>acorda chaves</strong> (ECDHE), <strong>autentica o
+          O <em>Transport Layer Security</em> (TLS 1.3, RFC 9846, que substituiu a RFC 8446) protege quase todo o tráfego da web. O handshake faz três coisas: <strong>acorda chaves</strong> (ECDHE), <strong>autentica o
           servidor</strong> (certificado e assinatura) e <strong>confirma tudo</strong> (Finished), usando uma só ida e volta. Depois, os dados da aplicação seguem em registros AES-GCM.
         </p>
         <p className="text-lg">
@@ -191,7 +191,7 @@ function HandshakePanel({ scenario }: { scenario: TlsScenario }) {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-base">
                 <caption className="mb-1 text-left text-base text-muted">
-                  Cronograma de chaves do TLS 1.3 (RFC 8446, seção 7.1). Cada segredo é derivado do anterior por HKDF.
+                  Cronograma de chaves do TLS 1.3 (RFC 9846, seção 7.1). Cada segredo é derivado do anterior por HKDF.
                 </caption>
                 <thead>
                   <tr className="border-b border-line">

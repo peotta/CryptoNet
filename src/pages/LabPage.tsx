@@ -1,11 +1,13 @@
 import { Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { CATEGORIES, findLab } from '../labs/registry';
 import { NotFound } from './NotFound';
 
 export function LabPage() {
   const { id } = useParams();
   const lab = findLab(id);
+  useDocumentTitle(lab?.component ? lab.title : 'Página não encontrada');
   if (!lab || !lab.component) return <NotFound />;
   const Lab = lab.component;
   const category = CATEGORIES.find((c) => c.id === lab.category);

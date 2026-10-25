@@ -1,4 +1,4 @@
-// HANDSHAKE DO TLS 1.3 (RFC 8446), versão didática de 1-RTT com a suíte TLS_AES_128_GCM_SHA256 e o grupo P-256.
+// HANDSHAKE DO TLS 1.3 (RFC 9846, que substituiu a RFC 8446), versão didática de 1-RTT com a suíte TLS_AES_128_GCM_SHA256 e o grupo P-256.
 // Reais (Web Crypto): ECDHE, HKDF-SHA-256 com o cronograma de chaves da seção 7.1, ECDSA P-256 (CertificateVerify),
 // HMAC (Finished) e AES-128-GCM (registros). Simplificações: mensagens com campos reduzidos (sem extensões completas),
 // "certificado" didático assinado por uma autoridade fictícia, um único registro por voo. Não use para proteger dados reais.
@@ -41,7 +41,7 @@ export async function hkdfExpand(prk: Uint8Array, info: Uint8Array, length: numb
   return concat(...out).slice(0, length);
 }
 
-/** HKDF-Expand-Label (RFC 8446, seção 7.1): o rótulo recebe o prefixo "tls13 ". */
+/** HKDF-Expand-Label (RFC 9846, seção 7.1): o rótulo recebe o prefixo "tls13 ". */
 export function hkdfExpandLabel(secret: Uint8Array, label: string, context: Uint8Array, length: number): Promise<Uint8Array> {
   const full = utf8Encode(`tls13 ${label}`);
   const info = concat(u8(length >> 8, length & 0xff), u8(full.length), full, u8(context.length), context);
@@ -111,7 +111,7 @@ export function handshakeMessage(type: number, body: Uint8Array): Uint8Array {
   return concat(u8(type, (body.length >> 16) & 0xff, (body.length >> 8) & 0xff, body.length & 0xff), body);
 }
 
-/** Conteúdo assinado no CertificateVerify do servidor (RFC 8446, seção 4.4.3). */
+/** Conteúdo assinado no CertificateVerify do servidor (RFC 9846). */
 export const certificateVerifyContent = (transcriptHash: Uint8Array): Uint8Array =>
   concat(new Uint8Array(64).fill(0x20), utf8Encode('TLS 1.3, server CertificateVerify'), u8(0), transcriptHash);
 
@@ -150,7 +150,7 @@ export async function ecdsaVerify(publicRaw: Uint8Array, signature: Uint8Array, 
   return subtle().verify({ name: 'ECDSA', hash: 'SHA-256' }, pub, signature as BufferSource, data as BufferSource);
 }
 
-/** Nonce do registro = IV XOR número de sequência (64 bits, alinhado à direita), RFC 8446 seção 5.3. */
+/** Nonce do registro = IV XOR número de sequência (64 bits, alinhado à direita), RFC 9846. */
 export function recordNonce(iv: Uint8Array, seq: number): Uint8Array {
   const n = Uint8Array.from(iv);
   let s = BigInt(seq);

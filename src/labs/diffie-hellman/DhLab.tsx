@@ -3,7 +3,7 @@ import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { Formula } from '../../animations/Formula';
 import { CryptoInputError, parseDecimal } from '../../crypto/bigmath';
 import { checkDhParameters, checkPrivateExponent, DH_GROUPS, generatePrivateExponent, type DhSession, type MitmSession } from '../../crypto/diffieHellman';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/diffieHellman';
 import { Callout, Field, LabSection, ReviewQuestions, Tabs, buttonClass } from '../../components/ui';
 import { DH_OBJECTIVES, DH_QUESTIONS } from './content';
 import { EvaObserver } from './EvaObserver';
@@ -75,7 +75,6 @@ export default function DhLab() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pText, gText, a, b, e]);
 
   const definition = useMemo(() => {

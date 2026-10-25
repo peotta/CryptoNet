@@ -3,10 +3,10 @@ import { MatrixView } from '../../animations/MatrixView';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { ALPHABET } from '../../crypto/classical';
 import { determinant, isInvertibleMod26, type Matrix } from '../../crypto/hill';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/classical';
 import { randomBigIntBelow } from '../../crypto/random';
 import { Callout, LabSection, buttonClass } from '../../components/ui';
-import { buildHillProtocol, matrixText, MAX_LETTERS, runHill, type HillRun } from './hill';
+import { buildHillProtocol, matrixText, MAX_LETTERS, runHill, type HillRun } from './hillFlows';
 
 const EXAMPLES: Record<2 | 3, Matrix> = {
   2: [[3, 3], [2, 5]],

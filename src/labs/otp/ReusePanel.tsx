@@ -3,7 +3,7 @@ import { PadTable } from '../../animations/PadTable';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { ALPHABET, normalizeText } from '../../crypto/classical';
 import { CryptoInputError } from '../../crypto/bigmath';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/classical';
 import { randomPad, validatePad } from '../../crypto/otp';
 import { Callout, Field, LabSection, Tabs, buttonClass } from '../../components/ui';
 import { buildReuseProtocol, MAX_LETTERS, runReuse, type ReuseRun } from './flows';

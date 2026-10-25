@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/hash';
 import { abbreviateHex, toHex, utf8Encode } from '../../crypto/encoding';
 import { constantTimeEqual, HASH_ALGOS, HASH_INFO, type HashAlgo, type HmacTrace } from '../../crypto/hash';
 import { Callout, LabSection } from '../../components/ui';

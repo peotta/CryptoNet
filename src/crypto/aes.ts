@@ -3,8 +3,6 @@
 // oferece ECB nem permite decifrar sem validar o preenchimento). NÃO use em produção: não é
 // resistente a ataques de canal lateral. Os resultados são conferidos nos testes contra a
 // Web Crypto e o node:crypto. O AES-GCM usa diretamente a Web Crypto (operação real).
-import { randomBytes } from './random';
-
 export const BLOCK = 16;
 export type AesMode = 'ECB' | 'CBC' | 'CTR' | 'GCM';
 
@@ -257,4 +255,3 @@ export function padWithSpaces(bytes: Uint8Array): Uint8Array {
   return out;
 }
 
-export const randomIv = (length = 16) => randomBytes(length);

@@ -3,12 +3,12 @@ import { FrequencyChart } from '../../animations/FrequencyChart';
 import { PlayfairGrid } from '../../animations/PlayfairGrid';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { ALPHABET, letterPercentages, PT_FREQUENCY } from '../../crypto/classical';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/classical';
 import { positionOf } from '../../crypto/playfair';
 import { randomBigIntBelow } from '../../crypto/random';
 import { IC_PORTUGUESE, IC_RANDOM } from '../../crypto/substitution';
 import { Callout, Field, LabSection, buttonClass } from '../../components/ui';
-import { buildPlayfairProtocol, MAX_LETTERS, runPlayfair, type PlayfairRun } from './playfair';
+import { buildPlayfairProtocol, MAX_LETTERS, runPlayfair, type PlayfairRun } from './playfairFlows';
 
 const EXAMPLE_KEY = 'MONARQUIA';
 const EXAMPLE_TEXT =

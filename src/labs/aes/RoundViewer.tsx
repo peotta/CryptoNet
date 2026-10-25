@@ -2,7 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react';
 import { PlayerControls } from '../../animations/PlayerControls';
 import { TimelineList } from '../../animations/TimelineList';
 import type { RoundOp, RoundStep } from '../../crypto/aes';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/aes';
 import { toHex } from '../../crypto/encoding';
 import { randomBytes } from '../../crypto/random';
 import { useStepPlayer } from '../../hooks/useStepPlayer';

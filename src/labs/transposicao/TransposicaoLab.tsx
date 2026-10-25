@@ -3,7 +3,7 @@ import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { ColumnGrid, RailGrid } from '../../animations/TranspositionViz';
 import { CryptoInputError } from '../../crypto/bigmath';
 import { normalizeText } from '../../crypto/classical';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/classical';
 import { IC_PORTUGUESE, randomSubstitutionKey, validateSubstitutionKey } from '../../crypto/substitution';
 import { keyOrder, MAX_ATTACK_COLUMNS, MAX_RAILS, validateRails } from '../../crypto/transposition';
 import { Callout, Field, LabSection, ReviewQuestions, Tabs, buttonClass } from '../../components/ui';

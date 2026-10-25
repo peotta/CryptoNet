@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { LabCard } from '../components/LabCard';
 import { CATEGORIES, labsByCategory } from '../labs/registry';
 import { NotFound } from './NotFound';
@@ -6,6 +7,7 @@ import { NotFound } from './NotFound';
 export function Category() {
   const { id } = useParams();
   const category = CATEGORIES.find((c) => c.id === id);
+  useDocumentTitle(category?.title ?? 'Página não encontrada');
   if (!category) return <NotFound />;
   return (
     <div className="space-y-6">

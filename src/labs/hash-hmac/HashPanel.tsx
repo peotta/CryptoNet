@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/hash';
 import { toHex, utf8Encode } from '../../crypto/encoding';
 import { bitDifference, HASH_ALGOS, HASH_INFO, type AvalancheStats, type BitDifference, type HashAlgo } from '../../crypto/hash';
 import { Callout, LabSection, buttonClass } from '../../components/ui';

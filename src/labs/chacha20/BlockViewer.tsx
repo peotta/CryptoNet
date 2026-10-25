@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { QuarterWords, StateGrid } from '../../animations/ChaChaViz';
 import { COLUMN_ROUNDS, DIAGONAL_ROUNDS, hex32, quarterRoundTrace, type ChaChaBlock, type QuarterStep } from '../../crypto/chacha20';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/chacha';
 import { toHex } from '../../crypto/encoding';
 import { randomBytes } from '../../crypto/random';
 import { Callout, Field, LabSection, buttonClass } from '../../components/ui';

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/chacha';
 import { utf8Encode } from '../../crypto/encoding';
 import { randomBytes } from '../../crypto/random';
 import { Callout, LabSection, Tabs, buttonClass } from '../../components/ui';

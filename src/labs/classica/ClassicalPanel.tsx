@@ -3,7 +3,7 @@ import { AlphabetStrip, CipherDisk } from '../../animations/CipherDisk';
 import { FrequencyChart } from '../../animations/FrequencyChart';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { ALPHABET, letterPercentages, mapLetter, PT_FREQUENCY, VALID_A, type ClassicalCipher, type ClassicalKey } from '../../crypto/classical';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/classical';
 import { Callout, Field, LabSection, buttonClass } from '../../components/ui';
 import { buildClassicalProtocol } from './flows';
 import { MAX_LETTERS, runClassical, type ClassicalRun } from './run';
@@ -99,7 +99,6 @@ export function ClassicalPanel({ cipher }: { cipher: ClassicalCipher }) {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cipher, kText, aText, bText, text, tamper]);
 
   const definition = useMemo(() => (run ? buildClassicalProtocol(run.flow) : null), [run]);

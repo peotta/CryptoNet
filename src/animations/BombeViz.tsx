@@ -20,7 +20,7 @@ export function MenuGraph({ edges, test, known = [] }: Props) {
     return [l, { x: C + R * Math.cos(a), y: C + R * Math.sin(a) }] as const;
   }));
   return (
-    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={`Menu da Bombe com ${letters.length} letras e ${edges.length} ligações (uma por tecla do texto provável). A letra de teste é ${test}.`} className="mx-auto w-full max-w-sm rounded-xl border border-line bg-surface">
+    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={`Menu da Bombe com ${letters.length} letras e ${edges.length} ligações (uma por tecla do texto provável). A letra de teste é ${test}.`} className="mx-auto w-full max-w-md rounded-xl border border-line bg-surface">
       {edges.map((e, i) => {
         const a = pos.get(e.plain)!;
         const b = pos.get(e.cipher)!;
@@ -31,7 +31,7 @@ export function MenuGraph({ edges, test, known = [] }: Props) {
         return (
           <g key={i}>
             <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} className="stroke-current text-muted" strokeWidth={1.5} />
-            <text x={mx} y={my} textAnchor="middle" dominantBaseline="central" className="fill-current text-[10px] text-k-cipher" stroke="var(--surface, #fff)" strokeWidth={3} paintOrder="stroke">
+            <text x={mx} y={my} textAnchor="middle" dominantBaseline="central" className="fill-current text-[12px] text-k-cipher" stroke="var(--surface, #fff)" strokeWidth={3} paintOrder="stroke">
               {e.step}
             </text>
           </g>

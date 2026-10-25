@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CurvePlot } from '../../animations/CurvePlot';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { showPoint, TOY_CURVE as C, type RealSigAlgo } from '../../crypto/ecc';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/ecc';
 import { Callout, Field, LabSection, Tabs, buttonClass } from '../../components/ui';
 import { useDebounced } from '../../hooks/useDebounced';
 import { buildEcdhProtocol, buildEcdsaProtocol, buildRealProtocol, runEcdh, runEcdsa, runRealSignature, type EcdhFlow, type EcdsaFlow, type RealFlow } from './flows';

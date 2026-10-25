@@ -5,7 +5,7 @@ import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { TabulaRecta } from '../../animations/TabulaRecta';
 import { ALPHABET, letterPercentages, PT_FREQUENCY } from '../../crypto/classical';
 import { CryptoInputError, } from '../../crypto/bigmath';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/classical';
 import { IC_PORTUGUESE, IC_RANDOM } from '../../crypto/substitution';
 import { randomBigIntBelow } from '../../crypto/random';
 import { columns, validateVigenereKey } from '../../crypto/vigenere';

@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { engines } from '../src/crypto/engines';
 import { buildGrid } from '../src/crypto/playfair';
 import { keyFromWord, type Matrix } from '../src/crypto/hill';
-import { buildHillProtocol, runHill } from '../src/labs/playfair-hill/hill';
-import { buildPlayfairProtocol, runPlayfair } from '../src/labs/playfair-hill/playfair';
+import { buildHillProtocol, runHill } from '../src/labs/playfair-hill/hillFlows';
+import { buildPlayfairProtocol, runPlayfair } from '../src/labs/playfair-hill/playfairFlows';
 import { ProtocolSimulationEngine } from '../src/simulation/timeline';
 
 const TEXTO =

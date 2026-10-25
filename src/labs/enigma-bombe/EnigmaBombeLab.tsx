@@ -4,7 +4,7 @@ import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { permsFor, propagate } from '../../crypto/bombe';
 import { ALPHABET } from '../../crypto/classical';
 import { CryptoInputError } from '../../crypto/bigmath';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/classical';
 import { REFLECTOR_NAMES, ROTOR_NAMES, validateConfig, type EnigmaConfig, type ReflectorName, type RotorName } from '../../crypto/enigma';
 import { keySpace } from '../../crypto/enigma';
 import { randomBigIntBelow } from '../../crypto/random';

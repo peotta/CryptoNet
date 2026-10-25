@@ -2,107 +2,23 @@
 // Todos os métodos são assíncronos de propósito: a implementação local (navegador) pode ser
 // substituída ou complementada por um cliente REST/WebSocket para uma API Python/FastAPI
 // (ver docs/arquitetura.md) sem alterar nenhum componente.
-import {
-  discreteLogBruteForce,
-  ecdh as eccDh,
-  ecdsaSign as eccSign,
-  ecdsaVerify as eccVerify,
-  publicKey as eccPublic,
-  realSignatureDemo,
-  realSigSupported,
-  recoverFromNonceReuse,
-  TOY_CURVE,
-  type Curve,
-  type EcdsaSignature,
-  type EcdsaVerification,
-  type Point,
-  type RealSigAlgo,
-  type RealSigRun,
-} from './ecc';
-import { simulateHandshake, type TlsHandshake, type TlsInput } from './tls13';
-import { chachaBlock, chachaCrypt, type ChaChaBlock } from './chacha20';
-import {
-  decryptDidactic,
-  encryptDidactic,
-  generateDidacticKeys,
-  signDidactic,
-  verifyDidactic,
-  type RsaDidacticKeys,
-  type RsaPrivateKey,
-  type RsaPublicKey,
-} from './rsaDidactic';
-import {
-  aesBlockWebCrypto,
-  cbcDecrypt,
-  cbcEncrypt,
-  ctrXor,
-  ecbDecrypt,
-  ecbEncrypt,
-  expandKey,
-  gcmDecrypt,
-  gcmEncrypt,
-  traceEncrypt,
-  type AesMode,
-  type RoundStep,
-} from './aes';
-import {
-  crack as crackClassical,
-  decrypt as decryptClassical,
-  encrypt as encryptClassical,
-  type ClassicalCipher,
-  type ClassicalKey,
-  type CrackCandidate,
-} from './classical';
-import {
-  crackSubstitution as crackSub,
-  substitutionDecrypt,
-  substitutionEncrypt,
-  type SubstitutionCrack,
-} from './substitution';
-import { crackVigenere as crackVig, vigenereDecrypt, vigenereEncrypt, type VigenereCrack } from './vigenere';
-import {
-  buildGrid,
-  playfairDecrypt,
-  playfairEncryptSteps,
-  type DigraphStep,
-} from './playfair';
-import {
-  hillDecrypt,
-  hillEncryptBlocks,
-  hillPrepare,
-  knownPlaintextAttack as hillAttack,
-  type HillAttack,
-  type HillBlock,
-  type Matrix,
-} from './hill';
-import { bombeAttack, type BombeAttack, type BombeSetup } from './bombe';
-import { cribOffsets, enigmaRun, type CribOffset, type EnigmaConfig, type EnigmaResult } from './enigma';
-import { cribDrag, otpDecrypt, otpEncrypt, type DragResult } from './otp';
-import {
-  columnarDecrypt,
-  columnarEncrypt,
-  crackColumnar as crackCol,
-  crackRail as crackRl,
-  productDecrypt,
-  productEncrypt,
-  railDecrypt,
-  railEncrypt,
-  type ColumnarCandidate,
-  type RailCandidate,
-} from './transposition';
-import { avalancheStats, digest, hmacTrace, hmacWebCrypto, constantTimeEqual, type AvalancheStats, type HashAlgo, type HmacTrace } from './hash';
-import { runDhSession, runMitmSession, type DhSession, type MitmSession } from './diffieHellman';
-import {
-  decryptOaep,
-  describePublicKey,
-  encryptOaep,
-  generateOaepKeyPair,
-  generatePssKeyPair,
-  signPss,
-  verifyPss,
-  type PublicKeyInfo,
-  type RsaKeySize,
-} from './rsaWebCrypto';
+import type { Curve, EcdsaSignature, EcdsaVerification, Point, RealSigAlgo, RealSigRun } from './ecc';
+import type { TlsHandshake, TlsInput } from './tls13';
+import type { ChaChaBlock } from './chacha20';
+import type { RsaDidacticKeys, RsaPrivateKey, RsaPublicKey } from './rsaDidactic';
+import type { AesMode, RoundStep } from './aes';
+import type { ClassicalCipher, ClassicalKey, CrackCandidate } from './classical';
+import type { SubstitutionCrack } from './substitution';
+import type { VigenereCrack } from './vigenere';
+import type { DigraphStep } from './playfair';
+import type { HillAttack, HillBlock, Matrix } from './hill';
+import type { BombeAttack, BombeSetup } from './bombe';
+import type { CribOffset, EnigmaConfig, EnigmaResult } from './enigma';
+import type { DragResult } from './otp';
+import type { ColumnarCandidate, RailCandidate } from './transposition';
+import type { AvalancheStats, HashAlgo, HmacTrace } from './hash';
+import type { DhSession, MitmSession } from './diffieHellman';
+import type { PublicKeyInfo, RsaKeySize } from './rsaWebCrypto';
 
 export type EngineKind = 'educational' | 'webcrypto' | 'remote';
 
@@ -251,157 +167,14 @@ export interface EngineSet {
   ecc: EccEngine;
 }
 
-const rsaDidactic: RsaDidacticEngine = {
-  id: 'local-rsa-didactic',
-  kind: 'educational',
-  generateKeys: async (p, q, e) => generateDidacticKeys(p, q, e),
-  encrypt: async (m, key) => encryptDidactic(m, key),
-  decrypt: async (c, key) => decryptDidactic(c, key),
-  sign: async (m, key) => signDidactic(m, key),
-  verify: async (m, s, key) => verifyDidactic(m, s, key),
-};
+// Conjunto completo, usado nos testes e na documentação. Os laboratórios importam apenas a família de que precisam (src/crypto/local/).
+import { engines as rsa } from './local/rsa';
+import { engines as diffieHellman } from './local/diffieHellman';
+import { engines as hash } from './local/hash';
+import { engines as aes } from './local/aes';
+import { engines as classical } from './local/classical';
+import { engines as chacha } from './local/chacha';
+import { engines as tls } from './local/tls';
+import { engines as ecc } from './local/ecc';
 
-async function wrap(size: RsaKeySize, handle: CryptoKeyPair): Promise<RealKeyPair> {
-  return { size, handle, info: await describePublicKey(handle.publicKey) };
-}
-
-const rsaReal: RsaRealEngine = {
-  id: 'local-webcrypto-rsa',
-  kind: 'webcrypto',
-  generateEncryptionKeys: async (size) => wrap(size, await generateOaepKeyPair(size)),
-  generateSigningKeys: async (size) => wrap(size, await generatePssKeyPair(size)),
-  encrypt: (keys, data) => encryptOaep(keys.handle.publicKey, data),
-  decrypt: (keys, data) => decryptOaep(keys.handle.privateKey, data),
-  sign: (keys, data) => signPss(keys.handle.privateKey, data),
-  verify: (keys, sig, data) => verifyPss(keys.handle.publicKey, sig, data),
-};
-
-const diffieHellman: DiffieHellmanEngine = {
-  id: 'local-dh-didactic',
-  kind: 'educational',
-  runSession: async (p, g, a, b) => runDhSession(p, g, a, b),
-  runMitm: async (p, g, a, b, e) => runMitmSession(p, g, a, b, e),
-};
-
-const hash: HashEngine = {
-  id: 'local-webcrypto-hash',
-  kind: 'webcrypto',
-  digest,
-  hmac: async (algo, key, message) => {
-    const trace = await hmacTrace(algo, key, message);
-    return { trace, matchesReference: constantTimeEqual(trace.tag, await hmacWebCrypto(algo, key, message)) };
-  },
-  avalanche: avalancheStats,
-};
-
-function need(iv: Uint8Array | null, length: number, mode: AesMode): Uint8Array {
-  if (!iv || iv.length !== length) throw new Error(`O ${mode === 'CBC' ? 'IV' : 'nonce'} do ${mode} deve ter ${length} bytes.`);
-  return iv;
-}
-
-const aes: AesEngine = {
-  id: 'local-aes',
-  kind: 'educational',
-  encrypt: async (mode, key, iv, pt) => {
-    switch (mode) {
-      case 'ECB':
-        return ecbEncrypt(key, pt);
-      case 'CBC':
-        return cbcEncrypt(key, need(iv, 16, mode), pt);
-      case 'CTR':
-        return ctrXor(key, need(iv, 12, mode), pt);
-      case 'GCM':
-        return gcmEncrypt(key, need(iv, 12, mode), pt);
-    }
-  },
-  decrypt: async (mode, key, iv, data) => {
-    switch (mode) {
-      case 'ECB':
-        return ecbDecrypt(key, data);
-      case 'CBC':
-        return cbcDecrypt(key, need(iv, 16, mode), data);
-      case 'CTR':
-        return ctrXor(key, need(iv, 12, mode), data);
-      case 'GCM':
-        return gcmDecrypt(key, need(iv, 12, mode), data);
-    }
-  },
-  traceBlock: async (key, block) => {
-    const roundKeys = expandKey(key);
-    const steps = traceEncrypt(roundKeys, block);
-    const reference = await aesBlockWebCrypto(key, block);
-    const last = steps[steps.length - 1].state;
-    return { steps, roundKeys, matchesReference: reference.every((b, i) => b === last[i]) };
-  },
-};
-
-const classical: ClassicalEngine = {
-  id: 'local-classical',
-  kind: 'educational',
-  encrypt: async (cipher, key, plaintext) => encryptClassical(cipher, key, plaintext),
-  decrypt: async (cipher, key, ciphertext) => decryptClassical(cipher, key, ciphertext),
-  crack: async (cipher, ciphertext) => crackClassical(cipher, ciphertext),
-  encryptSubstitution: async (key, plaintext) => substitutionEncrypt(key, plaintext),
-  decryptSubstitution: async (key, ciphertext) => substitutionDecrypt(key, ciphertext),
-  crackSubstitution: async (ciphertext) => crackSub(ciphertext),
-  encryptVigenere: async (key, plaintext) => vigenereEncrypt(key, plaintext),
-  decryptVigenere: async (key, ciphertext) => vigenereDecrypt(key, ciphertext),
-  crackVigenere: async (ciphertext) => crackVig(ciphertext),
-  encryptPlayfair: async (keyword, plaintext) => {
-    const grid = buildGrid(keyword);
-    const steps = playfairEncryptSteps(grid, plaintext);
-    return { grid, steps, cipher: steps.map((s) => s.output).join('') };
-  },
-  decryptPlayfair: async (grid, ciphertext) => playfairDecrypt(grid, ciphertext),
-  encryptHill: async (key, plaintext) => {
-    const blocks = hillEncryptBlocks(key, plaintext);
-    const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    return { prepared: hillPrepare(plaintext, key.length), blocks, cipher: blocks.map((b) => b.cipher.map((v) => ALPHA[v]).join('')).join('') };
-  },
-  decryptHill: async (key, ciphertext) => hillDecrypt(key, ciphertext),
-  attackHill: async (n, knownPlain, cipherPrefix) => hillAttack(n, knownPlain, cipherPrefix),
-  runEnigma: async (config, text) => enigmaRun(config, text),
-  analyzeCrib: async (ciphertext, crib) => cribOffsets(ciphertext, crib),
-  runBombe: async (setup, ciphertext, crib, offset) => bombeAttack(setup, ciphertext, crib, offset),
-  encryptOtp: async (key, plaintext) => otpEncrypt(key, plaintext),
-  decryptOtp: async (key, ciphertext) => otpDecrypt(key, ciphertext),
-  dragOtp: async (cipher1, cipher2, crib, inFirst) => cribDrag(cipher1, cipher2, crib, inFirst),
-  encryptRail: async (text, rails) => railEncrypt(text, rails),
-  decryptRail: async (ciphertext, rails) => railDecrypt(ciphertext, rails),
-  crackRail: async (ciphertext) => crackRl(ciphertext),
-  encryptColumnar: async (text, keyword) => columnarEncrypt(text, keyword),
-  decryptColumnar: async (ciphertext, keyword) => columnarDecrypt(ciphertext, keyword),
-  crackColumnar: async (ciphertext) => crackCol(ciphertext),
-  encryptProduct: async (text, key, keyword) => productEncrypt(text, key, keyword),
-  decryptProduct: async (ciphertext, key, keyword) => productDecrypt(ciphertext, key, keyword),
-};
-
-const chacha: ChaChaEngine = {
-  id: 'local-chacha20',
-  kind: 'educational',
-  crypt: async (key, nonce, counter, data) => chachaCrypt(key, nonce, counter, data),
-  block: async (key, nonce, counter) => chachaBlock(key, nonce, counter),
-};
-
-const tls: TlsEngine = {
-  id: 'local-tls13',
-  kind: 'webcrypto',
-  handshake: async (input) => simulateHandshake(input),
-};
-
-const ecc: EccEngine = {
-  id: 'local-ecc',
-  kind: 'educational',
-  curve: TOY_CURVE,
-  publicKey: async (d) => eccPublic(TOY_CURVE, d),
-  ecdh: async (d, Q) => eccDh(TOY_CURVE, d, Q),
-  discreteLog: async (Q) => discreteLogBruteForce(TOY_CURVE, Q),
-  sign: async (d, z, k) => eccSign(TOY_CURVE, d, z, k),
-  verify: async (Q, z, r, s) => eccVerify(TOY_CURVE, Q, z, r, s),
-  recoverNonceReuse: async (z1, s1, z2, s2, r) => recoverFromNonceReuse(TOY_CURVE, z1, s1, z2, s2, r),
-  realSupported: async (algo) => realSigSupported(algo),
-  realSignature: async (algo, message, tamper) => realSignatureDemo(algo, message, tamper),
-};
-
-/** Motores ativos. Para usar uma API remota, substitua os valores por clientes que implementem as mesmas interfaces. */
-export const engines: EngineSet = { rsaDidactic, rsaReal, diffieHellman, hash, aes, classical, chacha, tls, ecc };
+export const engines: EngineSet = { ...rsa, ...diffieHellman, ...hash, ...aes, ...classical, ...chacha, ...tls, ...ecc };

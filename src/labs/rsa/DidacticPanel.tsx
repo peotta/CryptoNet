@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Formula } from '../../animations/Formula';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { CryptoInputError, parseDecimal, primeFactors, modInverse } from '../../crypto/bigmath';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/rsa';
 import { RSA_LIMITS, randomDidacticPrimes, suggestPublicExponent } from '../../crypto/rsaDidactic';
 import { Callout, Field, LabSection, Tabs, buttonClass } from '../../components/ui';
 import { buildRsaProtocol, type RsaScenario } from './flows';
@@ -53,7 +53,6 @@ export function DidacticPanel() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [p, q, e, m, scenario, tamper]);
 
   const definition = useMemo(() => (run ? buildRsaProtocol(run.flow) : null), [run]);

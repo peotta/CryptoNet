@@ -131,8 +131,6 @@ export function knownPlaintextAttack(n: number, knownPlain: string, cipherPrefix
   return null;
 }
 
-export const keyToText = (m: Matrix) => m.map((r) => r.join(' ')).join(' | ');
-
 /** Chave como palavra (linhas em sequência), como em "GYBNQKURP". */
 export const keyFromWord = (word: string): Matrix => {
   const w = normalizeText(word);

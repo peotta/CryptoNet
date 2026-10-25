@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { LabCard } from '../components/LabCard';
 import { CATEGORIES, LABS, labsByCategory } from '../labs/registry';
 
 export function Home() {
+  useDocumentTitle();
   const available = LABS.filter((l) => l.status === 'available');
   const planned = LABS.filter((l) => l.status === 'planned');
   return (
@@ -50,16 +52,18 @@ export function Home() {
         </div>
       </section>
 
-      <section aria-labelledby="futuros" className="space-y-4">
-        <h2 id="futuros" className="text-2xl font-bold">
-          Laboratórios futuros
-        </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {planned.map((l) => (
-            <LabCard key={l.id} lab={l} />
-          ))}
-        </div>
-      </section>
+      {planned.length > 0 && (
+        <section aria-labelledby="futuros" className="space-y-4">
+          <h2 id="futuros" className="text-2xl font-bold">
+            Laboratórios futuros
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {planned.map((l) => (
+              <LabCard key={l.id} lab={l} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

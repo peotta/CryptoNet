@@ -4,7 +4,7 @@ import { PadTable } from '../../animations/PadTable';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { ALPHABET, letterPercentages, normalizeText, PT_FREQUENCY } from '../../crypto/classical';
 import { CryptoInputError } from '../../crypto/bigmath';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/classical';
 import { keyForTarget, otpDecrypt, randomPad, validatePad } from '../../crypto/otp';
 import { IC_PORTUGUESE, IC_RANDOM } from '../../crypto/substitution';
 import { Callout, Field, LabSection, buttonClass } from '../../components/ui';

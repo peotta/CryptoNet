@@ -3,7 +3,7 @@ import { AlphabetStrip } from '../../animations/CipherDisk';
 import { FrequencyChart } from '../../animations/FrequencyChart';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { ALPHABET, letterCounts, letterPercentages, PT_FREQUENCY } from '../../crypto/classical';
-import { engines } from '../../crypto/engines';
+import { engines } from '../../crypto/local/classical';
 import { CryptoInputError } from '../../crypto/bigmath';
 import { indexOfCoincidence, IC_PORTUGUESE, IC_RANDOM, invertKey, randomSubstitutionKey, SUBSTITUTION_KEY_SPACE, validateSubstitutionKey } from '../../crypto/substitution';
 import { useDebounced } from '../../hooks/useDebounced';
