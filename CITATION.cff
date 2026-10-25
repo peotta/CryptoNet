@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "Se este software for útil ao seu trabalho, cite-o conforme os metadados abaixo."
+title: "CryptoNet Lab: laboratório virtual de criptografia e protocolos seguros"
+type: software
+version: 0.1.0
+date-released: 2026-10-25
+license: MIT
+authors:
+  - family-names: "Melo"
+    given-names: "Laerte Peotta de"
+    affiliation: "Universidade de Brasília (UnB), Departamento de Engenharia Elétrica"
+repository-code: "https://github.com/peotta/CryptoNet"
+url: "https://peotta.github.io/CryptoNet/"
+keywords:
+  - criptografia
+  - protocolos seguros
+  - simulação
+  - ensino
+language: por
