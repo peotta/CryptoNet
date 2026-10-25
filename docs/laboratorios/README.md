@@ -38,6 +38,14 @@ Pares de chaves pública e privada, assinaturas digitais e estabelecimento de se
 | [ECDH, ECDSA e Ed25519](ecdh-assinaturas.md) | Aritmética de curvas elípticas passo a passo, ECDH e ECDSA em uma curva didática (com o ataque ao nonce reutilizado) e assinaturas reais ECDSA P-256 e Ed25519. | didático (curva minúscula, BigInt) e real (Web Crypto: ECDSA P-256 e Ed25519) | [RFC 6979](https://www.rfc-editor.org/rfc/rfc6979) (ECDSA determinístico); [RFC 8032](https://www.rfc-editor.org/rfc/rfc8032) (Ed25519); [RFC 7748](https://www.rfc-editor.org/rfc/rfc7748) (X25519); FIPS 186-5 (ECDSA e curvas P-256) |
 | [Handshake do TLS 1.3](tls13.md) | ECDHE, cronograma de chaves com HKDF, certificado, CertificateVerify e Finished, com Eva observando e como homem do meio. | real (Web Crypto: ECDHE P-256, HKDF-SHA-256, ECDSA P-256, HMAC e AES-128-GCM) | [RFC 9846](https://www.rfc-editor.org/rfc/rfc9846) (TLS 1.3; substitui a [RFC 8446](https://www.rfc-editor.org/rfc/rfc8446)); [RFC 8448](https://www.rfc-editor.org/rfc/rfc8448) (exemplos de handshakes do TLS 1.3, usados para conferir o cronograma de chaves); [RFC 5869](https://www.rfc-editor.org/rfc/rfc5869) (HKDF) |
 
+## Criptografia Pós-Quântica
+
+Algoritmos que resistem a computadores quânticos, como o ML-KEM (FIPS 203), baseado em reticulados, e a migração dos protocolos atuais.
+
+| Laboratório | Resumo | Motor | Padrões e referências |
+| --- | --- | --- | --- |
+| [ML-KEM e reticulados (pós-quântica)](ml-kem.md) | O problema LWE em escala didática e o ML-KEM (FIPS 203) passo a passo, com Eva observando e adulterando o texto cifrado, e a comparação de tamanhos com os algoritmos atuais. | didático (LWE com números minúsculos) e ML-KEM real (TypeScript, conferido contra o OpenSSL 3.5) | FIPS 203 (ML-KEM, antigo CRYSTALS-Kyber); FIPS 202 (SHA-3 e SHAKE, usados pelo ML-KEM); FIPS 204 (ML-DSA) e FIPS 205 (SLH-DSA): assinaturas pós-quânticas, citadas e não implementadas |
+
 
 ---
 

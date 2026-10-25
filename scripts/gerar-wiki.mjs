@@ -295,6 +295,32 @@ const SPECS = {
       },
     ],
   },
+  'ml-kem': {
+    dir: 'ml-kem',
+    motor: 'didático (LWE com números minúsculos) e ML-KEM real (TypeScript, conferido contra o OpenSSL 3.5)',
+    engine: 'src/crypto/mlkem.ts',
+    content: ['MLKEM_OBJECTIVES', 'MLKEM_QUESTIONS'],
+    padroes: ['FIPS 203 (ML-KEM, antigo CRYSTALS-Kyber).', 'FIPS 202 (SHA-3 e SHAKE, usados pelo ML-KEM).', 'FIPS 204 (ML-DSA) e FIPS 205 (SLH-DSA): assinaturas pós-quânticas, citadas e não implementadas.'],
+    resumo:
+      'O ML-KEM é o mecanismo de encapsulamento de chave pós-quântico padronizado pelo NIST. Sua segurança vem do problema Module-LWE: a chave pública é uma sequência de equações lineares com ruído pequeno, que só quem conhece o segredo consegue resolver. Alice gera o par de chaves, Bob encapsula uma chave de 32 bytes na chave pública dela e Alice a recupera por desencapsulamento. Se Eva alterar o texto cifrado, a transformação de Fujisaki-Okamoto faz Alice derivar uma chave diferente, sem aviso de erro (rejeição implícita). A Parte A mostra o LWE com números minúsculos, em que Eva vence; a Parte B executa o ML-KEM real; a Parte C compara tamanhos e trata do modo híbrido com o X25519.',
+    limites: ['A implementação é didática, sem proteção contra ataques de canal lateral (tempo constante, zeroização) e sem os testes de conformidade completos do NIST; foi conferida byte a byte contra o OpenSSL 3.5 e não deve proteger dados reais.', 'O LWE da Parte A usa dimensão 2 ou 3 e módulo 97, só para que cada conta caiba na tela: Eva sempre o quebra.', 'O laboratório trata só do estabelecimento de chaves. O modo híbrido com o X25519 é descrito na Parte C, mas não é executado, e as assinaturas pós-quânticas (ML-DSA e SLH-DSA) não estão implementadas.'],
+    partes: [
+      {
+        titulo: 'LWE em escala didática',
+        cenarios: [
+          { titulo: 'Com ruído (±1) e n = 3', entradas: 'semente 7, bit 1', build: async (c) => c.mod.mlkem.buildLweProtocol(await c.mod.mlkem.runLwe(c.E.lwe, { params: c.mod.lwe.DEFAULT_LWE, seed: 7, rSeed: 1007, bit: 1 })) },
+          { titulo: 'Sem ruído (inseguro)', entradas: 'semente 7, bit 0', build: async (c) => c.mod.mlkem.buildLweProtocol(await c.mod.mlkem.runLwe(c.E.lwe, { params: { ...c.mod.lwe.DEFAULT_LWE, noise: 0 }, seed: 7, rSeed: 1007, bit: 0 })) },
+        ],
+      },
+      {
+        titulo: 'ML-KEM-768',
+        cenarios: [
+          { titulo: 'Estabelecimento de chave, com Eva observando', entradas: 'ML-KEM-768, sementes fixas', build: async (c) => c.mod.mlkem.buildMlKemProtocol(await c.mod.mlkem.runMlKem(c.E.mlkem, { params: c.mod.mlkemCore.ML_KEM_768, d: fixedBytes(1), z: fixedBytes(2), m: fixedBytes(3), tamper: false })) },
+          { titulo: 'Eva inverte um bit do texto cifrado (rejeição implícita)', entradas: 'ML-KEM-768, sementes fixas', build: async (c) => c.mod.mlkem.buildMlKemProtocol(await c.mod.mlkem.runMlKem(c.E.mlkem, { params: c.mod.mlkemCore.ML_KEM_768, d: fixedBytes(1), z: fixedBytes(2), m: fixedBytes(3), tamper: true })) },
+        ],
+      },
+    ],
+  },
   tls13: {
     dir: 'tls13',
     motor: 'real (Web Crypto: ECDHE P-256, HKDF-SHA-256, ECDSA P-256, HMAC e AES-128-GCM)',
@@ -427,6 +453,7 @@ const L = {
   rsa: { build: (await load('/src/labs/rsa/flows.ts')).buildRsaProtocol, runDidactic: (await load('/src/labs/rsa/run.ts')).runDidactic, runReal: (await load('/src/labs/rsa/run.ts')).runReal },
   dh: { build: (await load('/src/labs/diffie-hellman/flows.ts')).buildDhProtocol, buildMitm: (await load('/src/labs/diffie-hellman/flows.ts')).buildMitmProtocol },
   ecc: await load('/src/labs/ecc/flows.ts'),
+  mlkem: await load('/src/labs/ml-kem/flows.ts'),
   tls: { build: (await load('/src/labs/tls13/flows.ts')).buildTlsProtocol, run: (await load('/src/labs/tls13/flows.ts')).runTls },
   aes: { build: (await load('/src/labs/aes/flows.ts')).buildAesProtocol, run: (await load('/src/labs/aes/run.ts')).runAes },
   chacha: {
@@ -437,8 +464,12 @@ const L = {
   },
   hmac: { build: (await load('/src/labs/hash-hmac/flows.ts')).buildHmacProtocol },
 };
+/** 32 bytes determinísticos, para que o documento gerado não mude entre execuções. */
+const fixedBytes = (seed) => Uint8Array.from({ length: 32 }, (_, i) => (i * 31 + seed * 17 + (i >> 3)) & 0xff);
 const rndLetters = (n) => Array.from(rnd(n), (b) => String.fromCharCode(65 + (b % 26))).join('');
-const ctx = { E, mod: { ...L, encoding, hash: hashMod }, rndLetters };
+const lweMod = await load('/src/crypto/lwe.ts');
+const mlkemMod = await load('/src/crypto/mlkem.ts');
+const ctx = { E, mod: { ...L, encoding, hash: hashMod, lwe: lweMod, mlkemCore: mlkemMod }, rndLetters };
 
 // ---------------------------------------------------------------------------------------------
 // Utilidades de texto

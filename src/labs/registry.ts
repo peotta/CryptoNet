@@ -1,6 +1,6 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 
-export type CategoryId = 'classica' | 'simetrica' | 'assimetrica';
+export type CategoryId = 'classica' | 'simetrica' | 'assimetrica' | 'posquantica';
 
 export interface Category {
   id: CategoryId;
@@ -34,6 +34,11 @@ export const CATEGORIES: Category[] = [
     id: 'assimetrica',
     title: 'Criptografia Assimétrica e Acordo de Chaves',
     description: 'Pares de chaves pública e privada, assinaturas digitais e estabelecimento de segredos por canais inseguros.',
+  },
+  {
+    id: 'posquantica',
+    title: 'Criptografia Pós-Quântica',
+    description: 'Algoritmos que resistem a computadores quânticos, como o ML-KEM (FIPS 203), baseado em reticulados, e a migração dos protocolos atuais.',
   },
 ];
 
@@ -138,6 +143,15 @@ export const LABS: LabMeta[] = [
     objectives: ['Somar pontos e multiplicar por escalar', 'Ver por que o ECDH depende do tamanho do grupo', 'Quebrar o ECDSA com o nonce reutilizado'],
     status: 'available',
     component: lazy(() => import('./ecc/EccLab')),
+  },
+  {
+    id: 'ml-kem',
+    category: 'posquantica',
+    title: 'ML-KEM e reticulados (pós-quântica)',
+    summary: 'O problema LWE em escala didática e o ML-KEM (FIPS 203) passo a passo, com Eva observando e adulterando o texto cifrado, e a comparação de tamanhos com os algoritmos atuais.',
+    objectives: ['Entender o ruído do LWE e por que ele protege a chave', 'Acompanhar a geração de chaves, o encapsulamento e o desencapsulamento do ML-KEM', 'Ver a rejeição implícita diante de um texto cifrado adulterado'],
+    status: 'available',
+    component: lazy(() => import('./ml-kem/MlKemLab')),
   },
   {
     id: 'tls13',

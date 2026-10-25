@@ -29,6 +29,9 @@ export function AppLayout() {
             <NavLink to="/categoria/assimetrica" className={link}>
               Assimétrica
             </NavLink>
+            <NavLink to="/categoria/posquantica" className={link}>
+              Pós-quântica
+            </NavLink>
           </nav>
           <button
             type="button"

@@ -6,7 +6,7 @@ O código separa quatro naturezas de conteúdo, cada uma em seu diretório:
 
 | Camada | Diretório | Natureza |
 | --- | --- | --- |
-| Simulação matemática educacional | `src/crypto/` (`bigmath.ts`, `rsaDidactic.ts`, `diffieHellman.ts`, `ecc.ts`, `classical.ts`, `enigma.ts`, `bombe.ts`, `aes.ts`, `chacha20.ts` e demais cifras clássicas) | BigInt e aritmética própria, sem padding, parâmetros pequenos. Inseguro por construção. |
+| Simulação matemática educacional | `src/crypto/` (`bigmath.ts`, `rsaDidactic.ts`, `diffieHellman.ts`, `ecc.ts`, `keccak.ts`, `mlkem.ts`, `lwe.ts`, `classical.ts`, `enigma.ts`, `bombe.ts`, `aes.ts`, `chacha20.ts` e demais cifras clássicas) | BigInt e aritmética própria, sem padding, parâmetros pequenos. Inseguro por construção. |
 | Operações criptográficas reais | `src/crypto/rsaWebCrypto.ts`, `kdf.ts`, `hash.ts`, `tls13.ts` e as assinaturas reais de `ecc.ts` | Web Crypto API: RSA-OAEP, RSA-PSS, HKDF-SHA-256, SHA-2, HMAC, AES-GCM, ECDH e ECDSA P-256 e Ed25519. |
 | Contratos e motores locais | `src/crypto/engines.ts` e `src/crypto/local/` | Interfaces assíncronas e as implementações locais, uma por família. |
 | Visualização conceitual | `src/simulation/`, `src/animations/`, `src/labs/`, `src/components/`, `src/pages/` | Modelo de protocolo, animações e interface. Não calcula criptografia. |
@@ -58,7 +58,7 @@ Observação: `RsaRealEngine` usa `CryptoKeyPair` em `RealKeyPair.handle`. Um mo
 
 ## 5. Registro de laboratórios
 
-`src/labs/registry.ts` é a única fonte de verdade. A página inicial, as categorias, os links de navegação, os testes e o gerador da documentação leem dele. Cada entrada tem identificador (kebab-case, usado na rota `#/lab/<id>`), categoria (`classica`, `simetrica` ou `assimetrica`), título, resumo, objetivos, situação (`available` ou `planned`) e, quando disponível, o componente carregado sob demanda (`lazy`). Hoje todos os laboratórios estão disponíveis; a seção "Laboratórios futuros" da página inicial só aparece quando há algum `planned`.
+`src/labs/registry.ts` é a única fonte de verdade. A página inicial, as categorias, os links de navegação, os testes e o gerador da documentação leem dele. Cada entrada tem identificador (kebab-case, usado na rota `#/lab/<id>`), categoria (`classica`, `simetrica`, `assimetrica` ou `posquantica`), título, resumo, objetivos, situação (`available` ou `planned`) e, quando disponível, o componente carregado sob demanda (`lazy`). Hoje todos os laboratórios estão disponíveis; a seção "Laboratórios futuros" da página inicial só aparece quando há algum `planned`.
 
 ## 6. Padrão de cada laboratório
 
@@ -78,7 +78,7 @@ Todos seguem a mesma estrutura pedagógica: Objetivos de aprendizagem, Introduç
 
 `npm test` executa o Vitest. Os testes se dividem em:
 
-- **Núcleo criptográfico:** vetores oficiais (FIPS 197, RFC 8439, RFC 8448, RFC 4231, entre outros) e propriedades (inverso modular, reciprocidade da Enigma, nonce reutilizado, etc.).
+- **Núcleo criptográfico:** vetores oficiais (FIPS 197, RFC 8439, RFC 8448, RFC 4231, entre outros) e, no ML-KEM e no SHA-3, a comparação byte a byte com o OpenSSL 3.5 do Node (quando disponível) e vetores de regressão fixos e propriedades (inverso modular, reciprocidade da Enigma, nonce reutilizado, etc.).
 - **Fluxos (`*-flow.test.ts`):** ordem das etapas, o que Eva sabe em cada etapa, segredos que nunca atravessam o canal e consistência do `replay` em todas as etapas.
 - **Interface (`*-ui.test.tsx`):** cada laboratório é aberto pelas rotas, percorrido passo a passo e verificado com o `axe-core`.
 - **Página de documentação (`doc-ui.test.tsx`):** leitura dos documentos, índice lateral, âncoras, links entre documentos, diagramas (o Mermaid é simulado no jsdom), página 404 e `axe-core`.

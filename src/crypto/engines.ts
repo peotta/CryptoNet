@@ -19,6 +19,8 @@ import type { ColumnarCandidate, RailCandidate } from './transposition';
 import type { AvalancheStats, HashAlgo, HmacTrace } from './hash';
 import type { DhSession, MitmSession } from './diffieHellman';
 import type { PublicKeyInfo, RsaKeySize } from './rsaWebCrypto';
+import type { DecapsDetail, EncapsDetail, KeyGenDetail, MlKemParams } from './mlkem';
+import type { LweAttack, LweCiphertext, LweDecryption, LweKeys, LweParams } from './lwe';
 
 export type EngineKind = 'educational' | 'webcrypto' | 'remote';
 
@@ -155,6 +157,22 @@ export interface EccEngine extends CryptoEngine {
   realSignature(algo: RealSigAlgo, message: Uint8Array, tamper: boolean): Promise<RealSigRun>;
 }
 
+/** ML-KEM (FIPS 203): geração de chaves, encapsulamento e desencapsulamento, com os valores intermediários. */
+export interface MlKemEngine extends CryptoEngine {
+  keyGen(params: MlKemParams, d: Uint8Array, z: Uint8Array): Promise<KeyGenDetail>;
+  encaps(params: MlKemParams, ek: Uint8Array, m: Uint8Array): Promise<EncapsDetail>;
+  decaps(params: MlKemParams, dk: Uint8Array, c: Uint8Array): Promise<DecapsDetail>;
+}
+
+/** LWE em escala didática (números minúsculos), com os ataques algébrico e exaustivo. */
+export interface LweEngine extends CryptoEngine {
+  keyGen(params: LweParams, seed: number): Promise<LweKeys>;
+  encrypt(keys: Pick<LweKeys, 'params' | 'A' | 'b'>, bit: 0 | 1, seed: number): Promise<LweCiphertext>;
+  decrypt(params: LweParams, s: number[], u: number[], v: number): Promise<LweDecryption>;
+  attackGauss(keys: LweKeys): Promise<LweAttack>;
+  attackBruteForce(keys: LweKeys): Promise<LweAttack>;
+}
+
 export interface EngineSet {
   rsaDidactic: RsaDidacticEngine;
   rsaReal: RsaRealEngine;
@@ -165,6 +183,8 @@ export interface EngineSet {
   chacha: ChaChaEngine;
   tls: TlsEngine;
   ecc: EccEngine;
+  mlkem: MlKemEngine;
+  lwe: LweEngine;
 }
 
 // Conjunto completo, usado nos testes e na documentação. Os laboratórios importam apenas a família de que precisam (src/crypto/local/).
@@ -176,5 +196,6 @@ import { engines as classical } from './local/classical';
 import { engines as chacha } from './local/chacha';
 import { engines as tls } from './local/tls';
 import { engines as ecc } from './local/ecc';
+import { engines as mlkem } from './local/mlkem';
 
-export const engines: EngineSet = { ...rsa, ...diffieHellman, ...hash, ...aes, ...classical, ...chacha, ...tls, ...ecc };
+export const engines: EngineSet = { ...rsa, ...diffieHellman, ...hash, ...aes, ...classical, ...chacha, ...tls, ...ecc, ...mlkem };

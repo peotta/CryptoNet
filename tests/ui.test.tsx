@@ -5,6 +5,7 @@ import { MotionConfig } from 'motion/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it } from 'vitest';
 import { AppRoutes } from '../src/App';
+import { LABS } from '../src/labs/registry';
 
 afterEach(cleanup);
 
@@ -41,7 +42,7 @@ describe('página inicial e categorias', () => {
   it('cada cartão tem o link da documentação, na página interna', () => {
     renderAt('/');
     const links = screen.getAllByRole('link', { name: /^Documentação/ });
-    expect(links).toHaveLength(15);
+    expect(links).toHaveLength(LABS.filter((l) => l.status === 'available').length);
     expect(links[0].getAttribute('href')).toMatch(/^\/lab\/[a-z0-9-]+\/documentacao$/);
   });
   it('atualiza o título da aba a cada página', () => {
