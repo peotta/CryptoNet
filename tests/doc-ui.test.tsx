@@ -110,6 +110,13 @@ describe('página de documentação (Markdown e Mermaid)', () => {
     expect(await screen.findByRole('heading', { name: 'Página não encontrada' })).toBeTruthy();
   }, 120000);
 
+  it('o crédito do projeto aparece uma só vez (o do arquivo Markdown fica só no GitHub e na wiki)', async () => {
+    await open('aes');
+    const credits = screen.getAllByText(/é um projeto mantido pelo/);
+    expect(credits).toHaveLength(1);
+    expect(credits[0].closest('footer')).toBeTruthy();
+  }, 40000);
+
   it('mostra o código quando o Mermaid falha', async () => {
     render_.mockRejectedValueOnce(new Error('falha'));
     await open('aes');

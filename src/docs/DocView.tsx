@@ -95,11 +95,14 @@ const components: Components = {
   },
 };
 
+/** O crédito que fecha o arquivo Markdown (útil no GitHub e na wiki) já está no rodapé do site: não se repete na página. */
+export const withoutCredit = (markdown: string) => markdown.replace(/\n+---\n+\*[^*\n]+ é um projeto mantido pelo [^*\n]+\*\s*$/, '\n');
+
 export function DocView({ markdown }: { markdown: string }) {
   return (
     <div className="min-w-0 max-w-4xl">
       <Markdown remarkPlugins={[remarkGfm]} components={components}>
-        {markdown}
+        {withoutCredit(markdown)}
       </Markdown>
     </div>
   );

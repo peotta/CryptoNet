@@ -301,10 +301,9 @@ describe('rodapé', () => {
     for (const path of ['/', '/lab/rsa', '/categoria/simetrica']) {
       const { unmount } = renderAt(path);
       const footer = screen.getByRole('contentinfo');
-      expect(footer.textContent).toContain('Projeto acadêmico de código aberto (licença MIT).');
-      expect(footer.textContent).toContain('Prof. Dr. Laerte Peotta de Melo');
-      expect(footer.textContent).toContain('Universidade de Brasília (UnB), Departamento de Engenharia Elétrica.');
-      expect(footer.textContent).toContain('Uso educacional: os laboratórios não devem proteger dados reais.');
+      expect(footer.textContent).toContain('CryptoNet é um projeto mantido pelo Prof. Dr. Laerte Peotta de Melo, com apoio de IA generativa');
+      expect(footer.textContent).toContain('Universidade de Brasília (UnB) - Departamento de Engenharia Elétrica. Código aberto (licença MIT).');
+      expect(footer.textContent).toContain('Os laboratórios não devem proteger dados reais.');
       unmount();
     }
   });

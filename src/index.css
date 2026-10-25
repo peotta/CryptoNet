@@ -58,8 +58,8 @@
   --color-k-plain: var(--k-plain);
   --color-k-cipher: var(--k-cipher);
   --color-k-signature: var(--k-signature);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Inter", Roboto, "Helvetica Neue", sans-serif;
-  --font-mono: ui-monospace, "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Inter", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
 
 html {

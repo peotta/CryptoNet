@@ -44,9 +44,9 @@ export function AppLayout() {
         <Outlet />
       </main>
       <footer className="border-t border-line bg-surface">
-        <p className="mx-auto max-w-7xl px-4 py-4 text-center text-base text-muted">
-          Projeto acadêmico de código aberto (licença MIT). Responsável: Prof. Dr. Laerte Peotta de Melo. Universidade de Brasília (UnB), Departamento de Engenharia Elétrica. Uso educacional: os laboratórios não devem
-          proteger dados reais.
+        <p className="mx-auto max-w-7xl px-4 py-4 text-center font-mono text-base text-muted">
+          CryptoNet é um projeto mantido pelo <strong className="font-bold text-ink">Prof. Dr. Laerte Peotta de Melo</strong>, com apoio de IA generativa no processo de desenvolvimento, com sua estrita supervisão, revisão técnica e responsabilidade. Uso exclusivo para fins de ensino e pesquisa.
+          Universidade de Brasília (UnB) - Departamento de Engenharia Elétrica. Código aberto (licença MIT). Os laboratórios não devem proteger dados reais.
         </p>
       </footer>
     </div>
