@@ -14,6 +14,7 @@ async function draw(id: string, code: string, dark: boolean): Promise<string> {
     theme: dark ? 'dark' : 'default',
     fontFamily: 'inherit',
     // Tamanho natural do diagrama: em telas estreitas o contêiner rola na horizontal em vez de encolher o texto.
+    flowchart: { useMaxWidth: false },
     sequence: { useMaxWidth: false, wrap: false, noteFontSize: 15, messageFontSize: 15, actorFontSize: 16 },
   });
   const { svg } = await mermaid.render(id, code);
