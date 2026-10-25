@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { LABS } from '../src/labs/registry';
+import { docUrl, LABS } from '../src/labs/registry';
 
 const dir = path.resolve(__dirname, '..', 'docs', 'laboratorios');
 const read = (name: string) => fs.readFileSync(path.join(dir, name), 'utf8');
@@ -10,6 +10,9 @@ const available = LABS.filter((l) => l.status === 'available');
 describe('documentação dos laboratórios (gerada por npm run docs:labs)', () => {
   it('todo laboratório disponível tem o seu documento', () => {
     for (const l of available) expect(fs.existsSync(path.join(dir, `${l.id}.md`)), `docs/laboratorios/${l.id}.md (rode npm run docs:labs)`).toBe(true);
+  });
+  it('o link do cartão aponta para o documento de cada laboratório', () => {
+    for (const l of available) expect(docUrl(l)).toBe(`https://github.com/peotta/CryptoNet/blob/main/docs/laboratorios/${l.id}.md`);
   });
   it('o índice lista todos os laboratórios disponíveis', () => {
     const index = read('README.md');

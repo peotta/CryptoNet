@@ -177,5 +177,9 @@ export const LABS: LabMeta[] = [
   },
 ];
 
+/** Documento do laboratório (gerado por npm run docs:labs), no GitHub. */
+export const DOCS_BASE = 'https://github.com/peotta/CryptoNet/blob/main/docs/laboratorios/';
+export const docUrl = (lab: LabMeta) => `${DOCS_BASE}${lab.id}.md`;
+
 export const labsByCategory = (id: CategoryId) => LABS.filter((l) => l.category === id);
 export const findLab = (id: string | undefined) => LABS.find((l) => l.id === id);
