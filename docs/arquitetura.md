@@ -23,6 +23,7 @@ src/
   components/        componentes de interface (cartões, seções, campos, perguntas de revisão)
   hooks/             useStepPlayer, useDebounced, useTheme, useDocumentTitle
   labs/              um diretório por laboratório e o registro (registry.ts)
+  docs/              página de documentação: leitor de Markdown (DocView), diagramas (Mermaid) e âncoras
   pages/, layouts/   páginas e layout (HashRouter)
 tests/               testes (Vitest, React Testing Library e axe-core)
 scripts/             gerador da documentação e da wiki (gerar-wiki.mjs)
@@ -80,6 +81,7 @@ Todos seguem a mesma estrutura pedagógica: Objetivos de aprendizagem, Introduç
 - **Núcleo criptográfico:** vetores oficiais (FIPS 197, RFC 8439, RFC 8448, RFC 4231, entre outros) e propriedades (inverso modular, reciprocidade da Enigma, nonce reutilizado, etc.).
 - **Fluxos (`*-flow.test.ts`):** ordem das etapas, o que Eva sabe em cada etapa, segredos que nunca atravessam o canal e consistência do `replay` em todas as etapas.
 - **Interface (`*-ui.test.tsx`):** cada laboratório é aberto pelas rotas, percorrido passo a passo e verificado com o `axe-core`.
+- **Página de documentação (`doc-ui.test.tsx`):** leitura dos documentos, índice lateral, âncoras, links entre documentos, diagramas (o Mermaid é simulado no jsdom), página 404 e `axe-core`.
 - **Documentação (`docs.test.ts`):** todo laboratório disponível tem o seu documento em `docs/laboratorios/`, sem travessões e com as RFCs em link.
 
 `tests/setup.ts` amplia o tempo de espera das consultas assíncronas da biblioteca de testes (cargas altas em paralelo), e `vite.config.ts` repete até duas vezes os testes que falharem no GitHub Actions (variável `CI`).

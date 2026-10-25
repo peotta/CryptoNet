@@ -79,6 +79,8 @@ npm run docs:labs   # gera ou atualiza docs/laboratorios/
 
 O teste `docs.test.ts` falha se faltar o documento de algum laboratório disponível. Versione o documento junto com o laboratório.
 
+O botão "Documentação" de cada cartão abre a página interna `#/lab/<id>/documentacao`, que lê o arquivo Markdown e o apresenta com o visual da aplicação (`react-markdown` e `remark-gfm`), desenhando os diagramas de sequência com o Mermaid nas cores padrão, como no GitHub. O Mermaid é carregado sob demanda, só ao abrir uma documentação. A página tem o link "Ver no GitHub" para o arquivo original.
+
 ### Wiki
 
 A [wiki do projeto](https://github.com/peotta/CryptoNet/wiki) reúne a mesma documentação em formato de páginas navegáveis: página inicial, arquitetura, índice de laboratórios, guia para contribuir e uma página por laboratório. Também é gerada pelo código:

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { docUrl, type LabMeta } from '../labs/registry';
+import type { LabMeta } from '../labs/registry';
 
 export function LabCard({ lab, headingLevel = 3 }: { lab: LabMeta; headingLevel?: 2 | 3 }) {
   const Heading = `h${headingLevel}` as 'h2' | 'h3';
@@ -23,12 +23,9 @@ export function LabCard({ lab, headingLevel = 3 }: { lab: LabMeta; headingLevel?
           <Link to={`/lab/${lab.id}`} className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg bg-accent px-5 text-base font-semibold text-accent-ink hover:opacity-90">
             Abrir laboratório<span className="sr-only">: {lab.title}</span>
           </Link>
-          <a href={docUrl(lab)} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex min-h-11 items-center justify-center gap-1 self-center text-base font-semibold text-accent underline">
-            Documentação<span className="sr-only">: {lab.title} (abre em nova aba)</span>
-            <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M7 17L17 7M8 7h9v9" />
-            </svg>
-          </a>
+          <Link to={`/lab/${lab.id}/documentacao`} className="mt-1 inline-flex min-h-11 items-center justify-center self-center text-base font-semibold text-accent underline">
+            Documentação<span className="sr-only">: {lab.title}</span>
+          </Link>
         </>
       )}
     </article>

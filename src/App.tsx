@@ -2,6 +2,7 @@ import { MotionConfig } from 'motion/react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { AppLayout } from './layouts/AppLayout';
 import { Category } from './pages/Category';
+import { DocPage } from './pages/DocPage';
 import { Home } from './pages/Home';
 import { LabPage } from './pages/LabPage';
 import { NotFound } from './pages/NotFound';
@@ -14,6 +15,7 @@ export function AppRoutes() {
         <Route index element={<Home />} />
         <Route path="categoria/:id" element={<Category />} />
         <Route path="lab/:id" element={<LabPage />} />
+        <Route path="lab/:id/documentacao" element={<DocPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

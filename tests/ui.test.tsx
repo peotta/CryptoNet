@@ -38,12 +38,11 @@ describe('página inicial e categorias', () => {
     // Sem laboratórios planejados, a seção de laboratórios futuros não aparece (nem o título vazio).
     expect(screen.queryByText('Laboratórios futuros')).toBeNull();
   });
-  it('cada cartão tem o link da documentação, em nova aba', () => {
+  it('cada cartão tem o link da documentação, na página interna', () => {
     renderAt('/');
     const links = screen.getAllByRole('link', { name: /^Documentação/ });
     expect(links).toHaveLength(15);
-    expect(links[0].getAttribute('href')).toMatch(/^https:\/\/github\.com\/peotta\/CryptoNet\/blob\/main\/docs\/laboratorios\/[a-z0-9-]+\.md$/);
-    expect(links[0].getAttribute('target')).toBe('_blank');
+    expect(links[0].getAttribute('href')).toMatch(/^\/lab\/[a-z0-9-]+\/documentacao$/);
   });
   it('atualiza o título da aba a cada página', () => {
     renderAt('/lab/rsa');
