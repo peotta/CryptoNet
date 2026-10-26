@@ -5,6 +5,7 @@
 import type { Curve, EcdsaSignature, EcdsaVerification, Point, RealSigAlgo, RealSigRun } from './ecc';
 import type { TlsHandshake, TlsInput } from './tls13';
 import type { ChaChaBlock } from './chacha20';
+import type { Bits, CbcBlock, DesSearch, DesTrace, KeySchedule, TdesStages } from './des';
 import type { RsaDidacticKeys, RsaPrivateKey, RsaPublicKey } from './rsaDidactic';
 import type { AesMode, RoundStep } from './aes';
 import type { ClassicalCipher, ClassicalKey, CrackCandidate } from './classical';
@@ -138,6 +139,22 @@ export interface ChaChaEngine extends CryptoEngine {
   block(key: Uint8Array, nonce: Uint8Array, counter: number): Promise<ChaChaBlock>;
 }
 
+/** DES e Triple DES (didáticos): rastro de cada etapa, modo CBC com preenchimento e busca exaustiva em escala reduzida. */
+export interface DesEngine extends CryptoEngine {
+  keySchedule(key: Uint8Array): Promise<KeySchedule>;
+  /** Rastro do bloco: permutação inicial, 16 rodadas (com expansão, caixas S e permutação P) e permutação final. */
+  trace(key: Uint8Array, block: Uint8Array, decrypt: boolean): Promise<DesTrace>;
+  block(key: Uint8Array, block: Uint8Array, decrypt: boolean): Promise<Uint8Array>;
+  /** Uma chave: DES. Três chaves: Triple DES no modo EDE. Os blocos mostram o XOR com o vetor anterior. */
+  cbcEncrypt(keys: Uint8Array[], iv: Uint8Array, data: Uint8Array): Promise<CbcBlock[]>;
+  /** Devolve os blocos decifrados sem tirar o preenchimento e o texto sem ele (null se o preenchimento for inválido). */
+  cbcDecrypt(keys: Uint8Array[], iv: Uint8Array, data: Uint8Array): Promise<{ raw: Uint8Array; plain: Uint8Array | null }>;
+  /** Etapas E, D, E do Triple DES sobre um bloco. */
+  tdesStages(k1: Uint8Array, k2: Uint8Array, k3: Uint8Array, block: Uint8Array): Promise<TdesStages>;
+  /** Busca exaustiva: conhece os primeiros (56 - n) bits úteis da chave e testa os 2^n valores dos demais. */
+  search(plainBlock: Uint8Array, cipherBlock: Uint8Array, base: Bits, unknownBits: number): Promise<DesSearch>;
+}
+
 /** Handshake do TLS 1.3 (1-RTT) com Web Crypto: ECDHE P-256, HKDF-SHA-256, ECDSA P-256, HMAC e AES-128-GCM. */
 export interface TlsEngine extends CryptoEngine {
   handshake(input: TlsInput): Promise<TlsHandshake>;
@@ -181,6 +198,7 @@ export interface EngineSet {
   aes: AesEngine;
   classical: ClassicalEngine;
   chacha: ChaChaEngine;
+  des: DesEngine;
   tls: TlsEngine;
   ecc: EccEngine;
   mlkem: MlKemEngine;
@@ -194,8 +212,9 @@ import { engines as hash } from './local/hash';
 import { engines as aes } from './local/aes';
 import { engines as classical } from './local/classical';
 import { engines as chacha } from './local/chacha';
+import { engines as des } from './local/des';
 import { engines as tls } from './local/tls';
 import { engines as ecc } from './local/ecc';
 import { engines as mlkem } from './local/mlkem';
 
-export const engines: EngineSet = { ...rsa, ...diffieHellman, ...hash, ...aes, ...classical, ...chacha, ...tls, ...ecc, ...mlkem };
+export const engines: EngineSet = { ...rsa, ...diffieHellman, ...hash, ...aes, ...classical, ...chacha, ...des, ...tls, ...ecc, ...mlkem };

@@ -2,6 +2,11 @@ export function toHex(bytes: Uint8Array): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+/** Bytes a partir de dígitos hexadecimais (número par de dígitos). */
+export function fromHex(hex: string): Uint8Array {
+  return Uint8Array.from(hex.match(/../g) ?? [], (x) => parseInt(x, 16));
+}
+
 export function fromBase64Url(text: string): Uint8Array {
   const b64 = text.replace(/-/g, '+').replace(/_/g, '/');
   const bin = atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4));

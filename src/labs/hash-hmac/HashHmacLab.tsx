@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Callout, LabSection, ReviewQuestions, Tabs } from '../../components/ui';
+import { Callout, LabSection, ReviewQuestions, Standards, Tabs } from '../../components/ui';
 import { HASH_OBJECTIVES, HASH_QUESTIONS } from './content';
 import { HashPanel } from './HashPanel';
 import { HmacPanel } from './HmacPanel';
@@ -25,6 +25,13 @@ export default function HashHmacLab() {
         <Callout variant="info" title="Hash e HMAC não cifram">
           <p>Nenhum dos dois oculta o conteúdo da mensagem. Hash dá resumo e detecção de alterações acidentais; HMAC acrescenta autenticidade por chave compartilhada.</p>
         </Callout>
+        <Standards
+          items={[
+            'FIPS 180-4 (SHA-1 e SHA-2)',
+            'RFC 2104 e FIPS 198-1 (HMAC); vetores de teste na RFC 4231',
+            'A FIPS 198-1 está em processo de retirada: o NIST propôs mover o conteúdo para o SP 800-224 (rascunho de junho de 2024) e retirá-la quando o SP 800-224 final for publicado. Até lá, continua vigente',
+          ]}
+        />
         <Tabs
           label="Parte do laboratório"
           value={part}

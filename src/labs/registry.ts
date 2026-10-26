@@ -15,6 +15,8 @@ export interface LabMeta {
   summary: string;
   objectives: string[];
   status: 'available' | 'planned';
+  /** Destaca o cartão com a marca Novo. */
+  novo?: boolean;
   /** Presente somente em laboratórios disponíveis. */
   component?: LazyExoticComponent<ComponentType>;
 }
@@ -137,6 +139,7 @@ export const LABS: LabMeta[] = [
   },
   {
     id: 'ecdh-assinaturas',
+    novo: true,
     category: 'assimetrica',
     title: 'ECDH, ECDSA e Ed25519',
     summary: 'Aritmética de curvas elípticas passo a passo, ECDH e ECDSA em uma curva didática (com o ataque ao nonce reutilizado) e assinaturas reais ECDSA P-256 e Ed25519.',
@@ -146,6 +149,7 @@ export const LABS: LabMeta[] = [
   },
   {
     id: 'ml-kem',
+    novo: true,
     category: 'posquantica',
     title: 'ML-KEM e reticulados (pós-quântica)',
     summary: 'O problema LWE em escala didática e o ML-KEM (FIPS 203) passo a passo, com Eva observando e adulterando o texto cifrado, e a comparação de tamanhos com os algoritmos atuais.',
@@ -161,6 +165,16 @@ export const LABS: LabMeta[] = [
     objectives: ['Acompanhar o handshake 1-RTT', 'Seguir o cronograma de chaves do TLS 1.3', 'Ver por que a autenticação do servidor barra o homem do meio'],
     status: 'available',
     component: lazy(() => import('./tls13/Tls13Lab')),
+  },
+  {
+    id: 'des',
+    novo: true,
+    category: 'simetrica',
+    title: 'DES e Triple DES',
+    summary: 'A rede de Feistel de 16 rodadas operação por operação, a busca exaustiva de Eva contra a chave de 56 bits e o Triple DES, com Alice e Bob.',
+    objectives: ['Acompanhar subchaves, expansão, caixas S e permutações', 'Ver por que 56 bits não resistem à força bruta', 'Entender o Triple DES e o limite do bloco de 64 bits'],
+    status: 'available',
+    component: lazy(() => import('./des/DesLab')),
   },
   {
     id: 'aes',

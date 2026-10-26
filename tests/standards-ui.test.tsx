@@ -25,6 +25,8 @@ describe('normas e referências na introdução dos laboratórios', () => {
     ['diffie-hellman', [/SP 800-56A Rev\. 3/, /SP 800-56C Rev\. 2/, /SP 800-38D/]],
     ['ecdh-assinaturas', [/FIPS 186-5/, /SP 800-186/, /SP 800-56A Rev\. 3/]],
     ['tls13', [/RFC 9846/, /SP 800-52 Rev\. 2/, /FIPS 186-5/]],
+    ['hash-hmac', [/FIPS 180-4/, /FIPS 198-1/, /SP 800-224/]],
+    ['des', [/FIPS 46-3/, /SP 800-67 Rev\. 2/, /FIPS 197/]],
     ['chacha20', [/RFC 8439.*ChaCha20/, /não é um algoritmo aprovado pelo NIST/]],
   ] as const)('%s', async (id, expected) => {
     const box = await openLab(id);

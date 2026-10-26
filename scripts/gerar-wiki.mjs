@@ -363,6 +363,38 @@ const SPECS = {
       },
     ],
   },
+  des: {
+    dir: 'des',
+    motor: 'didático (DES e Triple DES sobre bits, com rastro; conferido com o OpenSSL)',
+    engine: 'src/crypto/des.ts',
+    content: ['DES_OBJECTIVES', 'DES_QUESTIONS'],
+    padroes: [
+      'FIPS 46-3 (Data Encryption Standard), retirada pelo NIST em 19 de maio de 2005.',
+      'SP 800-67 Rev. 2 (Triple DES), retirada pelo NIST em 1º de janeiro de 2024.',
+      'FIPS 197 (AES), o padrão vigente de cifra de bloco.',
+    ],
+    resumo:
+      'O DES cifra blocos de 64 bits com uma chave de 56 bits úteis, em 16 rodadas de uma rede de Feistel: a função f expande a metade direita para 48 bits, soma (XOR) a subchave, passa por oito caixas S e por uma permutação. Decifrar é cifrar com as subchaves em ordem inversa. A chave pequena permite a busca exaustiva (o EFF DES Cracker a fez em 56 horas, em 1998), e o Triple DES, que aplica cifrar, decifrar e cifrar, mantém o limite do bloco de 64 bits (ataque Sweet32). O padrão vigente é o AES.',
+    limites: [
+      'A busca exaustiva do laboratório é em escala reduzida (de 1 a 20 bits desconhecidos); o tempo da chave inteira é uma projeção a partir da velocidade medida no navegador.',
+      'A implementação é didática e lenta, sem proteção contra ataques de canal lateral. O modo é o CBC com preenchimento PKCS#7, sem autenticação.',
+      'A mensagem é limitada a 40 bytes.',
+    ],
+    partes: [
+      {
+        titulo: 'DES em CBC',
+        cenarios: [{ titulo: 'Eva inverte um bit do bloco cifrado 2', entradas: 'chave e IV fixos, mensagem de 37 bytes', build: async (c) => c.mod.des.build((await c.mod.des.run(c.E.des, { key: fixedBytes(1).slice(0, 8), iv: fixedBytes(2).slice(0, 8), text: 'PAGAR R$ 1000,00 PARA BOB E CONFIRMAR', tamper: true, tamperBlock: 2 })).flow) }],
+      },
+      {
+        titulo: 'Busca exaustiva',
+        cenarios: [{ titulo: 'Eva testa todas as chaves (12 bits desconhecidos)', entradas: 'chave com 12 bits desconhecidos, primeiro bloco do claro conhecido', build: async (c) => c.mod.des.buildBrute((await c.mod.des.runBrute(c.E.des, { baseKey: fixedBytes(3).slice(0, 8), iv: fixedBytes(4).slice(0, 8), text: 'MENSAGEM SECRETA DE ALICE', unknownBits: 12, secret: 1234 })).flow) }],
+      },
+      {
+        titulo: 'Triple DES',
+        cenarios: [{ titulo: 'Cifrar, decifrar, cifrar com três chaves', entradas: 'três chaves independentes e IV fixos', build: async (c) => c.mod.des.buildTdes((await c.mod.des.runTdes(c.E.des, { k1: fixedBytes(5).slice(0, 8), k2: fixedBytes(6).slice(0, 8), k3: fixedBytes(7).slice(0, 8), iv: fixedBytes(8).slice(0, 8), text: 'PAGAR R$ 1000,00 PARA BOB E CONFIRMAR', keying: 'tres' })).flow) }],
+      },
+    ],
+  },
   chacha20: {
     dir: 'chacha20',
     motor: 'didático (ChaCha20 sem Poly1305)',
@@ -388,7 +420,7 @@ const SPECS = {
     motor: 'real (Web Crypto: SHA-1, SHA-256, SHA-384 e SHA-512) e HMAC passo a passo',
     engine: 'src/crypto/hash.ts',
     content: ['HASH_OBJECTIVES', 'HASH_QUESTIONS'],
-    padroes: ['FIPS 180-4 (SHA-2).', '[RFC 2104](https://www.rfc-editor.org/rfc/rfc2104) e FIPS 198-1 (HMAC).', '[RFC 4231](https://www.rfc-editor.org/rfc/rfc4231) (vetores de teste do HMAC-SHA-2).'],
+    padroes: ['FIPS 180-4 (SHA-2).', '[RFC 2104](https://www.rfc-editor.org/rfc/rfc2104) e FIPS 198-1 (HMAC).', 'A FIPS 198-1 está em processo de retirada: o NIST propôs mover o conteúdo para o SP 800-224 (rascunho de junho de 2024) e retirá-la quando o SP 800-224 final for publicado. Até lá, continua vigente.', '[RFC 4231](https://www.rfc-editor.org/rfc/rfc4231) (vetores de teste do HMAC-SHA-2).'],
     resumo:
       'Uma função hash produz um resumo de tamanho fixo e tem o efeito avalanche: trocar um bit da entrada altera cerca de metade dos bits da saída. Hash não é cifragem nem autentica quem enviou. O HMAC combina o hash com uma chave secreta em duas passagens (ipad e opad), e só quem tem a chave calcula a etiqueta correta, o que impede Eva de alterar a mensagem sem ser notada.',
     limites: ['O SHA-1 está disponível apenas para comparação: é considerado legado.', 'O avalanche é medido por amostragem de entradas aleatórias, não por prova.'],
@@ -462,6 +494,14 @@ const L = {
     run: (await load('/src/labs/chacha20/flows.ts')).runChaCha,
     buildReuse: (await load('/src/labs/chacha20/flows.ts')).buildReuseProtocol,
     runReuse: (await load('/src/labs/chacha20/flows.ts')).runReuse,
+  },
+  des: {
+    build: (await load('/src/labs/des/flows.ts')).buildDesProtocol,
+    run: (await load('/src/labs/des/flows.ts')).runDes,
+    buildBrute: (await load('/src/labs/des/flows.ts')).buildBruteProtocol,
+    runBrute: (await load('/src/labs/des/flows.ts')).runBrute,
+    buildTdes: (await load('/src/labs/des/flows.ts')).buildTdesProtocol,
+    runTdes: (await load('/src/labs/des/flows.ts')).runTdes,
   },
   hmac: { build: (await load('/src/labs/hash-hmac/flows.ts')).buildHmacProtocol },
 };

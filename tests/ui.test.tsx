@@ -45,6 +45,11 @@ describe('página inicial e categorias', () => {
     expect(links).toHaveLength(LABS.filter((l) => l.status === 'available').length);
     expect(links[0].getAttribute('href')).toMatch(/^\/lab\/[a-z0-9-]+\/documentacao$/);
   });
+  it('marca com Novo apenas os três laboratórios mais recentes', () => {
+    renderAt('/');
+    expect(screen.getAllByText('Novo')).toHaveLength(3);
+    expect(LABS.filter((l) => l.novo).map((l) => l.id).sort()).toEqual(['des', 'ecdh-assinaturas', 'ml-kem']);
+  });
   it('atualiza o título da aba a cada página', () => {
     renderAt('/lab/rsa');
     expect(document.title).toBe('RSA | CryptoNet Lab');

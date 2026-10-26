@@ -6,7 +6,7 @@ SHA-2 reais, efeito avalanche visualizado bit a bit e HMAC calculado passo a pas
 - **Abrir o laboratório:** <https://peotta.github.io/CryptoNet/#/lab/hash-hmac>
 - **Motor:** real (Web Crypto: SHA-1, SHA-256, SHA-384 e SHA-512) e HMAC passo a passo
 - **Código-fonte:** `src/labs/hash-hmac/` (interface e fluxos) e `src/crypto/hash.ts` (operações)
-- **Padrões e referências:** [FIPS 180-4](https://csrc.nist.gov/pubs/fips/180-4/final) (SHA-2); [RFC 2104](https://www.rfc-editor.org/rfc/rfc2104) e [FIPS 198-1](https://csrc.nist.gov/pubs/fips/198-1/final) (HMAC); [RFC 4231](https://www.rfc-editor.org/rfc/rfc4231) (vetores de teste do HMAC-SHA-2).
+- **Padrões e referências:** [FIPS 180-4](https://csrc.nist.gov/pubs/fips/180-4/upd1/final) (SHA-2); [RFC 2104](https://www.rfc-editor.org/rfc/rfc2104) e [FIPS 198-1](https://csrc.nist.gov/pubs/fips/198-1/final) (HMAC); A [FIPS 198-1](https://csrc.nist.gov/pubs/fips/198-1/final) está em processo de retirada: o NIST propôs mover o conteúdo para o [SP 800-224](https://csrc.nist.gov/pubs/sp/800/224/ipd) (rascunho de junho de 2024) e retirá-la quando o [SP 800-224](https://csrc.nist.gov/pubs/sp/800/224/ipd) final for publicado. Até lá, continua vigente; [RFC 4231](https://www.rfc-editor.org/rfc/rfc4231) (vetores de teste do HMAC-SHA-2).
 
 ## 1. Objetivos de aprendizagem
 

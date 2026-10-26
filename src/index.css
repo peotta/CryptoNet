@@ -19,6 +19,7 @@
   --k-plain: #6d28d9;
   --k-cipher: #b45309;
   --k-signature: #0e7490;
+  --warn: #b45309;
   --danger: #b91c1c;
 }
 
@@ -38,6 +39,7 @@
   --k-plain: #a78bfa;
   --k-cipher: #fbbf24;
   --k-signature: #22d3ee;
+  --warn: #f2a65a;
   --danger: #f87171;
 }
 
@@ -50,6 +52,7 @@
   --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
+  --color-warn: var(--warn);
   --color-danger: var(--danger);
   --color-k-param: var(--k-param);
   --color-k-public: var(--k-public);

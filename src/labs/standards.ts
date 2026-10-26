@@ -4,7 +4,8 @@ const csrc = (path: string) => `https://csrc.nist.gov/pubs/${path}/final`;
 
 /** Nome da norma, como aparece nos textos, e a página oficial no NIST (csrc.nist.gov). */
 export const NIST_URLS: Record<string, string> = {
-  'FIPS 180-4': csrc('fips/180-4'),
+  'FIPS 46-3': csrc('fips/46-3'),
+  'FIPS 180-4': csrc('fips/180-4/upd1'),
   'FIPS 186-5': csrc('fips/186-5'),
   'FIPS 197': csrc('fips/197'),
   'FIPS 198-1': csrc('fips/198-1'),
@@ -19,7 +20,9 @@ export const NIST_URLS: Record<string, string> = {
   'SP 800-56B Rev. 2': csrc('sp/800/56/b/r2'),
   'SP 800-56C Rev. 2': csrc('sp/800/56/c/r2'),
   'SP 800-57 Parte 1 Rev. 5': csrc('sp/800/57/pt1/r5'),
+  'SP 800-67 Rev. 2': csrc('sp/800/67/r2'),
   'SP 800-186': csrc('sp/800/186'),
+  'SP 800-224': 'https://csrc.nist.gov/pubs/sp/800/224/ipd',
 };
 
 export const rfcUrl = (n: number | string) => `https://www.rfc-editor.org/rfc/rfc${n}`;

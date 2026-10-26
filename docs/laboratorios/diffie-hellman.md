@@ -6,7 +6,7 @@ Acordo de chaves por um canal público, visão de Eva, derivação de chave com 
 - **Abrir o laboratório:** <https://peotta.github.io/CryptoNet/#/lab/diffie-hellman>
 - **Motor:** didático (BigInt) com HKDF e AES-GCM reais (Web Crypto)
 - **Código-fonte:** `src/labs/diffie-hellman/` (interface e fluxos) e `src/crypto/diffieHellman.ts e src/crypto/kdf.ts` (operações)
-- **Padrões e referências:** [RFC 7919](https://www.rfc-editor.org/rfc/rfc7919) (grupos de Diffie-Hellman finitos negociados); NIST [SP 800-56A Rev. 3](https://csrc.nist.gov/pubs/sp/800/56/a/r3/final) (acordo de chaves por logaritmo discreto); [RFC 5869](https://www.rfc-editor.org/rfc/rfc5869) (HKDF) e NIST [SP 800-56C Rev. 2](https://csrc.nist.gov/pubs/sp/800/56/c/r2/final) (derivação de chaves); [FIPS 180-4](https://csrc.nist.gov/pubs/fips/180-4/final) (SHA-256, usado no HKDF); NIST [SP 800-38D](https://csrc.nist.gov/pubs/sp/800/38/d/final) (AES-GCM); [RFC 7748](https://www.rfc-editor.org/rfc/rfc7748) (X25519).
+- **Padrões e referências:** [RFC 7919](https://www.rfc-editor.org/rfc/rfc7919) (grupos de Diffie-Hellman finitos negociados); NIST [SP 800-56A Rev. 3](https://csrc.nist.gov/pubs/sp/800/56/a/r3/final) (acordo de chaves por logaritmo discreto); [RFC 5869](https://www.rfc-editor.org/rfc/rfc5869) (HKDF) e NIST [SP 800-56C Rev. 2](https://csrc.nist.gov/pubs/sp/800/56/c/r2/final) (derivação de chaves); [FIPS 180-4](https://csrc.nist.gov/pubs/fips/180-4/upd1/final) (SHA-256, usado no HKDF); NIST [SP 800-38D](https://csrc.nist.gov/pubs/sp/800/38/d/final) (AES-GCM); [RFC 7748](https://www.rfc-editor.org/rfc/rfc7748) (X25519).
 
 ## 1. Objetivos de aprendizagem
 
