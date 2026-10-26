@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { engines } from '../../crypto/local/tls';
 import type { TlsScenario } from '../../crypto/tls13';
-import { Callout, Field, LabSection, ReviewQuestions, Tabs, buttonClass } from '../../components/ui';
+import { Callout, Field, LabSection, ReviewQuestions, Standards, Tabs, buttonClass } from '../../components/ui';
 import { useDebounced } from '../../hooks/useDebounced';
 import { TLS_OBJECTIVES, TLS_QUESTIONS } from './content';
 import { buildTlsProtocol, hex, MAX_MESSAGE, runTls, type TlsRun } from './flows';
@@ -38,6 +38,7 @@ export default function Tls13Lab() {
             <li>Sem retomada de sessão, 0-RTT, autenticação do cliente ou renegociação.</li>
           </ul>
         </Callout>
+        <Standards items={['RFC 9846 (TLS 1.3; substitui a RFC 8446)', 'RFC 8448 (exemplos de handshakes do TLS 1.3)', 'RFC 5869 (HKDF)', 'NIST SP 800-52 Rev. 2 (diretrizes do NIST para TLS)', 'FIPS 186-5 (ECDSA)', 'NIST SP 800-38D (AES-GCM)']} />
         <Tabs
           label="Cenário"
           value={scenario}

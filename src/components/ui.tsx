@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { splitStandards } from '../labs/standards';
 
 type Variant = 'info' | 'warn' | 'danger' | 'ok';
 const VARIANTS: Record<Variant, { box: string; title: string }> = {
@@ -69,6 +70,31 @@ export function Field({ id, label, value, onChange, hint, error, inputMode = 'nu
           {error}
         </p>
       )}
+    </div>
+  );
+}
+
+/** Normas e referências do laboratório (FIPS, NIST SP, RFC): cada norma citada é link para a página oficial. */
+export function Standards({ items }: { items: string[] }) {
+  return (
+    <div className="rounded-xl border border-line bg-surface p-4 text-base">
+      <p className="font-bold">Normas e referências</p>
+      <ul className="mt-1 list-disc space-y-0.5 pl-6">
+        {items.map((item) => (
+          <li key={item}>
+            {splitStandards(item).map((seg, i) =>
+              seg.href ? (
+                <a key={i} href={seg.href} target="_blank" rel="noopener noreferrer" className="font-semibold text-accent underline">
+                  {seg.text}
+                  <span className="sr-only"> (abre em nova aba)</span>
+                </a>
+              ) : (
+                <span key={i}>{seg.text}</span>
+              ),
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

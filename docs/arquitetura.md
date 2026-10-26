@@ -82,7 +82,7 @@ Todos seguem a mesma estrutura pedagógica: Objetivos de aprendizagem, Introduç
 - **Fluxos (`*-flow.test.ts`):** ordem das etapas, o que Eva sabe em cada etapa, segredos que nunca atravessam o canal e consistência do `replay` em todas as etapas.
 - **Interface (`*-ui.test.tsx`):** cada laboratório é aberto pelas rotas, percorrido passo a passo e verificado com o `axe-core`.
 - **Página de documentação (`doc-ui.test.tsx`):** leitura dos documentos, índice lateral, âncoras, links entre documentos, diagramas (o Mermaid é simulado no jsdom), página 404 e `axe-core`.
-- **Documentação (`docs.test.ts`):** todo laboratório disponível tem o seu documento em `docs/laboratorios/`, sem travessões e com as RFCs em link.
+- **Documentação (`docs.test.ts`):** todo laboratório disponível tem o seu documento em `docs/laboratorios/`, sem travessões, com as RFCs em link e toda FIPS e SP citada com link para o NIST.
 
 `tests/setup.ts` amplia o tempo de espera das consultas assíncronas da biblioteca de testes (cargas altas em paralelo), e `vite.config.ts` repete até duas vezes os testes que falharem no GitHub Actions (variável `CI`).
 
@@ -97,7 +97,7 @@ O fluxo `.github/workflows/deploy.yml` roda `npm ci`, `npm test`, `npm run build
 3. **Fluxo.** Crie `src/labs/<nome>/` com `content.ts` (objetivos e perguntas), `flows.ts` (a `ProtocolDefinition` de Alice, Bob e Eva) e o componente exportado por padrão. Renderize `<ProtocolPlayer definition={...} resetKey={...} />`.
 4. **Registro.** Acrescente a entrada em `src/labs/registry.ts` (componente com `lazy`, status `available`).
 5. **Testes.** Núcleo, fluxo e interface (com `axe-core`), seguindo os testes dos laboratórios existentes.
-6. **Documentação.** Acrescente a especificação do laboratório (resumo, padrões, limitações e cenários com as entradas fixas) em `SPECS`, no arquivo `scripts/gerar-wiki.mjs`, e rode `npm run docs:labs`. Isso gera `docs/laboratorios/<id>.md` e atualiza o índice. Confira o arquivo (travessões, diagramas, textos) e versione-o junto com o laboratório. O gerador transforma toda citação de RFC em link para o rfc-editor.org; o teste `docs.test.ts` falha se o documento não existir.
+6. **Documentação.** Acrescente a especificação do laboratório (resumo, padrões, limitações e cenários com as entradas fixas) em `SPECS`, no arquivo `scripts/gerar-wiki.mjs`, e rode `npm run docs:labs`. Isso gera `docs/laboratorios/<id>.md` e atualiza o índice. Confira o arquivo (travessões, diagramas, textos) e versione-o junto com o laboratório. O gerador transforma toda citação de RFC em link para o rfc-editor.org e toda FIPS ou SP em link para o csrc.nist.gov (endereços em `src/labs/standards.ts`, também usados pelo quadro `Standards` das telas; norma nova entra em `NIST_URLS`); o teste `docs.test.ts` falha se o documento não existir.
 7. **Wiki.** Rode `npm run wiki -- <pasta>`, clone `CryptoNet.wiki.git`, copie os `.md` gerados, faça o commit e o push. Como a wiki é pública, a publicação só é feita com autorização expressa do autor.
 8. **README e mapa do site.** Atualize a lista de laboratórios do `README.md`.
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Callout, LabSection, ReviewQuestions, Tabs } from '../../components/ui';
+import { Callout, LabSection, ReviewQuestions, Standards, Tabs } from '../../components/ui';
 import { CurvePanel } from './CurvePanel';
 import { ECC_OBJECTIVES, ECC_QUESTIONS } from './content';
 import { EcdhPanel, EcdsaPanel, RealPanel } from './ProtocolPanels';
@@ -30,6 +30,7 @@ export default function EccLab() {
             com curvas reais (P-256 e Curve25519). Pré-requisito: laboratórios de Diffie-Hellman e RSA.
           </p>
         </Callout>
+        <Standards items={['FIPS 186-5 (ECDSA e EdDSA)', 'NIST SP 800-186 (curvas elípticas recomendadas, como a P-256)', 'NIST SP 800-56A Rev. 3 (ECDH)', 'RFC 6979 (ECDSA determinístico)', 'RFC 8032 (Ed25519)', 'RFC 7748 (X25519)']} />
         <Tabs
           label="Parte do laboratório"
           value={part}

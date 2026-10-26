@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Callout, LabSection, ReviewQuestions, Tabs } from '../../components/ui';
+import { Callout, LabSection, ReviewQuestions, Standards, Tabs } from '../../components/ui';
 import { RSA_OBJECTIVES, RSA_QUESTIONS } from './content';
 import { DidacticPanel } from './DidacticPanel';
 import { RealPanel } from './RealPanel';
@@ -31,6 +31,7 @@ export default function RsaLab() {
             (autenticidade e integridade).
           </p>
         </Callout>
+        <Standards items={['RFC 8017 (PKCS #1 v2.2: RSAES-OAEP e RSASSA-PSS)', 'FIPS 186-5 (assinaturas RSA, incluindo o RSASSA-PSS)', 'FIPS 180-4 (SHA-2, usado no OAEP e no PSS)', 'NIST SP 800-56B Rev. 2 (estabelecimento de chaves com RSA)', 'NIST SP 800-57 Parte 1 Rev. 5 (tamanhos de chave)']} />
         <Tabs
           label="Modo de operação"
           value={mode}

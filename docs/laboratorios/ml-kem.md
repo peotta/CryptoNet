@@ -1,18 +1,18 @@
 # ML-KEM e reticulados (pós-quântica)
 
-O problema LWE em escala didática e o ML-KEM (FIPS 203) passo a passo, com Eva observando e adulterando o texto cifrado, e a comparação de tamanhos com os algoritmos atuais.
+O problema LWE em escala didática e o ML-KEM ([FIPS 203](https://csrc.nist.gov/pubs/fips/203/final)) passo a passo, com Eva observando e adulterando o texto cifrado, e a comparação de tamanhos com os algoritmos atuais.
 
 - **Categoria:** Criptografia Pós-Quântica
 - **Abrir o laboratório:** <https://peotta.github.io/CryptoNet/#/lab/ml-kem>
 - **Motor:** didático (LWE com números minúsculos) e ML-KEM real (TypeScript, conferido contra o OpenSSL 3.5)
 - **Código-fonte:** `src/labs/ml-kem/` (interface e fluxos) e `src/crypto/mlkem.ts` (operações)
-- **Padrões e referências:** FIPS 203 (ML-KEM, antigo CRYSTALS-Kyber); FIPS 202 (SHA-3 e SHAKE, usados pelo ML-KEM); FIPS 204 (ML-DSA) e FIPS 205 (SLH-DSA): assinaturas pós-quânticas, citadas e não implementadas.
+- **Padrões e referências:** [FIPS 203](https://csrc.nist.gov/pubs/fips/203/final) (ML-KEM, antigo CRYSTALS-Kyber); [FIPS 202](https://csrc.nist.gov/pubs/fips/202/final) (SHA-3 e SHAKE, usados pelo ML-KEM); [FIPS 204](https://csrc.nist.gov/pubs/fips/204/final) (ML-DSA) e [FIPS 205](https://csrc.nist.gov/pubs/fips/205/final) (SLH-DSA): assinaturas pós-quânticas, citadas e não implementadas.
 
 ## 1. Objetivos de aprendizagem
 
 - Explicar por que um computador quântico suficientemente grande quebra o RSA, o Diffie-Hellman e a criptografia de curvas elípticas, e por que a criptografia simétrica sofre bem menos.
 - Descrever o problema LWE (Learning With Errors) e o papel do ruído: sem ele, a eliminação de Gauss revela o segredo.
-- Acompanhar a geração de chaves, o encapsulamento e o desencapsulamento do ML-KEM (FIPS 203), com Alice, Bob e Eva.
+- Acompanhar a geração de chaves, o encapsulamento e o desencapsulamento do ML-KEM ([FIPS 203](https://csrc.nist.gov/pubs/fips/203/final)), com Alice, Bob e Eva.
 - Entender a rejeição implícita: um texto cifrado adulterado leva a uma chave diferente, sem mensagem de erro, e por que isso protege o segredo.
 - Comparar tamanhos de chaves e textos cifrados (X25519, P-256, ML-KEM e o modo híbrido) e relacionar ao custo no TLS.
 - Reconhecer a urgência de migrar a troca de chaves (colher agora, decifrar depois) e o papel do modo híbrido.
@@ -154,7 +154,7 @@ sequenceDiagram
 | 7 | Alice calcula t̂ = Â∘ŝ + ê | Multiplicação matriz-vetor no domínio da NTT mais o ruído. |
 | 8 | Alice empacota ek e dk | Codificação em bytes. |
 | 9 | Alice envia ek a Bob | Envio da chave pública ek. |
-| 10 | Bob verifica a chave recebida | Verificação de módulo da FIPS 203. |
+| 10 | Bob verifica a chave recebida | Verificação de módulo da [FIPS 203](https://csrc.nist.gov/pubs/fips/203/final). |
 | 11 | Bob sorteia a mensagem m | Sorteio de 32 bytes. |
 | 12 | Bob deriva a chave K e a semente r | Cálculo de SHA3-512(m ‖ H(ek)). |
 | 13 | Bob sorteia y, e₁ e e₂ a partir de r | Amostragem binomial centrada. |
@@ -199,7 +199,7 @@ sequenceDiagram
 | 7 | Alice calcula t̂ = Â∘ŝ + ê | Multiplicação matriz-vetor no domínio da NTT mais o ruído. |
 | 8 | Alice empacota ek e dk | Codificação em bytes. |
 | 9 | Alice envia ek a Bob | Envio da chave pública ek. |
-| 10 | Bob verifica a chave recebida | Verificação de módulo da FIPS 203. |
+| 10 | Bob verifica a chave recebida | Verificação de módulo da [FIPS 203](https://csrc.nist.gov/pubs/fips/203/final). |
 | 11 | Bob sorteia a mensagem m | Sorteio de 32 bytes. |
 | 12 | Bob deriva a chave K e a semente r | Cálculo de SHA3-512(m ‖ H(ek)). |
 | 13 | Bob sorteia y, e₁ e e₂ a partir de r | Amostragem binomial centrada. |

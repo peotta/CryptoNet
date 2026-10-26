@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Callout, LabSection, ReviewQuestions, Tabs } from '../../components/ui';
+import { Callout, LabSection, ReviewQuestions, Standards, Tabs } from '../../components/ui';
 import { BlockViewer } from './BlockViewer';
 import { CHACHA_OBJECTIVES, CHACHA_QUESTIONS } from './content';
 import { StreamPanel } from './StreamPanel';
@@ -30,6 +30,7 @@ export default function ChaCha20Lab() {
             erro de reutilizar o nonce. Implementação didática: não use para proteger dados reais.
           </p>
         </Callout>
+        <Standards items={['RFC 8439 (ChaCha20 e Poly1305 para protocolos IETF)', 'O ChaCha20 não é um algoritmo aprovado pelo NIST (não consta em nenhuma FIPS nem SP): a referência normativa é a RFC 8439']} />
         <Tabs
           label="Parte do laboratório"
           value={part}

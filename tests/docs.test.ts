@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { docUrl, LABS } from '../src/labs/registry';
+import { NIST_URLS } from '../src/labs/standards';
 
 const dir = path.resolve(__dirname, '..', 'docs', 'laboratorios');
 const read = (name: string) => fs.readFileSync(path.join(dir, name), 'utf8');
@@ -34,6 +35,13 @@ describe('documentação dos laboratórios (gerada por npm run docs:labs)', () =
     for (const f of fs.readdirSync(dir)) {
       const text = read(f).replace(/\[RFC \d+\]\(https:\/\/www\.rfc-editor\.org\/rfc\/rfc\d+\)/g, '');
       expect(text.match(/\bRFC \d+/g) ?? [], f).toEqual([]);
+    }
+  });
+  it('toda FIPS e SP do NIST citada tem link para a página oficial', () => {
+    for (const f of fs.readdirSync(dir)) {
+      let text = read(f);
+      for (const [name, url] of Object.entries(NIST_URLS)) text = text.split(`[${name}](${url})`).join('');
+      expect(text.match(/\b(FIPS \d{3}(-\d)?|SP 800-\d+[A-Z]?)\b/g) ?? [], f).toEqual([]);
     }
   });
   it('não expõe valores aleatórios (hexadecimais longos)', () => {

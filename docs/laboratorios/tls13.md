@@ -6,7 +6,7 @@ ECDHE, cronograma de chaves com HKDF, certificado, CertificateVerify e Finished,
 - **Abrir o laboratório:** <https://peotta.github.io/CryptoNet/#/lab/tls13>
 - **Motor:** real (Web Crypto: ECDHE P-256, HKDF-SHA-256, ECDSA P-256, HMAC e AES-128-GCM)
 - **Código-fonte:** `src/labs/tls13/` (interface e fluxos) e `src/crypto/tls13.ts` (operações)
-- **Padrões e referências:** [RFC 9846](https://www.rfc-editor.org/rfc/rfc9846) (TLS 1.3; substitui a [RFC 8446](https://www.rfc-editor.org/rfc/rfc8446)); [RFC 8448](https://www.rfc-editor.org/rfc/rfc8448) (exemplos de handshakes do TLS 1.3, usados para conferir o cronograma de chaves); [RFC 5869](https://www.rfc-editor.org/rfc/rfc5869) (HKDF).
+- **Padrões e referências:** [RFC 9846](https://www.rfc-editor.org/rfc/rfc9846) (TLS 1.3; substitui a [RFC 8446](https://www.rfc-editor.org/rfc/rfc8446)); [RFC 8448](https://www.rfc-editor.org/rfc/rfc8448) (exemplos de handshakes do TLS 1.3, usados para conferir o cronograma de chaves); [RFC 5869](https://www.rfc-editor.org/rfc/rfc5869) (HKDF); NIST [SP 800-52 Rev. 2](https://csrc.nist.gov/pubs/sp/800/52/r2/final) (diretrizes do NIST para TLS); [FIPS 186-5](https://csrc.nist.gov/pubs/fips/186-5/final) (ECDSA); NIST [SP 800-38D](https://csrc.nist.gov/pubs/sp/800/38/d/final) (AES-GCM).
 
 ## 1. Objetivos de aprendizagem
 

@@ -6,7 +6,7 @@ Cifra de fluxo ARX ([RFC 8439](https://www.rfc-editor.org/rfc/rfc8439)): quarter
 - **Abrir o laboratório:** <https://peotta.github.io/CryptoNet/#/lab/chacha20>
 - **Motor:** didático (ChaCha20 sem Poly1305)
 - **Código-fonte:** `src/labs/chacha20/` (interface e fluxos) e `src/crypto/chacha20.ts` (operações)
-- **Padrões e referências:** [RFC 8439](https://www.rfc-editor.org/rfc/rfc8439) (ChaCha20 e Poly1305 para protocolos IETF).
+- **Padrões e referências:** [RFC 8439](https://www.rfc-editor.org/rfc/rfc8439) (ChaCha20 e Poly1305 para protocolos IETF); O ChaCha20 não é um algoritmo aprovado pelo NIST (não consta em nenhuma FIPS nem SP): a referência normativa é a [RFC 8439](https://www.rfc-editor.org/rfc/rfc8439).
 
 ## 1. Objetivos de aprendizagem
 

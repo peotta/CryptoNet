@@ -6,7 +6,7 @@ As rodadas do AES operação por operação e a comparação de ECB, CBC, CTR e 
 - **Abrir o laboratório:** <https://peotta.github.io/CryptoNet/#/lab/aes>
 - **Motor:** didático (ECB, CBC e CTR) e real (GCM, pela Web Crypto)
 - **Código-fonte:** `src/labs/aes/` (interface e fluxos) e `src/crypto/aes.ts` (operações)
-- **Padrões e referências:** FIPS 197 (AES); NIST SP 800-38A (ECB, CBC e CTR) e SP 800-38D (GCM).
+- **Padrões e referências:** [FIPS 197](https://csrc.nist.gov/pubs/fips/197/final) (AES); NIST [SP 800-38A](https://csrc.nist.gov/pubs/sp/800/38/a/final) (ECB, CBC e CTR) e [SP 800-38D](https://csrc.nist.gov/pubs/sp/800/38/d/final) (GCM).
 
 ## 1. Objetivos de aprendizagem
 

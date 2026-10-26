@@ -6,7 +6,7 @@ Aritmética de curvas elípticas passo a passo, ECDH e ECDSA em uma curva didát
 - **Abrir o laboratório:** <https://peotta.github.io/CryptoNet/#/lab/ecdh-assinaturas>
 - **Motor:** didático (curva minúscula, BigInt) e real (Web Crypto: ECDSA P-256 e Ed25519)
 - **Código-fonte:** `src/labs/ecc/` (interface e fluxos) e `src/crypto/ecc.ts` (operações)
-- **Padrões e referências:** [RFC 6979](https://www.rfc-editor.org/rfc/rfc6979) (ECDSA determinístico); [RFC 8032](https://www.rfc-editor.org/rfc/rfc8032) (Ed25519); [RFC 7748](https://www.rfc-editor.org/rfc/rfc7748) (X25519); FIPS 186-5 (ECDSA e curvas P-256).
+- **Padrões e referências:** [RFC 6979](https://www.rfc-editor.org/rfc/rfc6979) (ECDSA determinístico); [RFC 8032](https://www.rfc-editor.org/rfc/rfc8032) (Ed25519); [RFC 7748](https://www.rfc-editor.org/rfc/rfc7748) (X25519); [FIPS 186-5](https://csrc.nist.gov/pubs/fips/186-5/final) (ECDSA e EdDSA); NIST [SP 800-186](https://csrc.nist.gov/pubs/sp/800/186/final) (curvas elípticas recomendadas, como a P-256); NIST [SP 800-56A Rev. 3](https://csrc.nist.gov/pubs/sp/800/56/a/r3/final) (ECDH).
 
 ## 1. Objetivos de aprendizagem
 

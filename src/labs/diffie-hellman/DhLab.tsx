@@ -4,7 +4,7 @@ import { Formula } from '../../animations/Formula';
 import { CryptoInputError, parseDecimal } from '../../crypto/bigmath';
 import { checkDhParameters, checkPrivateExponent, DH_GROUPS, generatePrivateExponent, type DhSession, type MitmSession } from '../../crypto/diffieHellman';
 import { engines } from '../../crypto/local/diffieHellman';
-import { Callout, Field, LabSection, ReviewQuestions, Tabs, buttonClass } from '../../components/ui';
+import { Callout, Field, LabSection, ReviewQuestions, Standards, Tabs, buttonClass } from '../../components/ui';
 import { DH_OBJECTIVES, DH_QUESTIONS } from './content';
 import { EvaObserver } from './EvaObserver';
 import { buildDhProtocol, buildMitmProtocol } from './flows';
@@ -113,6 +113,7 @@ export default function DhLab() {
         <Callout variant="danger" title="Modo matemático didático">
           <p>Os grupos pequenos servem apenas para visualizar as contas. Eles são quebrados por busca exaustiva em milissegundos e não oferecem segurança real.</p>
         </Callout>
+        <Standards items={['RFC 7919 (grupos de Diffie-Hellman finitos negociados)', 'NIST SP 800-56A Rev. 3 (acordo de chaves por logaritmo discreto)', 'RFC 5869 (HKDF) e NIST SP 800-56C Rev. 2 (derivação de chaves)', 'FIPS 180-4 (SHA-256, usado no HKDF)', 'NIST SP 800-38D (AES-GCM)', 'RFC 7748 (X25519)']} />
       </LabSection>
 
       <LabSection id="dh-params" title="3. Parâmetros configuráveis">

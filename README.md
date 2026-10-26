@@ -72,7 +72,7 @@ O caminho base é definido pela variável `VITE_BASE` (padrão `/`). Exemplo par
 
 ## Documentação
 
-A arquitetura (camadas, contratos dos motores para uma futura API Python/FastAPI, motor de simulação e como adicionar laboratórios) está em [docs/arquitetura.md](docs/arquitetura.md). Cada laboratório tem o seu documento em [docs/laboratorios](docs/laboratorios/README.md), com objetivos, participantes, diagramas de sequência de Alice, Bob e Eva, etapas, perguntas de fixação, padrões (com link para o [rfc-editor.org](https://www.rfc-editor.org)) e limitações. Os documentos são gerados pelo código:
+A arquitetura (camadas, contratos dos motores para uma futura API Python/FastAPI, motor de simulação e como adicionar laboratórios) está em [docs/arquitetura.md](docs/arquitetura.md). Cada laboratório tem o seu documento em [docs/laboratorios](docs/laboratorios/README.md), com objetivos, participantes, diagramas de sequência de Alice, Bob e Eva, etapas, perguntas de fixação, padrões (RFCs com link para o [rfc-editor.org](https://www.rfc-editor.org) e FIPS e SP com link para o [NIST](https://csrc.nist.gov)) e limitações. Os documentos são gerados pelo código:
 
 ```bash
 npm run docs:labs   # gera ou atualiza docs/laboratorios/

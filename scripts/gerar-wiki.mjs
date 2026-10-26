@@ -226,7 +226,7 @@ const SPECS = {
     motor: 'didático (BigInt, sem padding) e real (Web Crypto)',
     engine: 'src/crypto/rsaDidactic.ts e src/crypto/rsaWebCrypto.ts',
     content: ['RSA_OBJECTIVES', 'RSA_QUESTIONS'],
-    padroes: ['[RFC 8017](https://www.rfc-editor.org/rfc/rfc8017) (PKCS #1 v2.2: RSAES-OAEP e RSASSA-PSS).', 'NIST SP 800-57 (tamanhos de chave).'],
+    padroes: ['[RFC 8017](https://www.rfc-editor.org/rfc/rfc8017) (PKCS #1 v2.2: RSAES-OAEP e RSASSA-PSS)', 'FIPS 186-5 (assinaturas RSA, incluindo o RSASSA-PSS).', 'FIPS 180-4 (SHA-2, usado no OAEP e no PSS).', 'NIST SP 800-56B Rev. 2 (estabelecimento de chaves com RSA).', 'NIST SP 800-57 Parte 1 Rev. 5 (tamanhos de chave).'],
     resumo:
       'No RSA, n = p·q, e é coprimo de φ(n) e d é o inverso de e módulo φ(n). Cifrar é c = mᵉ mod n e decifrar é m = cᵈ mod n; assinar usa a chave privada e verificar usa a pública. O modo didático usa primos pequenos e nenhum padding (inseguro); o modo real usa RSA-OAEP (cifragem) e RSA-PSS (assinatura) pela Web Crypto, com chaves de 2048 a 4096 bits.',
     limites: ['O modo didático não tem padding e usa números pequenos: é inseguro por construção.', 'No modo real, as chaves são geradas no navegador e não são extraíveis; nada é armazenado.'],
@@ -252,7 +252,7 @@ const SPECS = {
     motor: 'didático (BigInt) com HKDF e AES-GCM reais (Web Crypto)',
     engine: 'src/crypto/diffieHellman.ts e src/crypto/kdf.ts',
     content: ['DH_OBJECTIVES', 'DH_QUESTIONS'],
-    padroes: ['[RFC 7919](https://www.rfc-editor.org/rfc/rfc7919) (grupos DH finitos negociados).', '[RFC 5869](https://www.rfc-editor.org/rfc/rfc5869) (HKDF).', '[RFC 7748](https://www.rfc-editor.org/rfc/rfc7748) (X25519).'],
+    padroes: ['[RFC 7919](https://www.rfc-editor.org/rfc/rfc7919) (grupos de Diffie-Hellman finitos negociados)', 'NIST SP 800-56A Rev. 3 (acordo de chaves por logaritmo discreto).', '[RFC 5869](https://www.rfc-editor.org/rfc/rfc5869) (HKDF) e NIST SP 800-56C Rev. 2 (derivação de chaves).', 'FIPS 180-4 (SHA-256, usado no HKDF).', 'NIST SP 800-38D (AES-GCM).', '[RFC 7748](https://www.rfc-editor.org/rfc/rfc7748) (X25519)'],
     resumo:
       'No Diffie-Hellman, Alice e Bob escolhem expoentes privados a e b e trocam A = gᵃ mod p e B = gᵇ mod p; ambos obtêm K = gᵃᵇ mod p. Eva vê p, g, A e B, mas recuperar a ou b é o problema do logaritmo discreto. O protocolo não autentica ninguém, por isso um homem do meio (Eva ativa) estabelece um segredo com cada lado. Na prática, K passa por uma função de derivação (HKDF) e alimenta um algoritmo simétrico como o AES-GCM.',
     limites: ['Os grupos são pequenos, por finalidade didática: não há grupo de 2048 bits no laboratório e nenhum valor aqui oferece segurança.', 'A extensão HKDF e AES-GCM usa a Web Crypto (operação real).'],
@@ -271,7 +271,7 @@ const SPECS = {
     motor: 'didático (curva minúscula, BigInt) e real (Web Crypto: ECDSA P-256 e Ed25519)',
     engine: 'src/crypto/ecc.ts',
     content: ['ECC_OBJECTIVES', 'ECC_QUESTIONS'],
-    padroes: ['[RFC 6979](https://www.rfc-editor.org/rfc/rfc6979) (ECDSA determinístico).', '[RFC 8032](https://www.rfc-editor.org/rfc/rfc8032) (Ed25519).', '[RFC 7748](https://www.rfc-editor.org/rfc/rfc7748) (X25519).', 'FIPS 186-5 (ECDSA e curvas P-256).'],
+    padroes: ['[RFC 6979](https://www.rfc-editor.org/rfc/rfc6979) (ECDSA determinístico)', '[RFC 8032](https://www.rfc-editor.org/rfc/rfc8032) (Ed25519)', '[RFC 7748](https://www.rfc-editor.org/rfc/rfc7748) (X25519)', 'FIPS 186-5 (ECDSA e EdDSA).', 'NIST SP 800-186 (curvas elípticas recomendadas, como a P-256).', 'NIST SP 800-56A Rev. 3 (ECDH).'],
     resumo:
       'Numa curva elíptica sobre um corpo finito, somar pontos e multiplicar por um escalar (dobrar e somar) são operações fáceis, mas descobrir k a partir de k·G é o logaritmo discreto elíptico. O ECDH acorda um segredo; o ECDSA assina com um nonce k que não pode se repetir (repetir k revela a chave privada, como no caso do PlayStation 3). O Ed25519 deriva o nonce da chave e da mensagem, sem sorteio.',
     limites: ['A curva didática tem 19 pontos: qualquer chave cai por tentativa e nada ali oferece segurança.', 'As assinaturas reais (ECDSA P-256 e Ed25519) dependem do suporte do navegador à Web Crypto; o Ed25519 pode não estar disponível em versões antigas.'],
@@ -326,7 +326,7 @@ const SPECS = {
     motor: 'real (Web Crypto: ECDHE P-256, HKDF-SHA-256, ECDSA P-256, HMAC e AES-128-GCM)',
     engine: 'src/crypto/tls13.ts',
     content: ['TLS_OBJECTIVES', 'TLS_QUESTIONS'],
-    padroes: ['[RFC 9846](https://www.rfc-editor.org/rfc/rfc9846) (TLS 1.3; substitui a RFC 8446).', '[RFC 8448](https://www.rfc-editor.org/rfc/rfc8448) (exemplos de handshakes do TLS 1.3, usados para conferir o cronograma de chaves).', '[RFC 5869](https://www.rfc-editor.org/rfc/rfc5869) (HKDF).'],
+    padroes: ['[RFC 9846](https://www.rfc-editor.org/rfc/rfc9846) (TLS 1.3; substitui a RFC 8446)', '[RFC 8448](https://www.rfc-editor.org/rfc/rfc8448) (exemplos de handshakes do TLS 1.3, usados para conferir o cronograma de chaves)', '[RFC 5869](https://www.rfc-editor.org/rfc/rfc5869) (HKDF)', 'NIST SP 800-52 Rev. 2 (diretrizes do NIST para TLS).', 'FIPS 186-5 (ECDSA).', 'NIST SP 800-38D (AES-GCM).'],
     resumo:
       'O handshake de 1-RTT do TLS 1.3 acorda a chave com ECDHE, deriva os segredos pelo cronograma de chaves (HKDF-Extract e HKDF-Expand-Label), autentica o servidor com certificado e CertificateVerify e confirma tudo com o Finished. Eva vê o ClientHello e o ServerHello, mas não as mensagens cifradas. Como homem do meio, ela só passa se o cliente deixar de validar o certificado.',
     limites: ['Suíte única (TLS_AES_128_GCM_SHA256) e grupo único (P-256); não há negociação, HelloRetryRequest, retomada de sessão (PSK) nem 0-RTT.', 'O certificado é gerado no laboratório e não é validado por uma cadeia de uma autoridade certificadora real.'],
@@ -368,7 +368,7 @@ const SPECS = {
     motor: 'didático (ChaCha20 sem Poly1305)',
     engine: 'src/crypto/chacha20.ts',
     content: ['CHACHA_OBJECTIVES', 'CHACHA_QUESTIONS'],
-    padroes: ['[RFC 8439](https://www.rfc-editor.org/rfc/rfc8439) (ChaCha20 e Poly1305 para protocolos IETF).'],
+    padroes: ['[RFC 8439](https://www.rfc-editor.org/rfc/rfc8439) (ChaCha20 e Poly1305 para protocolos IETF)', 'O ChaCha20 não é um algoritmo aprovado pelo NIST (não consta em nenhuma FIPS nem SP): a referência normativa é a RFC 8439.'],
     resumo:
       'O ChaCha20 é uma cifra de fluxo ARX (soma módulo 2³², rotação e XOR): o bloco de 64 bytes é calculado em 20 rodadas sobre um estado com constantes, chave de 256 bits, contador e nonce de 96 bits, e o fluxo de chaves é combinado com a mensagem por XOR. Repetir o par (chave, nonce) permite a Eva obter m1 ⊕ m2, e sem autenticação ela inverte bits do claro sem conhecer a chave.',
     limites: ['O laboratório usa só o ChaCha20, sem o Poly1305: por isso a cifra não autentica (o ChaCha20-Poly1305 é o AEAD usado no TLS 1.3).', 'A mensagem é limitada a 120 bytes.'],
@@ -431,6 +431,7 @@ async function hmacFlow(c, message, tamper) {
 // Carga dos módulos do projeto (pelo Vite, que entende o TypeScript)
 // ---------------------------------------------------------------------------------------------
 const { LABS, CATEGORIES } = await load('/src/labs/registry.ts');
+const { linkStandardsMarkdown } = await load('/src/labs/standards.ts');
 const { engines: E } = await load('/src/crypto/engines.ts');
 const { ProtocolSimulationEngine } = await load('/src/simulation/timeline.ts');
 const encoding = await load('/src/crypto/encoding.ts');
@@ -482,12 +483,8 @@ const mmMsg = (s) => String(s ?? '').replace(/<[^>]*>/g, '').replace(/;/g, ',').
 const plainLabel = (s) => String(s).replace(/_\{([^}]*)\}/g, '_$1').replace(/\^\{([^}]*)\}/g, '^$1');
 const cell = (s) => String(s ?? '').replace(/\|/g, '\\|').replace(/\n+/g, ' ');
 
-/** RFCs viram link para o rfc-editor.org quando ainda não são link. */
-function linkRfcs(text) {
-  return text
-    .replace(/\[RFC (\d+)\]\([^)]*\)/g, '[RFC $1](https://www.rfc-editor.org/rfc/rfc$1)')
-    .replace(/(?<!\[)\bRFC (\d{3,5})\b(?!\]\()/g, '[RFC $1](https://www.rfc-editor.org/rfc/rfc$1)');
-}
+/** RFCs, FIPS e SP do NIST viram link (as páginas oficiais ficam em src/labs/standards.ts) quando ainda não são link. */
+const linkRfcs = linkStandardsMarkdown;
 
 /** Diagrama de sequência Mermaid de um protocolo (mesma fonte da animação do laboratório). */
 function sequenceDiagram(def) {

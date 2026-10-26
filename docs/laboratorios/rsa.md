@@ -6,7 +6,7 @@ Geração de chaves, cifragem, decifragem e assinatura digital, em versão didá
 - **Abrir o laboratório:** <https://peotta.github.io/CryptoNet/#/lab/rsa>
 - **Motor:** didático (BigInt, sem padding) e real (Web Crypto)
 - **Código-fonte:** `src/labs/rsa/` (interface e fluxos) e `src/crypto/rsaDidactic.ts e src/crypto/rsaWebCrypto.ts` (operações)
-- **Padrões e referências:** [RFC 8017](https://www.rfc-editor.org/rfc/rfc8017) (PKCS #1 v2.2: RSAES-OAEP e RSASSA-PSS); NIST SP 800-57 (tamanhos de chave).
+- **Padrões e referências:** [RFC 8017](https://www.rfc-editor.org/rfc/rfc8017) (PKCS #1 v2.2: RSAES-OAEP e RSASSA-PSS); [FIPS 186-5](https://csrc.nist.gov/pubs/fips/186-5/final) (assinaturas RSA, incluindo o RSASSA-PSS); [FIPS 180-4](https://csrc.nist.gov/pubs/fips/180-4/final) (SHA-2, usado no OAEP e no PSS); NIST [SP 800-56B Rev. 2](https://csrc.nist.gov/pubs/sp/800/56/b/r2/final) (estabelecimento de chaves com RSA); NIST [SP 800-57 Parte 1 Rev. 5](https://csrc.nist.gov/pubs/sp/800/57/pt1/r5/final) (tamanhos de chave).
 
 ## 1. Objetivos de aprendizagem
 
