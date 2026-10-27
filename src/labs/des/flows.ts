@@ -307,7 +307,7 @@ export async function runBrute(
   const secondsEff = total / EFF_RATE;
   const ok = !found.key;
   const verdictText = found.key
-    ? `Eva encontrou a chave testando ${found.tries.toLocaleString('pt-BR')} de ${found.space.toLocaleString('pt-BR')} candidatas em ${humanTime(found.ms / 1000)} e leu a mensagem inteira. Aqui só ${n} bits eram desconhecidos. Na chave inteira de 56 bits o espaço é ${(2 ** 56 / found.space).toLocaleString('pt-BR')} vezes maior: neste navegador, a busca média levaria cerca de ${humanTime(secondsHere)}, e a máquina da EFF com a rede distributed.net (1999) acabaria em ${humanTime(secondsEff)} em média. Hoje, com circuitos dedicados ou em nuvem, é uma questão de horas ou dias. Por isso o DES foi aposentado.`
+    ? `Eva encontrou a chave testando ${found.tries.toLocaleString('pt-BR')} de ${found.space.toLocaleString('pt-BR')} candidatas e leu a mensagem inteira. Aqui só ${n} bits eram desconhecidos. Na chave inteira de 56 bits o espaço é ${(2 ** 56 / found.space).toLocaleString('pt-BR')} vezes maior: a projeção para este navegador está na tabela de resultados, e a máquina da EFF com a rede distributed.net (1999) acabaria em ${humanTime(secondsEff)} em média. Hoje, com circuitos dedicados ou em nuvem, é uma questão de horas ou dias. Por isso o DES foi aposentado.`
     : 'Nenhuma chave do espaço de busca cifra o bloco conhecido para a cifra observada.';
   return {
     flow: {

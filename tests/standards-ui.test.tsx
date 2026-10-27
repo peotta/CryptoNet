@@ -26,6 +26,7 @@ describe('normas e referências na introdução dos laboratórios', () => {
     ['ecdh-assinaturas', [/FIPS 186-5/, /SP 800-186/, /SP 800-56A Rev\. 3/]],
     ['tls13', [/RFC 9846/, /SP 800-52 Rev\. 2/, /FIPS 186-5/]],
     ['hash-hmac', [/FIPS 180-4/, /FIPS 198-1/, /SP 800-224/]],
+    ['rc4', [/RFC 6229/, /RFC 7465/, /RFC 8758/, /não é um algoritmo aprovado pelo NIST/]],
     ['des', [/FIPS 46-3/, /SP 800-67 Rev\. 2/, /FIPS 197/]],
     ['chacha20', [/RFC 8439.*ChaCha20/, /não é um algoritmo aprovado pelo NIST/]],
   ] as const)('%s', async (id, expected) => {

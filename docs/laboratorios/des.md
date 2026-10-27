@@ -109,7 +109,7 @@ sequenceDiagram
 | 8 | Eva decifra a mensagem inteira | Decifragem DES-CBC com a chave encontrada. |
 | 9 | O DES não resiste à busca exaustiva | Avaliação do resultado. |
 
-**Veredito do cenário:** Eva encontrou a chave testando 1.235 de 4.096 candidatas em menos de 1 segundo e leu a mensagem inteira. Aqui só 12 bits eram desconhecidos. Na chave inteira de 56 bits o espaço é 17.592.186.044.416 vezes maior: neste navegador, a busca média levaria cerca de 8.604 anos, e a máquina da EFF com a rede distributed.net (1999) acabaria em 41,7 horas em média. Hoje, com circuitos dedicados ou em nuvem, é uma questão de horas ou dias. Por isso o DES foi aposentado.
+**Veredito do cenário:** Eva encontrou a chave testando 1.235 de 4.096 candidatas e leu a mensagem inteira. Aqui só 12 bits eram desconhecidos. Na chave inteira de 56 bits o espaço é 17.592.186.044.416 vezes maior: a projeção para este navegador está na tabela de resultados, e a máquina da EFF com a rede distributed.net (1999) acabaria em 41,7 horas em média. Hoje, com circuitos dedicados ou em nuvem, é uma questão de horas ou dias. Por isso o DES foi aposentado.
 
 ### 5.3 Triple DES
 

@@ -139,7 +139,6 @@ export const LABS: LabMeta[] = [
   },
   {
     id: 'ecdh-assinaturas',
-    novo: true,
     category: 'assimetrica',
     title: 'ECDH, ECDSA e Ed25519',
     summary: 'Aritmética de curvas elípticas passo a passo, ECDH e ECDSA em uma curva didática (com o ataque ao nonce reutilizado) e assinaturas reais ECDSA P-256 e Ed25519.',
@@ -193,6 +192,16 @@ export const LABS: LabMeta[] = [
     objectives: ['Executar o quarter round e as 20 rodadas', 'Ver por que o nonce não pode se repetir', 'Perceber que a cifra de fluxo sozinha não autentica'],
     status: 'available',
     component: lazy(() => import('./chacha20/ChaCha20Lab')),
+  },
+  {
+    id: 'rc4',
+    novo: true,
+    category: 'simetrica',
+    title: 'RC4 e o ataque ao WEP',
+    summary: 'Cifra de fluxo clássica: KSA e PRGA troca por troca, a maleabilidade e o ataque FMS, com que Eva recupera a chave do WEP por votação.',
+    objectives: ['Executar a KSA e a PRGA com vetores conhecidos', 'Ver como o IV em claro do WEP entregou a chave', 'Medir o viés do segundo byte do fluxo'],
+    status: 'available',
+    component: lazy(() => import('./rc4/Rc4Lab')),
   },
   {
     id: 'hash-hmac',

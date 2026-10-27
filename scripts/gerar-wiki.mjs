@@ -415,6 +415,35 @@ const SPECS = {
       },
     ],
   },
+  rc4: {
+    dir: 'rc4',
+    motor: 'didático (RC4 com rastro; conferido com vetores conhecidos e com a RFC 6229)',
+    engine: 'src/crypto/rc4.ts',
+    content: ['RC4_OBJECTIVES', 'RC4_QUESTIONS'],
+    padroes: [
+      '[RFC 6229](https://www.rfc-editor.org/rfc/rfc6229) (vetores de teste do RC4, informativa).',
+      '[RFC 7465](https://www.rfc-editor.org/rfc/rfc7465) (proíbe as suítes RC4 no TLS).',
+      '[RFC 8758](https://www.rfc-editor.org/rfc/rfc8758) (descontinua o RC4 no SSH).',
+      'O RC4 não é um algoritmo aprovado pelo NIST (não consta em nenhuma FIPS nem SP).',
+    ],
+    resumo:
+      'O RC4 mantém um estado de 256 bytes. A KSA o embaralha com a chave em 256 trocas e a PRGA emite um byte por troca; a mensagem é combinada com o fluxo por XOR. Não há nonce, o fluxo tem vieses (o segundo byte vale zero com probabilidade próxima de 2/256) e a cifra não autentica. No WEP, a chave de cada quadro é o IV de 3 bytes, em claro, seguido da chave raiz, e o ataque FMS recupera a chave raiz por votação a partir do primeiro byte de fluxo de quadros com IV fracos, sabendo que o claro começa por 0xAA.',
+    limites: [
+      'O ataque FMS é demonstrado no WEP de 40 bits com quadros de IV fracos (256 por byte da chave); ferramentas reais precisam de mais quadros e usam ataques posteriores (KoreK, PTW).',
+      'A KSA e a PRGA são exibidas para a chave informada; a Parte C mede o viés por amostragem de chaves aleatórias, não por prova.',
+      'A mensagem é limitada a 120 bytes.',
+    ],
+    partes: [
+      {
+        titulo: 'Chave de sessão',
+        cenarios: [{ titulo: 'Eva observa e altera um byte', entradas: 'chave de 16 bytes, mensagem de 25 bytes', build: async (c) => c.mod.rc4.build((await c.mod.rc4.run(c.E.rc4, { key: fixedBytes(9).slice(0, 16), text: 'PAGAR R$ 1000,00 PARA BOB', drop: 256, tamper: true, tamperByte: 10 })).flow) }],
+      },
+      {
+        titulo: 'WEP',
+        cenarios: [{ titulo: 'Eva recupera a chave raiz (ataque FMS)', entradas: 'chave raiz de 40 bits, 1.280 quadros com IV fracos', build: async (c) => c.mod.rc4.buildWep((await c.mod.rc4.runWep(c.E.rc4, { root: fixedBytes(10).slice(0, 5), iv: fixedBytes(11).slice(0, 3), payload: 'GET /saldo HTTP/1.1' })).flow) }],
+      },
+    ],
+  },
   'hash-hmac': {
     dir: 'hash-hmac',
     motor: 'real (Web Crypto: SHA-1, SHA-256, SHA-384 e SHA-512) e HMAC passo a passo',
@@ -502,6 +531,12 @@ const L = {
     runBrute: (await load('/src/labs/des/flows.ts')).runBrute,
     buildTdes: (await load('/src/labs/des/flows.ts')).buildTdesProtocol,
     runTdes: (await load('/src/labs/des/flows.ts')).runTdes,
+  },
+  rc4: {
+    build: (await load('/src/labs/rc4/flows.ts')).buildRc4Protocol,
+    run: (await load('/src/labs/rc4/flows.ts')).runRc4,
+    buildWep: (await load('/src/labs/rc4/flows.ts')).buildWepProtocol,
+    runWep: (await load('/src/labs/rc4/flows.ts')).runWep,
   },
   hmac: { build: (await load('/src/labs/hash-hmac/flows.ts')).buildHmacProtocol },
 };

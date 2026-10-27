@@ -5,6 +5,7 @@
 import type { Curve, EcdsaSignature, EcdsaVerification, Point, RealSigAlgo, RealSigRun } from './ecc';
 import type { TlsHandshake, TlsInput } from './tls13';
 import type { ChaChaBlock } from './chacha20';
+import type { FmsVerified, KsaStep, PrgaStep, WepPacket } from './rc4';
 import type { Bits, CbcBlock, DesSearch, DesTrace, KeySchedule, TdesStages } from './des';
 import type { RsaDidacticKeys, RsaPrivateKey, RsaPublicKey } from './rsaDidactic';
 import type { AesMode, RoundStep } from './aes';
@@ -139,6 +140,19 @@ export interface ChaChaEngine extends CryptoEngine {
   block(key: Uint8Array, nonce: Uint8Array, counter: number): Promise<ChaChaBlock>;
 }
 
+/** RC4 (didático): KSA e PRGA com rastro, cifragem e o ataque FMS contra o WEP. */
+export interface Rc4Engine extends CryptoEngine {
+  ksa(key: Uint8Array): Promise<{ steps: KsaStep[]; state: Uint8Array }>;
+  prga(state: Uint8Array, count: number, skip: number): Promise<PrgaStep[]>;
+  stream(key: Uint8Array, n: number, drop: number): Promise<Uint8Array>;
+  /** Cifra ou decifra (a operação é a mesma). `drop` descarta os primeiros bytes do fluxo (RC4-drop[n]). */
+  crypt(key: Uint8Array, data: Uint8Array, drop: number): Promise<Uint8Array>;
+  /** Quadros WEP com IV fracos que Eva colhe (IV em claro e primeiro byte cifrado do quadro, que começa por 0xAA). */
+  wepCapture(root: Uint8Array): Promise<WepPacket[]>;
+  /** Ataque FMS: recupera a chave raiz e a confere contra um quadro conhecido. */
+  fms(rootLen: number, packets: WepPacket[], iv: Uint8Array, knownFrame: Uint8Array, cipherFrame: Uint8Array): Promise<FmsVerified>;
+}
+
 /** DES e Triple DES (didáticos): rastro de cada etapa, modo CBC com preenchimento e busca exaustiva em escala reduzida. */
 export interface DesEngine extends CryptoEngine {
   keySchedule(key: Uint8Array): Promise<KeySchedule>;
@@ -199,6 +213,7 @@ export interface EngineSet {
   classical: ClassicalEngine;
   chacha: ChaChaEngine;
   des: DesEngine;
+  rc4: Rc4Engine;
   tls: TlsEngine;
   ecc: EccEngine;
   mlkem: MlKemEngine;
@@ -213,8 +228,9 @@ import { engines as aes } from './local/aes';
 import { engines as classical } from './local/classical';
 import { engines as chacha } from './local/chacha';
 import { engines as des } from './local/des';
+import { engines as rc4 } from './local/rc4';
 import { engines as tls } from './local/tls';
 import { engines as ecc } from './local/ecc';
 import { engines as mlkem } from './local/mlkem';
 
-export const engines: EngineSet = { ...rsa, ...diffieHellman, ...hash, ...aes, ...classical, ...chacha, ...des, ...tls, ...ecc, ...mlkem };
+export const engines: EngineSet = { ...rsa, ...diffieHellman, ...hash, ...aes, ...classical, ...chacha, ...des, ...rc4, ...tls, ...ecc, ...mlkem };
