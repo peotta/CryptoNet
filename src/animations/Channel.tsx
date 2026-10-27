@@ -5,7 +5,11 @@ import { KIND_META, KindIcon } from './kinds';
 import { motionDuration } from './motion';
 
 const X: Record<PartyDef['position'], number> = { left: 0, center: 50, right: 100 };
-const LANE_HEIGHT = 64;
+/** A margem lateral da trilha (7,5 rem) comporta metade da largura máxima da mensagem (14 rem), que é centralizada na origem e no destino. */
+const LANE_HEIGHT = 76;
+
+/** Cada valor longo (sem espaços) mostra começo e fim, com reticências no meio; o valor completo fica no inspetor e na dica da mensagem. */
+const shorten = (s: string) => s.replace(/\S{24,}/g, (w) => `${w.slice(0, 10)}…${w.slice(-6)}`);
 
 interface Props {
   parties: PartyDef[];
@@ -22,10 +26,9 @@ export function Channel({ parties, messages, stepKey, speed }: Props) {
   const lanes = Math.max(messages.length, 1);
   const name = (id: string) => parties.find((p) => p.id === id)?.name ?? id;
   return (
-    <div className="rounded-xl border border-line bg-surface2 p-3">
-      <p className="mb-1 text-center text-base font-semibold">Canal público (inseguro)</p>
-      <p className="mb-2 text-center text-base text-muted">Qualquer nó do caminho pode ler o que passa por aqui.</p>
-      <div className="relative mx-14" style={{ height: lanes * LANE_HEIGHT }}>
+    <div className="rounded-xl border border-line bg-surface2 px-3 py-2">
+      <p className="mb-0 text-center text-base font-semibold">Canal público (inseguro): qualquer nó do caminho pode ler o que passa por aqui</p>
+      <div className="relative mx-[7.5rem]" style={{ height: lanes * LANE_HEIGHT }}>
         {Array.from({ length: lanes }, (_, i) => (
           <div key={i} aria-hidden="true" className="absolute left-0 right-0 border-t-2 border-dashed border-line" style={{ top: i * LANE_HEIGHT + LANE_HEIGHT / 2 }} />
         ))}
@@ -49,7 +52,7 @@ export function Channel({ parties, messages, stepKey, speed }: Props) {
               <KindIcon kind={m.kind} size={20} />
               <span className="min-w-0 text-base leading-tight">
                 <Formula tex={m.label} className="font-semibold" />
-                <span className="block truncate font-mono text-base">{m.summary}</span>
+                <span className="block font-mono text-base">{shorten(m.summary)}</span>
                 {m.tampered && <span className="block text-base font-semibold text-danger">adulterada</span>}
               </span>
             </motion.div>

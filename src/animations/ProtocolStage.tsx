@@ -9,7 +9,7 @@ interface Props {
   speed: number;
 }
 
-/** Cenário: participante à esquerda, canal (e adversário, se houver) ao centro, participante à direita. */
+/** Cenário: canal em faixa larga no alto e participantes lado a lado abaixo (o adversário, se houver, ao centro). */
 export function ProtocolStage({ timeline, index, speed }: Props) {
   const { definition, states } = timeline;
   const state = states[index];
@@ -22,13 +22,13 @@ export function ProtocolStage({ timeline, index, speed }: Props) {
   const panel = (p: typeof left) =>
     p && <PartyPanel party={p} entries={state.entries[p.id] ?? {}} changed={changed} active={activeParties.has(p.id)} speed={speed} />;
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
-      {panel(left)}
-      <div className="space-y-4">
-        <Channel parties={definition.parties} messages={state.transit} stepKey={`${definition.id}-${index}`} speed={speed} />
+    <div className="space-y-3">
+      <Channel parties={definition.parties} messages={state.transit} stepKey={`${definition.id}-${index}`} speed={speed} />
+      <div className={`grid gap-3 ${center ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}>
+        {panel(left)}
         {panel(center)}
+        {panel(right)}
       </div>
-      {panel(right)}
     </div>
   );
 }
