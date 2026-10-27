@@ -227,8 +227,8 @@ export function HillPanel() {
         )}
       </LabSection>
 
-      <LabSection id="hl-viz" title="4. Visualização animada">
-        {run ? (
+      {run && (
+        <LabSection id="hl-exec" title="4. Execução do algoritmo">
           <div className="space-y-6">
             <div className="flex flex-wrap items-start gap-8 rounded-xl border border-line bg-surface p-4">
               <div>
@@ -244,8 +244,13 @@ export function HillPanel() {
               </p>
             </div>
             <BlockStepper run={run} index={block} onIndex={setBlock} />
-            {definition && <ProtocolPlayer definition={definition} resetKey={`${run.flow.keyText}|${run.flow.cipherText}|${run.flow.tampered}|${run.flow.knownLetters}`} />}
           </div>
+        </LabSection>
+      )}
+
+      <LabSection id="hl-viz" title="5. Visualização animada">
+        {run ? (
+          definition && <ProtocolPlayer definition={definition} resetKey={`${run.flow.keyText}|${run.flow.cipherText}|${run.flow.tampered}|${run.flow.knownLetters}`} />
         ) : (
           <p className="text-lg text-muted">Corrija os parâmetros para iniciar a animação.</p>
         )}
@@ -253,7 +258,7 @@ export function HillPanel() {
 
       {run && (
         <>
-          <LabSection id="hl-eva" title="5. Criptoanálise de Eva: texto claro conhecido">
+          <LabSection id="hl-eva" title="6. Criptoanálise de Eva: texto claro conhecido">
             <div className="space-y-4">
               <p className="text-lg">
                 Cada bloco satisfaz <span className="font-mono">C = K · P</span>. Se Eva conhece {run.key.length} blocos de texto claro <strong>independentes</strong>, ela monta P e C (blocos nas
@@ -301,7 +306,7 @@ export function HillPanel() {
             </div>
           </LabSection>
 
-          <LabSection id="hl-results" title="6. Painel de resultados">
+          <LabSection id="hl-results" title="7. Painel de resultados">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-lg">
                 <caption className="sr-only">Resultados da cifragem e do ataque de Eva</caption>

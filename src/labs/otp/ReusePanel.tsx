@@ -170,8 +170,8 @@ export function ReusePanel() {
         )}
       </LabSection>
 
-      <LabSection id="reuse-viz" title="4. Visualização animada">
-        {run && !keyErr ? (
+      {run && !keyErr && (
+        <LabSection id="reuse-exec" title="4. Execução do algoritmo">
           <div className="space-y-6">
             <PadTable
               index={pos}
@@ -185,8 +185,13 @@ export function ReusePanel() {
               ]}
             />
             <PositionStepper run={run} index={pos} onIndex={setPos} />
-            {definition && <ProtocolPlayer definition={definition} resetKey={`${run.key}|${run.cipher1}|${run.cipher2}|${run.flow.crib}|${run.flow.cribIn}`} />}
           </div>
+        </LabSection>
+      )}
+
+      <LabSection id="reuse-viz" title="5. Visualização animada">
+        {run && !keyErr ? (
+          definition && <ProtocolPlayer definition={definition} resetKey={`${run.key}|${run.cipher1}|${run.cipher2}|${run.flow.crib}|${run.flow.cribIn}`} />
         ) : (
           <p className="text-lg text-muted">Corrija os parâmetros para iniciar a animação.</p>
         )}
@@ -194,7 +199,7 @@ export function ReusePanel() {
 
       {run && diffCheck && (
         <>
-          <LabSection id="reuse-eva" title="5. Criptoanálise de Eva">
+          <LabSection id="reuse-eva" title="6. Criptoanálise de Eva">
             <div className="space-y-6">
               <section aria-labelledby="reuse-eva-1" className="space-y-3">
                 <h3 id="reuse-eva-1" className="text-xl font-bold">
@@ -285,7 +290,7 @@ export function ReusePanel() {
             </div>
           </LabSection>
 
-          <LabSection id="reuse-results" title="6. Painel de resultados">
+          <LabSection id="reuse-results" title="7. Painel de resultados">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-lg">
                 <caption className="sr-only">Resultados da reutilização da chave</caption>

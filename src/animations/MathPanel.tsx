@@ -8,7 +8,7 @@ export function MathPanel({ operations }: { operations: Operation[] }) {
     return <p className="text-base text-muted">Esta etapa não executa cálculos. Avance para ver as operações.</p>;
   }
   return (
-    <ul className="space-y-3">
+    <ul className="grid gap-3 lg:grid-cols-[repeat(auto-fit,minmax(22rem,1fr))]">
       {operations.map((op) => (
         <li key={op.id} className={`rounded-lg border-l-4 border-y border-r border-y-line border-r-line bg-surface p-3 ${KIND_META[op.kind].border}`}>
           <p className="mb-1 flex items-center gap-2 text-base font-semibold">

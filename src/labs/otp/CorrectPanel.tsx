@@ -144,8 +144,8 @@ export function CorrectPanel() {
         )}
       </LabSection>
 
-      <LabSection id="otp-viz" title="4. Visualização animada">
-        {run && !keyErr ? (
+      {run && !keyErr && (
+        <LabSection id="otp-exec" title="4. Execução do algoritmo">
           <div className="space-y-6">
             <PadTable
               index={letter}
@@ -157,8 +157,13 @@ export function CorrectPanel() {
               ]}
             />
             <LetterStepper run={run} index={letter} onIndex={setLetter} />
-            {definition && <ProtocolPlayer definition={definition} resetKey={`${run.keyLetters}|${run.cipherLetters}|${run.flow.tampered}|${run.decoyLetters}`} />}
           </div>
+        </LabSection>
+      )}
+
+      <LabSection id="otp-viz" title="5. Visualização animada">
+        {run && !keyErr ? (
+          definition && <ProtocolPlayer definition={definition} resetKey={`${run.keyLetters}|${run.cipherLetters}|${run.flow.tampered}|${run.decoyLetters}`} />
         ) : (
           <p className="text-lg text-muted">Corrija os parâmetros para iniciar a animação.</p>
         )}
@@ -166,7 +171,7 @@ export function CorrectPanel() {
 
       {run && percents && (
         <>
-          <LabSection id="otp-eva" title="5. Criptoanálise de Eva">
+          <LabSection id="otp-eva" title="6. Criptoanálise de Eva">
             <div className="space-y-6">
               <section aria-labelledby="otp-eva-1" className="space-y-3">
                 <h3 id="otp-eva-1" className="text-xl font-bold">
@@ -265,7 +270,7 @@ export function CorrectPanel() {
             </div>
           </LabSection>
 
-          <LabSection id="otp-results" title="6. Painel de resultados">
+          <LabSection id="otp-results" title="7. Painel de resultados">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-lg">
                 <caption className="sr-only">Resultados da cifragem e da análise de Eva</caption>

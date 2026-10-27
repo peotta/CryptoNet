@@ -187,15 +187,20 @@ export default function VigenereLab() {
         )}
       </LabSection>
 
-      <LabSection id="vg-viz" title="4. Visualização animada">
-        {run && !keyErr ? (
+      {run && !keyErr && (
+        <LabSection id="vg-exec" title="4. Execução do algoritmo">
           <div className="space-y-6">
             <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
               <TabulaRecta keyIndex={keyIdx} plainIndex={plainIdx} />
               <LetterStepper run={run} index={letter} onIndex={setLetter} />
             </div>
-            {definition && <ProtocolPlayer definition={definition} resetKey={`${run.key}|${run.cipherLetters}|${run.flow.tampered}`} />}
           </div>
+        </LabSection>
+      )}
+
+      <LabSection id="vg-viz" title="5. Visualização animada">
+        {run && !keyErr ? (
+          definition && <ProtocolPlayer definition={definition} resetKey={`${run.key}|${run.cipherLetters}|${run.flow.tampered}`} />
         ) : (
           <p className="text-lg text-muted">Corrija os parâmetros para iniciar a animação.</p>
         )}
@@ -203,7 +208,7 @@ export default function VigenereLab() {
 
       {run && analysis && (
         <>
-          <LabSection id="vg-eva" title="5. Criptoanálise de Eva">
+          <LabSection id="vg-eva" title="6. Criptoanálise de Eva">
             <div className="space-y-6">
               <section aria-labelledby="vg-eva-1" className="space-y-2">
                 <h3 id="vg-eva-1" className="text-xl font-bold">
@@ -364,7 +369,7 @@ export default function VigenereLab() {
             </div>
           </LabSection>
 
-          <LabSection id="vg-results" title="6. Painel de resultados">
+          <LabSection id="vg-results" title="7. Painel de resultados">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-lg">
                 <caption className="sr-only">Resultados da cifragem e da criptoanálise</caption>

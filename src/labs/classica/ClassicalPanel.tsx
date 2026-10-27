@@ -165,18 +165,21 @@ export function ClassicalPanel({ cipher }: { cipher: ClassicalCipher }) {
         )}
       </LabSection>
 
-      <LabSection id="cl-viz" title="4. Visualização animada">
-        {run && key ? (
+      {run && key && (
+        <LabSection id="cl-exec" title="4. Execução do algoritmo">
           <div className="space-y-6">
-            <div className="grid items-start gap-6 lg:grid-cols-[22rem_1fr]">
-              {caesar ? <CipherDisk shift={key.b} highlight={highlight} /> : <div />}
-              <div className="space-y-4">
-                <AlphabetStrip cipherKey={key} highlight={highlight} />
-                <LetterStepper run={run} cipher={cipher} index={letter} onIndex={setLetter} />
-              </div>
+            <div className={`grid items-center gap-6 ${caesar ? 'lg:grid-cols-[16rem_minmax(0,1fr)]' : ''}`}>
+              {caesar && <CipherDisk shift={key.b} highlight={highlight} />}
+              <AlphabetStrip cipherKey={key} highlight={highlight} />
             </div>
-            {definition && <ProtocolPlayer definition={definition} resetKey={`${cipher}|${run.flow.keyText}|${run.cipherLetters}|${run.flow.tampered}`} />}
+            <LetterStepper run={run} cipher={cipher} index={letter} onIndex={setLetter} />
           </div>
+        </LabSection>
+      )}
+
+      <LabSection id="cl-viz" title="5. Visualização animada">
+        {run && key ? (
+          definition && <ProtocolPlayer definition={definition} resetKey={`${cipher}|${run.flow.keyText}|${run.cipherLetters}|${run.flow.tampered}`} />
         ) : (
           <p className="text-lg text-muted">Corrija os parâmetros para iniciar a animação.</p>
         )}
@@ -184,7 +187,7 @@ export function ClassicalPanel({ cipher }: { cipher: ClassicalCipher }) {
 
       {run && observed && (
         <>
-          <LabSection id="cl-eva" title="5. Criptoanálise de Eva">
+          <LabSection id="cl-eva" title="6. Criptoanálise de Eva">
             <p className="text-lg">
               Eva conhece apenas o texto cifrado e sabe que a mensagem está em português. Ela usa dois fatos: o <strong>espaço de chaves é minúsculo</strong> ({run.flow.keyCount}{' '}
               chaves) e a <strong>frequência das letras sobrevive à cifra</strong>.
@@ -236,7 +239,7 @@ export function ClassicalPanel({ cipher }: { cipher: ClassicalCipher }) {
             </Callout>
           </LabSection>
 
-          <LabSection id="cl-results" title="6. Painel de resultados">
+          <LabSection id="cl-results" title="7. Painel de resultados">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-lg">
                 <caption className="sr-only">Resultados da cifragem e da criptoanálise</caption>

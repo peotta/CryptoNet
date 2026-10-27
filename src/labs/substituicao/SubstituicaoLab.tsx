@@ -200,15 +200,20 @@ export default function SubstituicaoLab() {
         </p>
       </LabSection>
 
-      <LabSection id="sb-viz" title="4. Visualização animada">
-        {run && !keyErr ? (
+      {run && !keyErr && (
+        <LabSection id="sb-exec" title="4. Execução do algoritmo">
           <div className="space-y-6">
             <div className="space-y-4">
               <AlphabetStrip table={run.key} highlight={highlight} />
               <LetterStepper run={run} index={letter} onIndex={setLetter} />
             </div>
-            {definition && <ProtocolPlayer definition={definition} resetKey={`${run.key}|${run.cipherLetters}|${run.flow.tampered}`} />}
           </div>
+        </LabSection>
+      )}
+
+      <LabSection id="sb-viz" title="5. Visualização animada">
+        {run && !keyErr ? (
+          definition && <ProtocolPlayer definition={definition} resetKey={`${run.key}|${run.cipherLetters}|${run.flow.tampered}`} />
         ) : (
           <p className="text-lg text-muted">Corrija os parâmetros para iniciar a animação.</p>
         )}
@@ -216,7 +221,7 @@ export default function SubstituicaoLab() {
 
       {run && analysis && (
         <>
-          <LabSection id="sb-eva" title="5. Criptoanálise de Eva">
+          <LabSection id="sb-eva" title="6. Criptoanálise de Eva">
             <div className="space-y-6">
               <section aria-labelledby="sb-eva-1" className="space-y-2">
                 <h3 id="sb-eva-1" className="text-xl font-bold">
@@ -335,7 +340,7 @@ export default function SubstituicaoLab() {
             </div>
           </LabSection>
 
-          <LabSection id="sb-results" title="6. Painel de resultados">
+          <LabSection id="sb-results" title="7. Painel de resultados">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-lg">
                 <caption className="sr-only">Resultados da cifragem e da criptoanálise</caption>

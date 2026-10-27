@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useStepPlayer } from '../hooks/useStepPlayer';
 import { ProtocolSimulationEngine } from '../simulation/timeline';
 import type { ProtocolDefinition } from '../simulation/types';
@@ -16,13 +16,17 @@ interface Props {
   footer?: (info: { index: number; total: number }) => ReactNode;
 }
 
-const panel = 'flex min-h-0 flex-col rounded-xl border border-line bg-surface';
-const panelTitle = 'shrink-0 border-b border-line px-3 py-2 text-lg font-bold';
+const panel = 'flex flex-col rounded-xl border border-line bg-surface';
+const panelTitle = 'border-b border-line px-3 py-2 text-lg font-bold';
+
+/** Escalas tentadas, da maior para a menor, até o conteúdo caber na área disponível (sem barras de rolagem). */
+const FIT_STEPS = [1, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6];
 
 /**
  * Visualização completa de um protocolo, organizada para caber em uma única tela:
- * controles no topo; explicação e cenário animado à esquerda;
- * matemática e mensagens à direita. Cada região rola por conta própria.
+ * controles no topo; depois, em toda a largura, a etapa, a matemática, o cenário animado
+ * e as mensagens. Não há rolagem interna: se o conteúdo for maior que a área, a escala
+ * é reduzida (até 60%) para que tudo apareça de uma vez.
  */
 export function ProtocolPlayer({ definition, resetKey, footer }: Props) {
   const timeline = useMemo(() => ProtocolSimulationEngine.build(definition), [definition]);
@@ -35,6 +39,36 @@ export function ProtocolPlayer({ definition, resetKey, footer }: Props) {
   const current = index > 0 ? definition.steps[index - 1] : null;
   const sim = timeline.states[index];
   const root = useRef<HTMLDivElement>(null);
+  const viewport = useRef<HTMLDivElement>(null);
+  const content = useRef<HTMLDivElement>(null);
+
+  // Escolhe a maior escala em que todo o conteúdo cabe na área. Roda a cada renderização, antes da pintura.
+  useLayoutEffect(() => {
+    const vp = viewport.current;
+    const ct = content.current;
+    if (!vp || !ct) return;
+    const fit = () => {
+      // Em telas estreitas o conteúdo empilha e a página rola normalmente.
+      if (!window.matchMedia?.('(min-width: 1024px)').matches) {
+        ct.style.zoom = '';
+        return;
+      }
+      let chosen = FIT_STEPS[FIT_STEPS.length - 1];
+      for (const z of FIT_STEPS) {
+        ct.style.zoom = String(z);
+        if (ct.getBoundingClientRect().height <= vp.clientHeight + 1) {
+          chosen = z;
+          break;
+        }
+      }
+      ct.style.zoom = String(chosen);
+    };
+    fit();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(fit);
+    ro.observe(vp);
+    return () => ro.disconnect();
+  });
 
   // Esc sai da tela cheia.
   useEffect(() => {
@@ -80,10 +114,10 @@ export function ProtocolPlayer({ definition, resetKey, footer }: Props) {
           onFullscreen={setFullscreen}
         />
 
-        <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_21rem] lg:grid-rows-1">
-          {/* Esquerda: o que acontece agora e o cenário animado. */}
-          <div className="flex min-h-0 flex-col gap-3">
-            <div className="max-h-[38%] shrink-0 overflow-y-auto rounded-xl border border-line bg-surface p-3 max-lg:max-h-none" aria-live="polite">
+        <div ref={viewport} className="flex-1 lg:min-h-0 lg:overflow-y-auto">
+          <div ref={content} className="flex flex-col gap-3">
+            {/* Etapa atual: o que acontece agora. */}
+            <div className="rounded-xl border border-line bg-surface p-3" aria-live="polite">
               {current ? (
                 <>
                   <h3 className="text-xl font-bold">
@@ -108,38 +142,35 @@ export function ProtocolPlayer({ definition, resetKey, footer }: Props) {
               )}
             </div>
 
+            {/* Logo abaixo da etapa: a conta, com as operações lado a lado. */}
+            {showMath && (
+              <section aria-labelledby="math-heading" className={`${panel} bg-surface2`}>
+                <h3 id="math-heading" className={panelTitle}>
+                  Explicação matemática da etapa
+                </h3>
+                <div className="p-3">
+                  <MathPanel operations={sim.operations} />
+                </div>
+              </section>
+            )}
+
             {sim.verdict && (
               <p
                 role="status"
-                className={`shrink-0 rounded-xl border-2 px-3 py-2 text-lg font-semibold ${sim.verdict.ok ? 'border-k-secret bg-k-secret/10 text-k-secret' : 'border-danger bg-danger/10 text-danger'}`}
+                className={`rounded-xl border-2 px-3 py-2 text-lg font-semibold ${sim.verdict.ok ? 'border-k-secret bg-k-secret/10 text-k-secret' : 'border-danger bg-danger/10 text-danger'}`}
               >
                 {sim.verdict.ok ? '✓ ' : '✗ '}
                 {sim.verdict.text}
               </p>
             )}
 
-            <div className="min-h-0 flex-1 overflow-y-auto">
-              <ProtocolStage timeline={timeline} index={index} speed={speed} />
-            </div>
-          </div>
+            <ProtocolStage timeline={timeline} index={index} speed={speed} />
 
-          {/* Direita: a conta da etapa e o que trafegou pelo canal. */}
-          <div className="flex min-h-0 flex-col gap-3">
-            {showMath && (
-              <section aria-labelledby="math-heading" className={`${panel} max-h-[60%] bg-surface2 max-lg:max-h-96`}>
-                <h3 id="math-heading" className={panelTitle}>
-                  Explicação matemática da etapa
-                </h3>
-                <div className="min-h-0 flex-1 overflow-y-auto p-3">
-                  <MathPanel operations={sim.operations} />
-                </div>
-              </section>
-            )}
-            <section aria-labelledby="inspector-heading" className={`${panel} flex-1 max-lg:max-h-72`}>
+            <section aria-labelledby="inspector-heading" className={panel}>
               <h3 id="inspector-heading" className={panelTitle}>
                 Inspetor de mensagens
               </h3>
-              <div className="min-h-0 flex-1 overflow-auto p-3">
+              <div className="p-3">
                 <MessageInspector log={sim.log} parties={definition.parties} />
               </div>
             </section>

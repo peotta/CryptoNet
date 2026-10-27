@@ -134,8 +134,8 @@ export function PlayfairPanel() {
         )}
       </LabSection>
 
-      <LabSection id="pf-viz" title="4. Visualização animada">
-        {run ? (
+      {run && (
+        <LabSection id="pf-exec" title="4. Execução do algoritmo">
           <div className="space-y-6">
             <div className="grid items-start gap-6 md:grid-cols-[auto_1fr]">
               <div className="space-y-2">
@@ -144,8 +144,13 @@ export function PlayfairPanel() {
               </div>
               <DigraphStepper run={run} index={digraph} onIndex={setDigraph} />
             </div>
-            {definition && <ProtocolPlayer definition={definition} resetKey={`${run.grid}|${run.cipherLetters}|${run.flow.tampered}`} />}
           </div>
+        </LabSection>
+      )}
+
+      <LabSection id="pf-viz" title="5. Visualização animada">
+        {run ? (
+          definition && <ProtocolPlayer definition={definition} resetKey={`${run.grid}|${run.cipherLetters}|${run.flow.tampered}`} />
         ) : (
           <p className="text-lg text-muted">Corrija os parâmetros para iniciar a animação.</p>
         )}
@@ -153,7 +158,7 @@ export function PlayfairPanel() {
 
       {run && percents && (
         <>
-          <LabSection id="pf-eva" title="5. Criptoanálise de Eva">
+          <LabSection id="pf-eva" title="6. Criptoanálise de Eva">
             <div className="space-y-6">
               <section aria-labelledby="pf-eva-1" className="space-y-2">
                 <h3 id="pf-eva-1" className="text-xl font-bold">
@@ -236,7 +241,7 @@ export function PlayfairPanel() {
             </div>
           </LabSection>
 
-          <LabSection id="pf-results" title="6. Painel de resultados">
+          <LabSection id="pf-results" title="7. Painel de resultados">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-lg">
                 <caption className="sr-only">Resultados da cifragem e da análise de Eva</caption>

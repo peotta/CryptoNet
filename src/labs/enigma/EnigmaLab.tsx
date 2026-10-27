@@ -235,13 +235,18 @@ export default function EnigmaLab() {
         )}
       </LabSection>
 
-      <LabSection id="en-viz" title="4. Visualização animada">
-        {run && !cfgError ? (
+      {run && !cfgError && (
+        <LabSection id="en-exec" title="4. Execução do algoritmo">
           <div className="space-y-6">
             <EnigmaViz config={run.config} trace={trace} />
             <KeyStepper run={run} index={key} onIndex={setKey} />
-            {definition && <ProtocolPlayer definition={definition} resetKey={`${run.flow.configText}|${run.cipherLetters}|${run.flow.tampered}|${run.flow.crib}`} />}
           </div>
+        </LabSection>
+      )}
+
+      <LabSection id="en-viz" title="5. Visualização animada">
+        {run && !cfgError ? (
+          definition && <ProtocolPlayer definition={definition} resetKey={`${run.flow.configText}|${run.cipherLetters}|${run.flow.tampered}|${run.flow.crib}`} />
         ) : (
           <p className="text-lg text-muted">Corrija os parâmetros para iniciar a animação.</p>
         )}
@@ -249,7 +254,7 @@ export default function EnigmaLab() {
 
       {run && percents && (
         <>
-          <LabSection id="en-eva" title="5. Criptoanálise de Eva">
+          <LabSection id="en-eva" title="6. Criptoanálise de Eva">
             <div className="space-y-6">
               <section aria-labelledby="en-eva-1" className="space-y-3">
                 <h3 id="en-eva-1" className="text-xl font-bold">
@@ -357,7 +362,7 @@ export default function EnigmaLab() {
             </div>
           </LabSection>
 
-          <LabSection id="en-results" title="6. Painel de resultados">
+          <LabSection id="en-results" title="7. Painel de resultados">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-lg">
                 <caption className="sr-only">Resultados da cifragem e da análise de Eva</caption>
