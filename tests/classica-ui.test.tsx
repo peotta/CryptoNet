@@ -25,6 +25,7 @@ async function violations(container: HTMLElement) {
 
 const slot = (party: string, key: string) => screen.getByTestId(`slot-${party}-${key}`);
 const next = () => fireEvent.click(screen.queryByRole('button', { name: 'Iniciar' }) ?? screen.getByRole('button', { name: /Próxima etapa/ }));
+const history = () => screen.getByRole('group', { name: /Mensagem de Alice e saída/ }).textContent;
 const ready = () => screen.findByText(/Estado inicial\. Pressione/);
 
 describe('aba Criptografia Clássica', () => {
@@ -55,22 +56,20 @@ describe('laboratório de César e cifra afim', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Começar pela primeira letra' }));
     // "Nós atacaremos..." normalizado começa com N = 13; C = (13 + 3) mod 26 = 16 = Q
     expect(screen.getByText(/C = \(13 \+ 3\) mod 26 = 16 mod 26 = 16/)).toBeTruthy();
-    expect(screen.getByText(/Cifra até aqui: Q/)).toBeTruthy();
+    expect(history()).toContain('NOSATQ·'); // primeira letra cifrada, as demais pendentes
     fireEvent.click(screen.getByRole('button', { name: /Próxima letra/ }));
     expect(screen.getByText(/Letra 2 de/)).toBeTruthy();
-    expect(screen.getByText(/Cifra até aqui: QR/)).toBeTruthy();
+    expect(history()).toContain('NOSATQR·');
     fireEvent.click(screen.getByRole('button', { name: /Letra anterior/ }));
     expect(screen.getByText(/Letra 1 de/)).toBeTruthy();
   });
 
-  it('César: o disco acompanha a chave digitada e a tira mostra o mapeamento', async () => {
+  it('César: o disco acompanha a chave digitada', async () => {
     renderAt('/lab/cesar-afim');
     await ready();
     fireEvent.change(screen.getByLabelText('Deslocamento k'), { target: { value: '13' } });
     expect(await screen.findByRole('img', { name: /deslocamento 13: a letra A do texto claro corresponde a N/ })).toBeTruthy();
-    const cells = within(screen.getByRole('table', { name: /Correspondência entre as letras/ })).getAllByRole('cell');
-    expect(cells[0].textContent).toBe('A');
-    expect(cells[26].textContent).toBe('N'); // A vira N com k = 13
+    expect(screen.queryByRole('table', { name: /Correspondência entre as letras/ })).toBeNull(); // a tira cedeu lugar ao box letra a letra
   });
 
   it('César: a animação passo a passo mostra Eva deduzindo a chave', async () => {
@@ -144,7 +143,7 @@ describe('laboratório de César e cifra afim', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Começar pela primeira letra' }));
     // a = 5, b = 8, N = 13: (5 · 13 + 8) = 73 mod 26 = 21 = V
     expect(screen.getByText(/C = \(5 · 13 \+ 8\) mod 26 = 73 mod 26 = 21/)).toBeTruthy();
-    expect(screen.getByText(/Cifra até aqui: V/)).toBeTruthy();
+    expect(history()).toContain('NOSATV·');
   });
 
   it('afim: valida b e Eva encontra a chave', async () => {
