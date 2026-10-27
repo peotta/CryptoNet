@@ -1,4 +1,4 @@
-import type { Dispatch } from 'react';
+import { useState, type Dispatch } from 'react';
 import type { PlayerAction, PlayerState } from '../simulation/player';
 
 export const SPEEDS = [0.5, 1, 1.5, 2] as const;
@@ -21,6 +21,8 @@ const primary = 'min-h-10 rounded-lg bg-accent px-4 text-base font-semibold text
 /** Barra única de controles: navegação à esquerda, opções à direita. */
 export function PlayerControls({ state, dispatch, speed, onSpeed, showMath, onShowMath, fullscreen = false, onFullscreen }: Props) {
   const { index, total, playing } = state;
+  // O botão "Tela cheia" pula até o primeiro uso, para o estudante perceber a função.
+  const [noticed, setNoticed] = useState(false);
   return (
     <div role="group" aria-label="Controles da animação" className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-line bg-surface px-3 py-2">
       {/* Passo a passo é o padrão: nada avança sem a confirmação explícita do estudante. */}
@@ -62,7 +64,15 @@ export function PlayerControls({ state, dispatch, speed, onSpeed, showMath, onSh
           </select>
         </label>
         {onFullscreen && (
-          <button type="button" className={btn} aria-pressed={fullscreen} onClick={() => onFullscreen(!fullscreen)}>
+          <button
+            type="button"
+            className={`${btn} ${fullscreen || noticed ? '' : 'animate-bounce border-2 border-accent! motion-reduce:animate-none'}`}
+            aria-pressed={fullscreen}
+            onClick={() => {
+              setNoticed(true);
+              onFullscreen(!fullscreen);
+            }}
+          >
             {fullscreen ? 'Sair da tela cheia (Esc)' : 'Tela cheia'}
           </button>
         )}
