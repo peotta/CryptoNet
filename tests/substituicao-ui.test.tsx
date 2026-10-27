@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import axe from 'axe-core';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MotionConfig } from 'motion/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -31,6 +31,9 @@ const open = async () => {
   renderAt('/lab/substituicao-frequencia');
   await ready();
 };
+// A mensagem padrão do laboratório é curta (80 letras) e Eva falha; a análise de frequência precisa de centenas de letras.
+const LONG_TEXT =
+  'Nós atacaremos a fortaleza ao amanhecer, sem avisar ninguém, pois a surpresa é a nossa melhor arma. Os soldados devem partir antes do nascer do sol, atravessar o vale em silêncio e esperar o sinal do comandante junto à ponte velha. Quem for visto pelos moradores deverá voltar imediatamente ao acampamento e aguardar novas ordens. Ninguém deve acender fogueiras durante a noite, porque a fumaça denunciaria a posição de todo o grupo ao inimigo que vigia a estrada principal. Se o plano der certo, ao meio dia a bandeira estará hasteada na torre mais alta.';
 const percentOf = (text: string) => Number(/(\d+,\d)% corretas/.exec(text)![1].replace(',', '.'));
 
 describe('laboratório de substituição simples e análise de frequência', () => {
@@ -48,7 +51,7 @@ describe('laboratório de substituição simples e análise de frequência', () 
     fireEvent.click(screen.getByRole('button', { name: 'Começar pela primeira letra' }));
     // "Nós atacaremos..." começa com N (posição 13), e a posição 13 da chave QWERTY... é F
     expect(screen.getByText(/está na posição 13 do alfabeto/)).toBeTruthy();
-    expect(screen.getByText(/Cifra até aqui: F/)).toBeTruthy();
+    expect(screen.getByRole('group', { name: /Mensagem de Alice e saída/ }).textContent).toContain('NOSATF·'); // primeira letra cifrada, as demais pendentes
     fireEvent.click(screen.getByRole('button', { name: /Próxima letra/ }));
     expect(screen.getByText(/Letra 2 de/)).toBeTruthy();
   }, 30000);
@@ -62,6 +65,8 @@ describe('laboratório de substituição simples e análise de frequência', () 
 
   it('a análise de frequência acerta cerca de metade e o refinamento quase tudo', async () => {
     await open();
+    fireEvent.change(screen.getByLabelText('Mensagem de Alice'), { target: { value: LONG_TEXT } });
+    await waitFor(() => expect(percentOf(screen.getByText(/Depois do refinamento: .* corretas:/).textContent!)).toBeGreaterThan(90), { timeout: 20000 });
     const freq = percentOf(screen.getByText(/Só por frequência: .* corretas/).textContent!);
     const refined = percentOf(screen.getByText(/Depois do refinamento: .* corretas:/).textContent!);
     expect(freq).toBeGreaterThan(25);

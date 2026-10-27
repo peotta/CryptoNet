@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AlphabetStrip } from '../../animations/CipherDisk';
+import { LetterCard, LetterHistory } from '../../animations/LetterPairs';
 import { FrequencyChart } from '../../animations/FrequencyChart';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
 import { ALPHABET, letterCounts, letterPercentages, PT_FREQUENCY } from '../../crypto/classical';
@@ -14,8 +15,7 @@ import { buildSubstitutionProtocol } from './flows';
 import { MAX_LETTERS, runSubstitution, type SubstitutionRun } from './run';
 
 const EXAMPLE_KEY = 'QWERTYUIOPASDFGHJKLZXCVBNM';
-const EXAMPLE_TEXT =
-  'Nós atacaremos a fortaleza ao amanhecer, sem avisar ninguém, pois a surpresa é a nossa melhor arma. Os soldados devem partir antes do nascer do sol, atravessar o vale em silêncio e esperar o sinal do comandante junto à ponte velha. Quem for visto pelos moradores deverá voltar imediatamente ao acampamento e aguardar novas ordens. Ninguém deve acender fogueiras durante a noite, porque a fumaça denunciaria a posição de todo o grupo ao inimigo que vigia a estrada principal. Se o plano der certo, ao meio dia a bandeira estará hasteada na torre mais alta.';
+const EXAMPLE_TEXT = 'Nós atacaremos a fortaleza ao amanhecer, sem avisar ninguém, pois a surpresa é a nossa melhor arma.';
 
 const num = (v: number, d = 4) => v.toFixed(d).replace('.', ',');
 const pct = (v: number) => `${v.toFixed(1).replace('.', ',')}%`;
@@ -43,17 +43,20 @@ function LetterStepper({ run, index, onIndex }: { run: SubstitutionRun; index: n
           {index === null ? 'Começar pela primeira letra' : 'Próxima letra →'}
         </button>
       </div>
-      <p aria-live="polite" className="text-lg">
+      <div aria-live="polite" className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg border border-line bg-surface-2 p-3">
         {index === null ? (
-          'Use os botões para ver a consulta à tabela de cada letra.'
+          <p className="text-lg">Use os botões para ver a consulta à tabela de cada letra.</p>
         ) : (
           <>
-            Letra {index + 1} de {n}: <span className="font-mono font-bold">{run.plainLetters[index]}</span> está na posição {p} do alfabeto; a posição {p} da chave é{' '}
-            <span className="font-mono font-bold">{run.key[p]}</span>.
+            <LetterCard plain={run.plainLetters} cipher={run.cipherLetters} index={index} />
+            <p className="text-lg">
+              Letra {index + 1} de {n}: <span className="font-mono">{run.plainLetters[index]}</span> está na posição {p} do alfabeto; a posição {p} da chave é{' '}
+              <span className="font-mono">{run.key[p]}</span>.
+            </p>
           </>
         )}
-      </p>
-      <p className="break-all font-mono text-base text-muted">Cifra até aqui: {index === null ? '(vazia)' : run.cipherLetters.slice(0, index + 1)}</p>
+      </div>
+      <LetterHistory plain={run.plainLetters} cipher={run.cipherLetters} index={index} />
     </div>
   );
 }
@@ -204,7 +207,7 @@ export default function SubstituicaoLab() {
         <LabSection id="sb-exec" title="4. Execução do algoritmo">
           <div className="space-y-6">
             <div className="space-y-4">
-              <AlphabetStrip table={run.key} highlight={highlight} />
+              <AlphabetStrip table={run.key} highlight={highlight} tinted />
               <LetterStepper run={run} index={letter} onIndex={setLetter} />
             </div>
           </div>

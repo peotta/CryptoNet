@@ -88,10 +88,13 @@ interface StripProps {
   /** Tabela de substituição: a letra na posição i é a cifrada da letra i (26 letras). */
   table?: string;
   highlight?: number | null;
+  /** Pinta a coluna em destaque com a cor da letra (a mesma do par exibido na mensagem). */
+  tinted?: boolean;
 }
 
 /** Tira de alfabeto: cada letra clara e a sua cifrada, lado a lado. Serve ao César, à cifra afim e à substituição simples. */
-export function AlphabetStrip({ cipherKey, table, highlight = null }: StripProps) {
+export function AlphabetStrip({ cipherKey, table, highlight = null, tinted = false }: StripProps) {
+  const tint = (i: number) => (tinted && highlight === i ? letterColorVars(i) : undefined);
   return (
     <div className="overflow-x-auto">
       <table className="border-separate border-spacing-0.5 font-mono text-base">
@@ -102,7 +105,11 @@ export function AlphabetStrip({ cipherKey, table, highlight = null }: StripProps
               Claro
             </th>
             {[...ALPHABET].map((ch, i) => (
-              <td key={ch} className={`min-w-7 rounded border px-1 text-center ${highlight === i ? 'border-k-plain bg-k-plain/25 font-bold' : 'border-line'}`}>
+              <td
+                key={ch}
+                style={tint(i)}
+                className={`min-w-7 rounded border px-1 text-center ${highlight === i ? (tinted ? 'lc-fill font-bold' : 'border-k-plain bg-k-plain/25 font-bold') : 'border-line'}`}
+              >
                 {ch}
               </td>
             ))}
@@ -112,7 +119,11 @@ export function AlphabetStrip({ cipherKey, table, highlight = null }: StripProps
               Cifrado
             </th>
             {[...ALPHABET].map((ch, i) => (
-              <td key={ch} className={`min-w-7 rounded border px-1 text-center ${highlight === i ? 'border-k-cipher bg-k-cipher/25 font-bold' : 'border-line'}`}>
+              <td
+                key={ch}
+                style={tint(i)}
+                className={`min-w-7 rounded border px-1 text-center ${highlight === i ? (tinted ? 'lc-fill font-bold' : 'border-k-cipher bg-k-cipher/25 font-bold') : 'border-line'}`}
+              >
                 {table ? table[i] : ALPHABET[mapLetter(cipherKey ?? { a: 1, b: 0 }, i)]}
               </td>
             ))}

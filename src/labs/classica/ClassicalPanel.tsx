@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CipherDisk } from '../../animations/CipherDisk';
-import { letterColorVars } from '../../animations/letterColor';
+import { LetterCard, LetterHistory } from '../../animations/LetterPairs';
 import { FrequencyChart } from '../../animations/FrequencyChart';
 import { ProtocolPlayer } from '../../animations/ProtocolPlayer';
-import { ALPHABET, groupsOfFive, letterPercentages, mapLetter, PT_FREQUENCY, VALID_A, type ClassicalCipher, type ClassicalKey } from '../../crypto/classical';
+import { ALPHABET, letterPercentages, mapLetter, PT_FREQUENCY, VALID_A, type ClassicalCipher, type ClassicalKey } from '../../crypto/classical';
 import { engines } from '../../crypto/local/classical';
 import { Callout, Field, LabSection, buttonClass } from '../../components/ui';
 import { buildClassicalProtocol } from './flows';
@@ -48,44 +48,14 @@ function LetterStepper({ run, cipher, index, onIndex }: { run: ClassicalRun; cip
           <p className="text-lg">Use os botões para ver a conta de cada letra. O disco e a tira de alfabeto destacam a letra atual.</p>
         ) : (
           <>
-            <div className="flex items-center gap-3 font-mono text-3xl font-bold" style={letterColorVars(p)}>
-              <span className="lc-fill flex h-12 w-12 items-center justify-center rounded-lg border-2">{run.plainLetters[i]}</span>
-              <span aria-hidden="true">→</span>
-              <span className="lc-fill flex h-12 w-12 items-center justify-center rounded-lg border-2">{ALPHABET[c]}</span>
-            </div>
+            <LetterCard plain={run.plainLetters} cipher={run.cipherLetters} index={i} />
             <p className="text-lg">
               Letra {i + 1} de {n}: <span className="font-mono">{run.plainLetters[i]}</span> = {p}. <span className="font-mono">{conta}</span>
             </p>
           </>
         )}
       </div>
-      <p className="text-base text-muted">
-        Linha de cima: mensagem de Alice. Linha de baixo: saída. Cada letra mantém a cor do par.
-      </p>
-      <div className="flex flex-wrap gap-x-4 gap-y-2 font-mono text-base" role="group" aria-label="Mensagem de Alice e saída, em grupos de cinco letras">
-        {(groupsOfFive(run.plainLetters).split(' ')).map((group, g) => (
-          <div key={g} className="flex flex-col">
-            {[0, 1].map((row) => (
-              <div key={row} className="flex">
-                {[...group].map((ch, k) => {
-                  const j = g * 5 + k;
-                  const done = i !== null && j <= i;
-                  const text = row === 0 ? ch : done ? run.cipherLetters[j] : '·';
-                  return (
-                    <span
-                      key={k}
-                      style={done ? letterColorVars(ALPHABET.indexOf(run.plainLetters[j])) : undefined}
-                      className={`w-5 rounded border border-transparent text-center ${done ? 'lc-text font-bold' : 'text-muted/60'} ${j === i ? 'lc-fill' : ''}`}
-                    >
-                      {text}
-                    </span>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
+      <LetterHistory plain={run.plainLetters} cipher={run.cipherLetters} index={i} />
     </div>
   );
 }
