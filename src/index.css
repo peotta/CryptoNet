@@ -43,6 +43,30 @@
   --danger: #f87171;
 }
 
+/* Cor por letra na execução das cifras clássicas: `--lc-h` (matiz) é definido em animations/letterColor.ts. */
+.lc-text {
+  color: hsl(var(--lc-h) 80% 34%);
+}
+.lc-fill {
+  background-color: hsl(var(--lc-h) 80% 50% / 0.22);
+  border-color: hsl(var(--lc-h) 75% 38%);
+}
+.lc-mark {
+  fill: hsl(var(--lc-h) 80% 50% / 0.3);
+  stroke: hsl(var(--lc-h) 75% 38%);
+}
+.dark .lc-mark {
+  fill: hsl(var(--lc-h) 80% 60% / 0.35);
+  stroke: hsl(var(--lc-h) 80% 68%);
+}
+.dark .lc-text {
+  color: hsl(var(--lc-h) 85% 70%);
+}
+.dark .lc-fill {
+  background-color: hsl(var(--lc-h) 80% 60% / 0.28);
+  border-color: hsl(var(--lc-h) 80% 68%);
+}
+
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);

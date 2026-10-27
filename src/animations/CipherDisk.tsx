@@ -1,5 +1,6 @@
 import { motion, useReducedMotion } from 'motion/react';
 import { ALPHABET, mapLetter, type ClassicalKey } from '../crypto/classical';
+import { letterColorVars } from './letterColor';
 import { motionDuration } from './motion';
 
 const STEP = 360 / 26;
@@ -32,13 +33,20 @@ export function CipherDisk({ shift, highlight = null, speed = 1 }: DiskProps) {
       <circle cx="150" cy="150" r="142" fill="none" stroke="var(--line)" strokeWidth="2" />
       <circle cx="150" cy="150" r="113" fill="none" stroke="var(--line)" strokeWidth="2" />
       <circle cx="150" cy="150" r="82" fill="var(--surface-2)" stroke="var(--line)" strokeWidth="2" />
+      {/* ponteiro de relógio: liga a letra clara (fora) à sua cifrada (dentro), na mesma cor das duas */}
+      {highlight !== null && (
+        <g style={letterColorVars(highlight)}>
+          <line className="lc-mark" x1={at(highlight, 108).x} y1={at(highlight, 108).y} x2={at(highlight, 118).x} y2={at(highlight, 118).y} strokeWidth="4" strokeLinecap="round" />
+          <circle className="lc-mark" cx={at(highlight, 98).x} cy={at(highlight, 98).y} r="11" strokeWidth="2" />
+        </g>
+      )}
       {/* anel externo: alfabeto claro, fixo */}
       {[...ALPHABET].map((ch, i) => {
         const { x, y, deg } = at(i, 128);
         const on = highlight === i;
         return (
-          <g key={`o${ch}`}>
-            {on && <circle cx={x} cy={y} r="11" fill="var(--k-plain)" opacity="0.25" stroke="var(--k-plain)" strokeWidth="2" />}
+          <g key={`o${ch}`} style={on ? letterColorVars(i) : undefined}>
+            {on && <circle className="lc-mark" cx={x} cy={y} r="11" strokeWidth="2" />}
             <text x={x} y={y} textAnchor="middle" dominantBaseline="central" transform={`rotate(${deg} ${x} ${y})`} fontSize="14" fontWeight={on ? 800 : 600} fill="var(--text)" fontFamily="var(--font-mono)">
               {ch}
             </text>
