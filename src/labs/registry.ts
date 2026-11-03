@@ -166,7 +166,7 @@ export const LABS: LabMeta[] = [
     category: 'autenticacao',
     title: 'DAP: autorização visual de transações',
     summary: 'Segundo fator fora de banda por QR code: chave em duas metades, desafio com AES-256-CBC e HMAC-SHA-256, tela confiável do celular (WYSIWYS) e os ataques de Eva ao computador não confiável.',
-    objectives: ['Provisionar a chave k = k1 XOR k2 por dois canais e ativá-la', 'Montar e verificar o desafio com dados, código cifrado e etiqueta HMAC', 'Ver como o protocolo reage à alteração do QR, ao MITB, ao chute e à repetição do código'],
+    objectives: ['Provisionar a chave k = k1 ⊕ k2 por dois canais e ativá-la', 'Montar e verificar o desafio com dados, código cifrado e etiqueta HMAC', 'Ver como o protocolo reage à alteração do QR, ao MITB, ao chute e à repetição do código'],
     status: 'available',
     component: lazy(() => import('./dap/DapLab')),
   },
