@@ -48,6 +48,14 @@ Algoritmos que resistem a computadores quânticos, como o ML-KEM ([FIPS 203](htt
 | --- | --- | --- | --- |
 | [ML-KEM e reticulados (pós-quântica)](ml-kem.md) | O problema LWE em escala didática e o ML-KEM ([FIPS 203](https://csrc.nist.gov/pubs/fips/203/final)) passo a passo, com Eva observando e adulterando o texto cifrado, e a comparação de tamanhos com os algoritmos atuais. | didático (LWE com números minúsculos) e ML-KEM real (TypeScript, conferido contra o OpenSSL 3.5) | [FIPS 203](https://csrc.nist.gov/pubs/fips/203/final) (ML-KEM, antigo CRYSTALS-Kyber); [FIPS 202](https://csrc.nist.gov/pubs/fips/202/final) (SHA-3 e SHAKE, usados pelo ML-KEM); [FIPS 204](https://csrc.nist.gov/pubs/fips/204/final) (ML-DSA) e [FIPS 205](https://csrc.nist.gov/pubs/fips/205/final) (SLH-DSA): assinaturas pós-quânticas, citadas e não implementadas |
 
+## Autenticação e Protocolos Seguros
+
+Protocolos que combinam primitivas para provar quem é o usuário e o que ele autorizou, como a autorização de transações fora de banda do DAP.
+
+| Laboratório | Resumo | Motor | Padrões e referências |
+| --- | --- | --- | --- |
+| [DAP: autorização visual de transações](dap.md) | Segundo fator fora de banda por QR code: chave em duas metades, desafio com AES-256-CBC e HMAC-SHA-256, tela confiável do celular (WYSIWYS) e os ataques de Eva ao computador não confiável. | real (Web Crypto: HMAC-SHA-512, HMAC-SHA-256, SHA-256 e AES-256-CBC), com QR code desenhado na tela | Melo, L. P. de. *DAP (Dynamic Authorization Protocol): Secure Approach Out-of-Band for E-Bank with a Two-Factor Visual Authentication*. Tese de doutorado, Universidade de Brasília, 2012; Melo, L. P. de et al. *A Secure Approach Out-of-Band for e-Bank with Visual Two-Factor Authorization Protocol*. Cryptography, v. 8, n. 4, art. 51, 2024. DOI 10.3390/cryptography8040051; draft-melo-dap-visual-oob-auth-00 (Internet-Draft, trabalho em andamento, sem número de RFC); [RFC 2104](https://www.rfc-editor.org/rfc/rfc2104) (HMAC); [RFC 6234](https://www.rfc-editor.org/rfc/rfc6234) (SHA-2); [RFC 4648](https://www.rfc-editor.org/rfc/rfc4648) (Base64); [FIPS 197](https://csrc.nist.gov/pubs/fips/197/final) (AES); [SP 800-38A](https://csrc.nist.gov/pubs/sp/800/38/a/final) (modo CBC); ISO/IEC 18004 (QR code) |
+
 
 ---
 

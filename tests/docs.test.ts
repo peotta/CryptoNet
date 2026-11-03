@@ -44,6 +44,13 @@ describe('documentação dos laboratórios (gerada por npm run docs:labs)', () =
       expect(text.match(/\b(FIPS \d{3}(-\d)?|SP 800-\d+[A-Z]?)\b/g) ?? [], f).toEqual([]);
     }
   });
+  it('todo diagrama de sequência numera as interações (autonumber)', () => {
+    for (const f of fs.readdirSync(dir)) {
+      for (const block of read(f).match(/```mermaid\n[\s\S]*?```/g) ?? []) {
+        if (block.includes('sequenceDiagram')) expect(block, f).toContain('autonumber');
+      }
+    }
+  });
   it('não expõe valores aleatórios (hexadecimais longos)', () => {
     for (const f of fs.readdirSync(dir)) expect(/\b[0-9a-f]{32,}\b/.test(read(f)), f).toBe(false);
   });

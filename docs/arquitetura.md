@@ -58,7 +58,7 @@ Observação: `RsaRealEngine` usa `CryptoKeyPair` em `RealKeyPair.handle`. Um mo
 
 ## 5. Registro de laboratórios
 
-`src/labs/registry.ts` é a única fonte de verdade. A página inicial, as categorias, os links de navegação, os testes e o gerador da documentação leem dele. Cada entrada tem identificador (kebab-case, usado na rota `#/lab/<id>`), categoria (`classica`, `simetrica`, `assimetrica` ou `posquantica`), título, resumo, objetivos, situação (`available` ou `planned`) e, quando disponível, o componente carregado sob demanda (`lazy`). Hoje todos os laboratórios estão disponíveis; a seção "Laboratórios futuros" da página inicial só aparece quando há algum `planned`.
+`src/labs/registry.ts` é a única fonte de verdade. A página inicial, as categorias, os links de navegação, os testes e o gerador da documentação leem dele. Cada entrada tem identificador (kebab-case, usado na rota `#/lab/<id>`), categoria (`classica`, `simetrica`, `assimetrica`, `posquantica` ou `autenticacao`), título, resumo, objetivos, situação (`available` ou `planned`) e, quando disponível, o componente carregado sob demanda (`lazy`). Hoje todos os laboratórios estão disponíveis; a seção "Laboratórios futuros" da página inicial só aparece quando há algum `planned`.
 
 ## 6. Padrão de cada laboratório
 

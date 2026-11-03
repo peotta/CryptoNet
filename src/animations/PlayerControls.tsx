@@ -3,6 +3,16 @@ import type { PlayerAction, PlayerState } from '../simulation/player';
 
 export const SPEEDS = [0.5, 1, 1.5, 2] as const;
 
+/** Tamanho do texto da animação: 'auto' reduz o conteúdo até caber na tela; os demais valores são fixos e a área rola. */
+export type TextScale = 'auto' | number;
+export const TEXT_SCALES: { value: TextScale; label: string }[] = [
+  { value: 'auto', label: 'Automático (cabe na tela)' },
+  { value: 1, label: '100%' },
+  { value: 1.25, label: '125%' },
+  { value: 1.5, label: '150%' },
+  { value: 1.75, label: '175%' },
+];
+
 interface Props {
   state: PlayerState;
   dispatch: Dispatch<PlayerAction>;
@@ -12,6 +22,8 @@ interface Props {
   onShowMath: (v: boolean) => void;
   fullscreen?: boolean;
   onFullscreen?: (v: boolean) => void;
+  textScale?: TextScale;
+  onTextScale?: (v: TextScale) => void;
 }
 
 const btn =
@@ -19,7 +31,7 @@ const btn =
 const primary = 'min-h-10 rounded-lg bg-accent px-4 text-base font-semibold text-accent-ink hover:opacity-90 disabled:opacity-50';
 
 /** Barra única de controles: navegação à esquerda, opções à direita. */
-export function PlayerControls({ state, dispatch, speed, onSpeed, showMath, onShowMath, fullscreen = false, onFullscreen }: Props) {
+export function PlayerControls({ state, dispatch, speed, onSpeed, showMath, onShowMath, fullscreen = false, onFullscreen, textScale = 'auto', onTextScale }: Props) {
   const { index, total, playing } = state;
   // O botão "Tela cheia" pula até o primeiro uso, para o estudante perceber a função.
   const [noticed, setNoticed] = useState(false);
@@ -63,6 +75,22 @@ export function PlayerControls({ state, dispatch, speed, onSpeed, showMath, onSh
             ))}
           </select>
         </label>
+        {onTextScale && (
+          <label className="flex items-center gap-2">
+            Tamanho do texto
+            <select
+              className="min-h-10 rounded-lg border border-line bg-surface px-2 text-base"
+              value={String(textScale)}
+              onChange={(e) => onTextScale(e.target.value === 'auto' ? 'auto' : Number(e.target.value))}
+            >
+              {TEXT_SCALES.map((t) => (
+                <option key={String(t.value)} value={String(t.value)}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         {onFullscreen && (
           <button
             type="button"

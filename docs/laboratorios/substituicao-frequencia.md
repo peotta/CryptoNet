@@ -36,6 +36,8 @@ Alice e Bob são os participantes legítimos; Eva é a atacante (observadora pas
 Cada figura é um diagrama de sequência gerado a partir da mesma definição de protocolo que anima o laboratório: as colunas são os participantes, o tempo corre de cima para baixo e cada faixa horizontal é o início de uma etapa. Os valores numéricos e as chaves não aparecem aqui (são aleatórios ou dependem das entradas); eles são mostrados nas fórmulas do próprio laboratório.
 
 - Seta cheia: mensagem enviada pelo canal, com o rótulo do que trafega.
+- Número no início do rótulo: ordem da interação no diagrama, de cima para baixo.
+- Botão Ampliar diagrama (no site): abre o diagrama em tela cheia, com zoom.
 - `[adulterada]` no início do rótulo: a mensagem foi alterada em trânsito por Eva.
 - Faixa com texto: título da etapa que começa naquele ponto.
 
@@ -53,6 +55,7 @@ Cada figura é um diagrama de sequência gerado a partir da mesma definição de
 
 ```mermaid
 sequenceDiagram
+  autonumber
   participant n_alice as Alice
   participant n_bob as Bob
   participant n_eva as Eva

@@ -4,7 +4,7 @@ import { ProtocolSimulationEngine } from '../simulation/timeline';
 import type { ProtocolDefinition } from '../simulation/types';
 import { MathPanel } from './MathPanel';
 import { MessageInspector } from './MessageInspector';
-import { PlayerControls } from './PlayerControls';
+import { PlayerControls, type TextScale } from './PlayerControls';
 import { ProtocolStage } from './ProtocolStage';
 import { TimelineList } from './TimelineList';
 
@@ -19,14 +19,25 @@ interface Props {
 const panel = 'flex flex-col rounded-xl border border-line bg-surface';
 const panelTitle = 'border-b border-line px-3 py-2 text-lg font-bold';
 
+const SCALE_KEY = 'cryptonet:tamanho-do-texto';
+const VALID_SCALES = [1, 1.25, 1.5, 1.75];
+function readScale(): TextScale {
+  try {
+    const v = Number(localStorage.getItem(SCALE_KEY));
+    return VALID_SCALES.includes(v) ? v : 'auto';
+  } catch {
+    return 'auto';
+  }
+}
+
 /** Escalas tentadas, da maior para a menor, até o conteúdo caber na área disponível (sem barras de rolagem). */
-const FIT_STEPS = [1, 0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6];
+const FIT_STEPS = [1, 0.95, 0.9, 0.85, 0.8];
 
 /**
  * Visualização completa de um protocolo, organizada para caber em uma única tela:
  * controles no topo; depois, em toda a largura, a etapa, a matemática, o cenário animado
  * e as mensagens. Não há rolagem interna: se o conteúdo for maior que a área, a escala
- * é reduzida (até 60%) para que tudo apareça de uma vez.
+ * é reduzida (até 80%) para que tudo apareça de uma vez. O estudante também pode fixar o tamanho do texto (100% a 175%); nesse caso a área rola.
  */
 export function ProtocolPlayer({ definition, resetKey, footer }: Props) {
   const timeline = useMemo(() => ProtocolSimulationEngine.build(definition), [definition]);
@@ -34,6 +45,15 @@ export function ProtocolPlayer({ definition, resetKey, footer }: Props) {
   const [speed, setSpeed] = useState(1);
   const [showMath, setShowMath] = useState(true);
   const [fullscreen, setFullscreen] = useState(false);
+  const [textScale, setTextScaleState] = useState<TextScale>(readScale);
+  const setTextScale = (v: TextScale) => {
+    setTextScaleState(v);
+    try {
+      localStorage.setItem(SCALE_KEY, String(v));
+    } catch {
+      /* sem armazenamento: vale só nesta visita */
+    }
+  };
   const { state, dispatch } = useStepPlayer(total, speed, resetKey);
   const index = Math.min(state.index, total);
   const current = index > 0 ? definition.steps[index - 1] : null;
@@ -48,6 +68,10 @@ export function ProtocolPlayer({ definition, resetKey, footer }: Props) {
     const ct = content.current;
     if (!vp || !ct) return;
     const fit = () => {
+      if (textScale !== 'auto') {
+        ct.style.zoom = String(textScale);
+        return;
+      }
       // Em telas estreitas o conteúdo empilha e a página rola normalmente.
       if (!window.matchMedia?.('(min-width: 1024px)').matches) {
         ct.style.zoom = '';
@@ -112,6 +136,8 @@ export function ProtocolPlayer({ definition, resetKey, footer }: Props) {
           onShowMath={setShowMath}
           fullscreen={fullscreen}
           onFullscreen={setFullscreen}
+          textScale={textScale}
+          onTextScale={setTextScale}
         />
 
         <div ref={viewport} className="flex-1 lg:min-h-0 lg:overflow-y-auto">

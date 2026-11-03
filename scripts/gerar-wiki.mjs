@@ -321,6 +321,59 @@ const SPECS = {
       },
     ],
   },
+  dap: {
+    dir: 'dap',
+    motor: 'real (Web Crypto: HMAC-SHA-512, HMAC-SHA-256, SHA-256 e AES-256-CBC), com QR code desenhado na tela',
+    engine: 'src/crypto/dap.ts',
+    content: ['DAP_OBJECTIVES', 'DAP_QUESTIONS'],
+    padroes: [
+      'Melo, L. P. de. *DAP (Dynamic Authorization Protocol): Secure Approach Out-of-Band for E-Bank with a Two-Factor Visual Authentication*. Tese de doutorado, Universidade de Brasília, 2012',
+      'Melo, L. P. de et al. *A Secure Approach Out-of-Band for e-Bank with Visual Two-Factor Authorization Protocol*. Cryptography, v. 8, n. 4, art. 51, 2024. DOI 10.3390/cryptography8040051',
+      'draft-melo-dap-visual-oob-auth-00 (Internet-Draft, trabalho em andamento, sem número de RFC)',
+      '[RFC 2104](https://www.rfc-editor.org/rfc/rfc2104) (HMAC)',
+      '[RFC 6234](https://www.rfc-editor.org/rfc/rfc6234) (SHA-2)',
+      '[RFC 4648](https://www.rfc-editor.org/rfc/rfc4648) (Base64)',
+      'FIPS 197 (AES).',
+      'SP 800-38A (modo CBC).',
+      'ISO/IEC 18004 (QR code).',
+    ],
+    resumo:
+      'O **DAP** (*Dynamic Authorization Protocol*) é um protocolo de **autorização de transações fora de banda**, proposto na **tese de doutorado do Prof. Dr. Laerte Peotta de Melo** (Universidade de Brasília, 2012) e desenvolvido posteriormente em artigo científico e em um *Internet-Draft* do IETF. Destina-se a servir de **segundo fator de autenticação e autorização em transações financeiras realizadas em computadores não confiáveis**, como as do Internet banking: transferências, pagamento de boletos, alterações cadastrais ou qualquer transação que se queira proteger.\n\n**O problema tratado.** São os programas maliciosos no navegador (*Man-in-the-Browser*), que substituem a conta ou o valor depois do *login* e exibem ao usuário uma tela falsa. Senhas, códigos enviados por mensagem (SMS) e senhas de uso único (HOTP e TOTP) não dependem do conteúdo da transação e, por isso, permanecem válidos para a transação adulterada.\n\n**O código de seis dígitos.** Ele não é um HOTP nem um TOTP: não deriva de contador nem de relógio, e sim de um **valor aleatório sorteado pelo e-Bank para cada transação** e protegido junto com os dados dela. Cada código **vale somente para aquela transação** e **não pode ser aproveitado para outra**, nem mesmo para outra de mesmo destinatário e valor. Ele só é revelado no celular do usuário depois que este confere, em uma tela independente do computador, o destinatário e o valor. Dessa forma, **o usuário autoriza o que vê** (*What You See Is What You Sign*, WYSIWYS), e **um atacante não é capaz de alterar a mensagem que está sendo autorizada**: os dados da transação são protegidos por uma **etiqueta HMAC**, e qualquer alteração faz o celular rejeitar o desafio antes de exibir a transação ou de revelar o código.\n\n**Autenticação e autorização.** O DAP autentica o desafio, pois somente quem possui a chave produz uma etiqueta HMAC válida, e autoriza cada operação por meio de um código associado a ela. Consequentemente, ainda que as credenciais do usuário (*login*, senha e impressão digital do aparelho) sejam capturadas por *phishing* ou por programa malicioso, o atacante **não consegue autorizar uma transação**: sem a **chave k**, que permanece no celular, ele não forja um desafio aceito pelo aparelho nem decifra o código. Essa garantia vale no **modelo de adversário** do *draft*, que supõe o celular fora do controle do atacante.\n\n**Resistência à engenharia social.** O protocolo aumenta essa resistência porque o **usuário não tem acesso à chave**. Armazenada de forma segura no celular de confiança e **não exportável**, ela não pode ser copiada, visualizada nem incluída em cópias de segurança, e o próprio usuário nunca a conhece. Assim, diferentemente de uma senha, que pode ser revelada por engano, a chave não pode ser entregue ao atacante. Resta ao adversário tentar convencer o usuário a confirmar uma transação fraudulenta ou a informar o código exibido no celular, risco que a conferência na tela do aparelho reduz, mas não elimina.\n\n**Funcionamento em cada transação.** O e-Bank gera o desafio `trans_data | r\' | y`, com o código r cifrado em **AES-256-CBC** e a etiqueta **HMAC-SHA-256**, e o apresenta como QR code no computador não confiável (UC). O celular de confiança (MD), que dispensa conexão de rede, lê o QR, verifica a etiqueta, exibe a transação em tela própria e, somente após a confirmação do usuário, revela o código, que o e-Bank confere em até **120 s** e **3 tentativas**. A proteção apoia-se ainda em HMAC-SHA-512, que deriva uma das metades da chave no módulo de segurança de hardware (HSM) do e-Bank, e na divisão da chave em duas metades pela operação ⊕ (OU exclusivo).\n\n**Provisionamento da chave.** A chave k, de 512 bits, chega ao MD em **duas metades por canais separados** (**k = k1 ⊕ k2**) e é ativada com o código 000. Alice é a usuária com o MD, Bob é o e-Bank com o HSM e Eva é o UC, que controla o canal da Internet.\n\n**Partes do laboratório.** A Parte A cobre o provisionamento da chave, inclusive a troca de k1 por Eva e a observação do ATM; a Parte B cobre a ativação do dispositivo, que confirma que as duas pontas têm a mesma chave; a Parte C cobre a transação e os ataques de Eva: alteração do QR, pedido trocado por malware (MITB), chute do código e repetição do código.',
+    limites: [
+      'O laboratório segue um Internet-Draft (trabalho em andamento) e não uma RFC: o texto pode mudar até a publicação. A verificação formal citada no draft não cobre os elementos mais recentes (modelos, carimbo, Nonce e arquivo de modelos assinado).',
+      'O arquivo de modelos assinado em CMS (RFC 5652) não é implementado: os modelos 000 e 818 são fixos no código. O e-Bank, o HSM e o ATM são simulados no navegador, sem rede.',
+      'O QR code é desenhado na tela, e a leitura por câmera não é simulada. O UC honesto e o UC de Eva são representados por Eva, que sempre controla o canal da Internet.',
+      'Os valores aleatórios vêm da Web Crypto, e a implementação não tem proteção contra ataques de canal lateral nem armazenamento protegido de verdade: não a use para proteger dados reais.',
+    ],
+    partes: [
+      {
+        titulo: 'Provisionamento da chave',
+        cenarios: [
+          { titulo: 'Provisionamento normal', entradas: 'valores fixos', build: async (c) => c.mod.dap.buildProvisionProtocol(await c.mod.dap.runProvision(c.E.dap, { scenario: 'normal', seeds: c.mod.dap.makeSeeds(c.mod.dap.fixedRandom(1)), t0: DAP_T0, scanSec: 12, typeSec: 30 }), 'chave') },
+          { titulo: 'Eva troca a metade k1 no UC', entradas: 'valores fixos', build: async (c) => c.mod.dap.buildProvisionProtocol(await c.mod.dap.runProvision(c.E.dap, { scenario: 'substitui', seeds: c.mod.dap.makeSeeds(c.mod.dap.fixedRandom(1)), t0: DAP_T0, scanSec: 12, typeSec: 30 }), 'chave') },
+          { titulo: 'Eva vê a metade k2 na tela do ATM', entradas: 'valores fixos', build: async (c) => c.mod.dap.buildProvisionProtocol(await c.mod.dap.runProvision(c.E.dap, { scenario: 've-k2', seeds: c.mod.dap.makeSeeds(c.mod.dap.fixedRandom(1)), t0: DAP_T0, scanSec: 12, typeSec: 30 }), 'chave') },
+        ],
+      },
+      {
+        titulo: 'Ativação do dispositivo',
+        cenarios: [
+          { titulo: 'Chave correta', entradas: 'QR lido em 12 s e código digitado em 30 s', build: async (c) => c.mod.dap.buildProvisionProtocol(await c.mod.dap.runProvision(c.E.dap, { scenario: 'normal', seeds: c.mod.dap.makeSeeds(c.mod.dap.fixedRandom(1)), t0: DAP_T0, scanSec: 12, typeSec: 30 }), 'ativacao') },
+          { titulo: 'Chave divergente: Eva trocou k1 no provisionamento', entradas: 'QR lido em 12 s', build: async (c) => c.mod.dap.buildProvisionProtocol(await c.mod.dap.runProvision(c.E.dap, { scenario: 'substitui', seeds: c.mod.dap.makeSeeds(c.mod.dap.fixedRandom(1)), t0: DAP_T0, scanSec: 12, typeSec: 30 }), 'ativacao') },
+          { titulo: 'Eva conhece a chave k', entradas: 'QR lido em 12 s e código digitado em 30 s', build: async (c) => c.mod.dap.buildProvisionProtocol(await c.mod.dap.runProvision(c.E.dap, { scenario: 've-k2', seeds: c.mod.dap.makeSeeds(c.mod.dap.fixedRandom(1)), t0: DAP_T0, scanSec: 12, typeSec: 30 }), 'ativacao') },
+        ],
+      },
+      {
+        titulo: 'Autorização de transação',
+        cenarios: [
+          { titulo: 'Transação normal', entradas: 'transferência de R$ 1.500,00 para MARIA SILVA', build: async (c) => c.mod.dap.buildTransactionProtocol(await c.mod.dap.runTransaction(c.E.dap, DAP_TX(c, 'normal'))) },
+          { titulo: 'Eva altera os dados dentro do QR', entradas: 'mesmos dados', build: async (c) => c.mod.dap.buildTransactionProtocol(await c.mod.dap.runTransaction(c.E.dap, DAP_TX(c, 'altera'))) },
+          { titulo: 'Eva troca o pedido no navegador (MITB) e Alice cancela', entradas: 'mesmos dados', build: async (c) => c.mod.dap.buildTransactionProtocol(await c.mod.dap.runTransaction(c.E.dap, DAP_TX(c, 'fraude'))) },
+          { titulo: 'Eva chuta o código', entradas: 'três tentativas', build: async (c) => c.mod.dap.buildTransactionProtocol(await c.mod.dap.runTransaction(c.E.dap, DAP_TX(c, 'forca-bruta'))) },
+          { titulo: 'Eva repete o código capturado', entradas: 'segunda transação de Eva', build: async (c) => c.mod.dap.buildTransactionProtocol(await c.mod.dap.runTransaction(c.E.dap, DAP_TX(c, 'replay'))) },
+        ],
+      },
+    ],
+  },
   tls13: {
     dir: 'tls13',
     motor: 'real (Web Crypto: ECDHE P-256, HKDF-SHA-256, ECDSA P-256, HMAC e AES-128-GCM)',
@@ -516,6 +569,7 @@ const L = {
   dh: { build: (await load('/src/labs/diffie-hellman/flows.ts')).buildDhProtocol, buildMitm: (await load('/src/labs/diffie-hellman/flows.ts')).buildMitmProtocol },
   ecc: await load('/src/labs/ecc/flows.ts'),
   mlkem: await load('/src/labs/ml-kem/flows.ts'),
+  dap: { ...(await load('/src/labs/dap/provision.ts')), ...(await load('/src/labs/dap/transaction.ts')), ...(await load('/src/labs/dap/seeds.ts')) },
   tls: { build: (await load('/src/labs/tls13/flows.ts')).buildTlsProtocol, run: (await load('/src/labs/tls13/flows.ts')).runTls },
   aes: { build: (await load('/src/labs/aes/flows.ts')).buildAesProtocol, run: (await load('/src/labs/aes/run.ts')).runAes },
   chacha: {
@@ -540,6 +594,9 @@ const L = {
   },
   hmac: { build: (await load('/src/labs/hash-hmac/flows.ts')).buildHmacProtocol },
 };
+/** Instante fixo (2 de novembro de 2026, 13:30:00 UTC) e entradas do DAP, para o documento gerado não mudar entre execuções. */
+const DAP_T0 = Date.UTC(2026, 10, 2, 13, 30, 0);
+const DAP_TX = (c, scenario) => ({ scenario, seeds: c.mod.dap.makeSeeds(c.mod.dap.fixedRandom(1)), t0: DAP_T0, scanSec: 20, typeSec: 45, mdOffset: 0, payee: 'Maria Silva', amount: '1500,00' });
 /** 32 bytes determinísticos, para que o documento gerado não mude entre execuções. */
 const fixedBytes = (seed) => Uint8Array.from({ length: 32 }, (_, i) => (i * 31 + seed * 17 + (i >> 3)) & 0xff);
 const rndLetters = (n) => Array.from(rnd(n), (b) => String.fromCharCode(65 + (b % 26))).join('');
@@ -561,9 +618,16 @@ const cell = (s) => String(s ?? '').replace(/\|/g, '\\|').replace(/\n+/g, ' ');
 /** RFCs, FIPS e SP do NIST viram link (as páginas oficiais ficam em src/labs/standards.ts) quando ainda não são link. */
 const linkRfcs = linkStandardsMarkdown;
 
+/**
+ * Todo diagrama de sequência ganha `autonumber` do Mermaid: cada mensagem recebe um número, na ordem da comunicação.
+ * NUMERAR=nao desliga a numeração.
+ */
+const numerar = () => process.env.NUMERAR !== 'nao';
+
 /** Diagrama de sequência Mermaid de um protocolo (mesma fonte da animação do laboratório). */
 function sequenceDiagram(def) {
   const L2 = ['sequenceDiagram'];
+  if (numerar()) L2.push('  autonumber');
   for (const p of def.parties) L2.push(`  participant ${mmId(p.id)} as ${mmMsg(p.name)}`);
   const ids = def.parties.map((p) => mmId(p.id));
   let msgs = 0;
@@ -669,6 +733,8 @@ async function labDocument(lab) {
   O.push(`## ${sec}. Como ler os diagramas`, '');
   O.push('Cada figura é um diagrama de sequência gerado a partir da mesma definição de protocolo que anima o laboratório: as colunas são os participantes, o tempo corre de cima para baixo e cada faixa horizontal é o início de uma etapa. Os valores numéricos e as chaves não aparecem aqui (são aleatórios ou dependem das entradas); eles são mostrados nas fórmulas do próprio laboratório.', '');
   O.push('- Seta cheia: mensagem enviada pelo canal, com o rótulo do que trafega.');
+  O.push('- Número no início do rótulo: ordem da interação no diagrama, de cima para baixo.');
+  O.push('- Botão Ampliar diagrama (no site): abre o diagrama em tela cheia, com zoom.');
   O.push('- `[adulterada]` no início do rótulo: a mensagem foi alterada em trânsito por Eva.');
   O.push('- Faixa com texto: título da etapa que começa naquele ponto.');
   O.push('');

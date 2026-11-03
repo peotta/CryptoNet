@@ -117,6 +117,26 @@ describe('página de documentação (Markdown e Mermaid)', () => {
     expect(credits[0].closest('footer')).toBeTruthy();
   }, 40000);
 
+  it('cada diagrama tem o botão Ampliar diagrama, que abre a janela com zoom', async () => {
+    // O jsdom não implementa o <dialog> modal.
+    HTMLDialogElement.prototype.showModal = function (this: HTMLDialogElement) {
+      this.setAttribute('open', '');
+    };
+    HTMLDialogElement.prototype.close = function (this: HTMLDialogElement) {
+      this.removeAttribute('open');
+      this.dispatchEvent(new Event('close'));
+    };
+    await open();
+    await waitFor(() => expect(screen.getAllByRole('button', { name: 'Ampliar diagrama' })).toHaveLength(4), { timeout: 10000 });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Ampliar diagrama' })[0]);
+    const dialog = await screen.findByRole('dialog', { name: /Diagrama de sequência/ });
+    expect(within(dialog).getByRole('button', { name: 'Aumentar o zoom' })).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Aumentar o zoom' }));
+    expect(within(dialog).getByText('125%')).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Fechar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+
   it('mostra o código quando o Mermaid falha', async () => {
     render_.mockRejectedValueOnce(new Error('falha'));
     await open('aes');

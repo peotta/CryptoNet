@@ -1,6 +1,6 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 
-export type CategoryId = 'classica' | 'simetrica' | 'assimetrica' | 'posquantica';
+export type CategoryId = 'classica' | 'simetrica' | 'assimetrica' | 'posquantica' | 'autenticacao';
 
 export interface Category {
   id: CategoryId;
@@ -41,6 +41,11 @@ export const CATEGORIES: Category[] = [
     id: 'posquantica',
     title: 'Criptografia Pós-Quântica',
     description: 'Algoritmos que resistem a computadores quânticos, como o ML-KEM (FIPS 203), baseado em reticulados, e a migração dos protocolos atuais.',
+  },
+  {
+    id: 'autenticacao',
+    title: 'Autenticação e Protocolos Seguros',
+    description: 'Protocolos que combinam primitivas para provar quem é o usuário e o que ele autorizou, como a autorização de transações fora de banda do DAP.',
   },
 ];
 
@@ -148,13 +153,22 @@ export const LABS: LabMeta[] = [
   },
   {
     id: 'ml-kem',
-    novo: true,
     category: 'posquantica',
     title: 'ML-KEM e reticulados (pós-quântica)',
     summary: 'O problema LWE em escala didática e o ML-KEM (FIPS 203) passo a passo, com Eva observando e adulterando o texto cifrado, e a comparação de tamanhos com os algoritmos atuais.',
     objectives: ['Entender o ruído do LWE e por que ele protege a chave', 'Acompanhar a geração de chaves, o encapsulamento e o desencapsulamento do ML-KEM', 'Ver a rejeição implícita diante de um texto cifrado adulterado'],
     status: 'available',
     component: lazy(() => import('./ml-kem/MlKemLab')),
+  },
+  {
+    id: 'dap',
+    novo: true,
+    category: 'autenticacao',
+    title: 'DAP: autorização visual de transações',
+    summary: 'Segundo fator fora de banda por QR code: chave em duas metades, desafio com AES-256-CBC e HMAC-SHA-256, tela confiável do celular (WYSIWYS) e os ataques de Eva ao computador não confiável.',
+    objectives: ['Provisionar a chave k = k1 XOR k2 por dois canais e ativá-la', 'Montar e verificar o desafio com dados, código cifrado e etiqueta HMAC', 'Ver como o protocolo reage à alteração do QR, ao MITB, ao chute e à repetição do código'],
+    status: 'available',
+    component: lazy(() => import('./dap/DapLab')),
   },
   {
     id: 'tls13',

@@ -32,6 +32,9 @@ export function AppLayout() {
             <NavLink to="/categoria/posquantica" className={link}>
               Pós-quântica
             </NavLink>
+            <NavLink to="/categoria/autenticacao" className={link}>
+              Autenticação
+            </NavLink>
           </nav>
           <button
             type="button"

@@ -23,6 +23,7 @@ import type { DhSession, MitmSession } from './diffieHellman';
 import type { PublicKeyInfo, RsaKeySize } from './rsaWebCrypto';
 import type { DecapsDetail, EncapsDetail, KeyGenDetail, MlKemParams } from './mlkem';
 import type { LweAttack, LweCiphertext, LweDecryption, LweKeys, LweParams } from './lwe';
+import type { Challenge, CustomerRecord, KeyShareQr, ShareParse, SplitChallenge, SubKeys } from './dap';
 
 export type EngineKind = 'educational' | 'webcrypto' | 'remote';
 
@@ -204,6 +205,20 @@ export interface LweEngine extends CryptoEngine {
   attackBruteForce(keys: LweKeys): Promise<LweAttack>;
 }
 
+/** DAP (draft-melo-dap-visual-oob-auth-00): operações do e-Bank, do HSM e do celular (MD). */
+export interface DapEngine extends CryptoEngine {
+  /** k_2 = HMAC-SHA-512(MK, label | key_id | version | len(ID) | ID | key_timestamp), dentro do HSM. */
+  deriveK2(mk: Uint8Array, customer: CustomerRecord): Promise<Uint8Array>;
+  encodeShare(qr: KeyShareQr): Promise<string>;
+  parseShare(text: string): Promise<ShareParse>;
+  /** Monta r' = IV | AES-256-CBC(k'_2, r) e y = HMAC-SHA-256(k'_1, trans_data | r'). */
+  seal(keys: SubKeys, transData: string, r: string, iv: Uint8Array): Promise<Challenge>;
+  /** y' e a comparação em tempo constante com y (MD). */
+  checkTag(kMac: Uint8Array, challenge: SplitChallenge): Promise<{ yPrime: Uint8Array; equal: boolean }>;
+  /** r_hat, ou null se o preenchimento ou o formato forem inválidos (MD). */
+  reveal(kEnc: Uint8Array, rPrime: Uint8Array): Promise<string | null>;
+}
+
 export interface EngineSet {
   rsaDidactic: RsaDidacticEngine;
   rsaReal: RsaRealEngine;
@@ -218,6 +233,7 @@ export interface EngineSet {
   ecc: EccEngine;
   mlkem: MlKemEngine;
   lwe: LweEngine;
+  dap: DapEngine;
 }
 
 // Conjunto completo, usado nos testes e na documentação. Os laboratórios importam apenas a família de que precisam (src/crypto/local/).
@@ -232,5 +248,6 @@ import { engines as rc4 } from './local/rc4';
 import { engines as tls } from './local/tls';
 import { engines as ecc } from './local/ecc';
 import { engines as mlkem } from './local/mlkem';
+import { engines as dap } from './local/dap';
 
-export const engines: EngineSet = { ...rsa, ...diffieHellman, ...hash, ...aes, ...classical, ...chacha, ...des, ...rc4, ...tls, ...ecc, ...mlkem };
+export const engines: EngineSet = { ...rsa, ...diffieHellman, ...hash, ...aes, ...classical, ...chacha, ...des, ...rc4, ...tls, ...ecc, ...mlkem, ...dap };
