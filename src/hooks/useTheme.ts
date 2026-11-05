@@ -10,7 +10,7 @@ function initial(): Theme {
   } catch {
     /* armazenamento indisponível */
   }
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return 'light'; // tema claro é o padrão; a escolha do usuário fica salva
 }
 
 export function useTheme() {

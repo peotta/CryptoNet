@@ -22,7 +22,7 @@
       // Aplica o tema salvo antes da renderização para evitar piscar.
       try {
         var t = localStorage.getItem('cryptonet-theme');
-        var dark = t ? t === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var dark = t === 'dark';
         if (dark) document.documentElement.classList.add('dark');
       } catch (e) {}
     </script>
