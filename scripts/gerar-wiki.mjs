@@ -12,6 +12,7 @@ import { createServer } from 'vite';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DAP_RFC_INTRO, DAP_RFC_ATORES, DAP_RFC_DIAGRAMAS } from './dap-rfc-diagramas.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DOCS = process.argv.includes('--docs');
@@ -683,6 +684,17 @@ async function labDocument(lab) {
   sec++;
 
   O.push(`## ${sec}. Fundamentação`, '', spec.resumo, '');
+  if (lab.id === 'dap') {
+    // Item 2.1: diagramas do draft, com os atores do próprio draft (Cliente, MD, UC, ATM, e-Bank, HSM)
+    O.push(`### ${sec}.1 Diagramas de sequência do protocolo (Internet-Draft)`, '', DAP_RFC_INTRO, '');
+    O.push('| Ator | Significado |', '| --- | --- |');
+    for (const [a, m] of DAP_RFC_ATORES) O.push(`| ${a} | ${m} |`);
+    O.push('');
+    DAP_RFC_DIAGRAMAS.forEach((d, i) => {
+      O.push(`#### ${sec}.1.${i + 1} ${d.titulo} (${d.ref})`, '', d.descricao, '', '```mermaid', d.mermaid, '```', '');
+      O.push(`*Figura ${sec}.1.${i + 1} (sequência).* ${d.titulo}.`, '');
+    });
+  }
   sec++;
 
   // Cenários executados
@@ -712,6 +724,7 @@ async function labDocument(lab) {
   }
 
   // Participantes (do primeiro cenário)
+  if (lab.id === 'dap') O.push('> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.', '');
   O.push(`## ${sec}. Participantes`, '');
   O.push('Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.', '');
   const partyRows = new Map();

@@ -37,6 +37,329 @@ O **DAP** (*Dynamic Authorization Protocol*) é um protocolo de **autorização 
 
 **Partes do laboratório.** A Parte A cobre o provisionamento da chave, inclusive a troca de k1 por Eva e a observação do ATM; a Parte B cobre a ativação do dispositivo, que confirma que as duas pontas têm a mesma chave; a Parte C cobre a transação e os ataques de Eva: alteração do QR, pedido trocado por malware (MITB), chute do código e repetição do código.
 
+### 2.1 Diagramas de sequência do protocolo (Internet-Draft)
+
+Os diagramas abaixo reproduzem todas as interações do protocolo descritas no *Internet-Draft* `draft-melo-dap-visual-oob-auth-00`, com os atores do próprio draft (e não com Alice, Bob e Eva, usados nos cenários da seção 5). Seta cheia é mensagem por rede; seta tracejada com a palavra "óptico" é a câmera do MD lendo um QR code, canal que não usa rede. A notação é k = k1 ⊕ k2 (512 bits), k'1 (32 octetos, chave do HMAC-SHA-256) e k'2 (32 octetos, chave do AES-256-CBC); r é o código autorizador de seis dígitos, r' é IV + C, y é a etiqueta HMAC e trans_data são os dados da transação em claro.
+
+| Ator | Significado |
+| --- | --- |
+| Cliente | Usuário humano |
+| MD | *Trusted Mobile Device*: celular de confiança com o aplicativo da instituição (função DAP) |
+| UC | *Untrusted Computer*: computador do cliente, tratado como não confiável |
+| ATM | Caixa eletrônico da instituição (tela com QR e leitor de smartcard) |
+| e-Bank | Servidor da instituição |
+| HSM | Módulo de segurança de hardware do e-Bank (guarda a chave-mestra MK e só calcula k2; o restante, inclusive k = k1 ⊕ k2, é feito pelo e-Bank) |
+
+#### 2.1.1 Provisionamento e ativação da chave (Seção 5 do draft)
+
+Cenário em que o Cliente cadastra o celular. Na fase 1 (canal Internet), o e-Bank sorteia k1 e o apresenta como QR no UC, e o MD o lê pela câmera. Na fase 2 (canal ATM), o Cliente se identifica com smartcard e PIN, o e-Bank pede ao HSM a metade k2 (calculada sob demanda) e o ATM a exibe como QR, também lido pelo MD, que calcula k = k1 ⊕ k2 e apaga as metades da memória. Na fase 3, o e-Bank cria o desafio de ativação (código 000), o MD o verifica e mostra r_hat, o Cliente o digita no ATM e o e-Bank habilita o MD. A chave k nunca trafega inteira por nenhum canal.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Cliente
+    participant MD as MD (app)
+    participant UC as UC
+    participant EB as e-Bank
+    participant HSM as HSM
+    participant ATM as ATM
+
+    Note over C,ATM: Fase 1 - Canal Internet (Passos 1 a 3)
+    C->>UC: Autentica e solicita cadastro do celular
+    UC->>EB: Pedido de cadastro (Passo 1)
+    C->>MD: Instala o app da instituição (protegido por senha local)
+    EB->>EB: Gera k1 aleatório (512 bits) e Enroll, guarda k1 e define key_id, key_version e key_timestamp
+    EB-->>UC: QR(k1) com código 001 (Passo 2)
+    UC-->>MD: QR de k1 (óptico, Passo 3)
+    MD->>MD: Valida o QR e guarda k1 temporariamente
+
+    Note over C,ATM: Fase 2 - Canal ATM (Passo 4)
+    C->>ATM: Smartcard + PIN
+    ATM->>EB: Autentica o cliente e pede k2
+    EB->>HSM: Pede k2 (calculado sob demanda)
+    HSM-->>EB: k2 = F_MK(label, key_id, key_version, ID, key_timestamp)
+    EB-->>ATM: k2
+    ATM-->>MD: QR(k2) com código 001 (óptico)
+    MD->>MD: Confere Enroll igual ao de k1
+    MD->>MD: k = k1 ⊕ k2, separa k'1 e k'2
+    MD->>MD: Guarda k no armazenamento protegido (não exportável)
+    MD->>MD: Zera k1 e k2 da memória
+
+    Note over C,ATM: Fase 3 - Ativação (Passo 5, código 000)
+    EB->>HSM: Pede k2
+    HSM-->>EB: k2
+    EB->>EB: k = k1 ⊕ k2 e cria o desafio de ativação (código 000)
+    EB-->>ATM: QR(desafio 000)
+    ATM-->>MD: QR(desafio 000) (óptico)
+    MD->>MD: Verifica y, Version, Code 000 e timestamp
+    MD->>C: Mostra mensagem de ativação
+    C->>MD: Confirma
+    MD->>C: Mostra r_hat
+    C->>ATM: Digita r_hat
+    ATM->>EB: r_hat
+    EB->>EB: Dentro de 120 s? r_hat = r? (até 3 tentativas)
+    EB->>EB: Marca o MD como habilitado
+    EB-->>ATM: Habilitado
+    ATM-->>C: DAP ativado
+```
+
+*Figura 2.1.1 (sequência).* Provisionamento e ativação da chave.
+
+#### 2.1.2 Formato e validação dos QR de troca de chaves (código 001, Seção 5.2)
+
+Cenário em que o MD valida os QR de k1 (vindo do e-Bank pelo UC) e de k2 (vindo do ATM). Os QR não levam a etiqueta y, porque o MD ainda não tem chave: o MD confere apenas a estrutura (seis campos, Version, Code 001, 64 octetos e o campo Check). As duas metades podem ser lidas em qualquer ordem, devem ter o mesmo Enroll e são descartadas se a segunda não chegar no prazo definido pela instituição. Uma metade adulterada só é detectada na ativação.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant EB as e-Bank
+    participant UC as UC
+    participant ATM as ATM
+    participant MD as MD (app)
+
+    EB-->>UC: Version, 001, 1, Enroll, Base64(k1), Check
+    UC-->>MD: QR de k1 (óptico)
+    MD->>MD: Seis campos? Version aceita? Code 001?
+    MD->>MD: Value decodifica para 64 octetos? Check correto?
+    alt algum teste falha
+        MD-->>MD: Rejeita o QR
+    else tudo correto
+        MD->>MD: Guarda a metade 1 com seu Enroll
+    end
+
+    EB-->>ATM: Version, 001, 2, Enroll, Base64(k2), Check
+    ATM-->>MD: QR de k2 (óptico)
+    MD->>MD: Mesmas validações do QR de k1
+    alt Enroll diferente ou metade repetida
+        MD-->>MD: Rejeita o segundo QR, k não é calculado
+    else uma metade 1 e uma metade 2 com o mesmo Enroll
+        MD->>MD: k = k1 ⊕ k2
+    end
+
+    Note over MD: As duas metades podem ser lidas em qualquer ordem
+    opt a segunda metade não chega no prazo definido pela instituição
+        MD->>MD: Descarta (zera) a metade guardada
+    end
+```
+
+*Figura 2.1.2 (sequência).* Formato e validação dos QR de troca de chaves.
+
+#### 2.1.3 Autorização de transação (Seção 6 do draft)
+
+Fluxo normal, do login ao recibo. O Cliente se autentica no UC e solicita a transação; o e-Bank gera o Nonce, o código r e o desafio (r' = IV + C, etiqueta y), obtendo k2 do HSM, e o exibe como QR. O MD lê o QR, recalcula a etiqueta, valida Version, Code, template e timestamp e mostra a transação em tela própria (WYSIWYS). Após a confirmação do Cliente, o MD decifra r e mostra r_hat; o Cliente o digita no UC, e o e-Bank o confere em até 120 s, executa a transação e invalida r.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Cliente
+    participant MD as MD (app)
+    participant UC as UC
+    participant EB as e-Bank
+    participant HSM as HSM
+
+    Note over C,EB: Autenticação usual no e-Bank
+    C->>UC: Login
+    UC->>EB: Autenticação
+    EB-->>UC: Autenticação OK
+    C->>UC: Solicita a transação
+    UC->>EB: Pedido da transação (campos exigidos pelo template)
+
+    Note over EB,HSM: Geração do desafio (6.1.1)
+    EB->>EB: Registra o instante de geração (campo timestamp) e inicia o timer de 120 s
+    EB->>EB: Define Version, gera Nonce único (20 caracteres) e r (000000 a 999999, sem viés)
+    EB->>EB: Monta trans_data a partir dos campos do pedido (Nonce, Version e timestamp enviados pelo UC são ignorados)
+    EB->>HSM: Pede k2 (ID, key_timestamp)
+    HSM-->>EB: k2
+    EB->>EB: k = k1 ⊕ k2, separa k'1 e k'2
+    EB->>EB: IV aleatório, C = AES-CBC(k'2, IV, r), r' = IV + C
+    EB->>EB: y = HMAC-SHA-256(k'1, trans_data + r')
+    EB->>EB: Descarta k2 e k da memória, guarda r até o desafio ser aceito, invalidado ou expirar
+    EB-->>UC: QR(trans_data + r' + y) em Base64
+    UC->>C: Exibe o QR
+
+    Note over C,MD: Captura e verificação no celular (6.1.2)
+    C->>MD: Abre o app DAP e digita a senha local
+    UC-->>MD: QR do desafio (óptico, sem rede)
+    MD->>MD: Separa trans_data, r' e y (rejeita se o Base64 for inválido ou o tamanho for insuficiente)
+    MD->>MD: y' = HMAC-SHA-256(k'1, trans_data + r')
+    MD->>MD: Confere y' = y em tempo constante
+    MD->>MD: Confere Version, Code, template (versão igual à Version do desafio), caracteres e campos
+    MD->>MD: Timestamp com mais de 120 s? Mais de 60 s no futuro?
+    MD->>C: Mostra a transação pelo template (WYSIWYS)
+
+    Note over C,EB: Confirmação e execução (6.1.3)
+    C->>MD: Confirma
+    MD->>MD: r_hat = AES-CBC-Dec(k'2, r') (se o padding for inválido ou não forem 6 dígitos, rejeita e não mostra código)
+    MD->>MD: Guarda o Nonce por pelo menos 120 s (aviso se o mesmo desafio for apresentado de novo, Seção 9.4)
+    MD->>C: Mostra o código autorizador r_hat
+    C->>UC: Digita r_hat
+    UC->>EB: r_hat
+    EB->>EB: Dentro de 120 s? r_hat = r? (comparação em tempo constante)
+    EB->>EB: Executa a transação e invalida r
+    EB-->>UC: Transação concluída
+    UC->>C: Recibo
+```
+
+*Figura 2.1.3 (sequência).* Autorização de transação.
+
+#### 2.1.4 Cancelamento pelo usuário (divergência nos dados mostrados)
+
+Cenário do ataque MITB. O malware no UC troca a conta e o valor do pedido antes de enviá-lo ao e-Bank, e a tela do UC continua mostrando os dados originais. O desafio é autêntico, pois veio do e-Bank, de modo que a etiqueta HMAC confere, mas o MD exibe a conta B e o valor Y reais. O Cliente percebe a divergência e cancela; o MD descarta o desafio sem mostrar r_hat, e o e-Bank cancela a transação quando o timer de 120 s expira. O MD não fala com o e-Bank.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Cliente
+    participant MD as MD (app)
+    participant UC as UC (com malware)
+    participant EB as e-Bank
+
+    C->>UC: Pede transferência para a conta A, valor X
+    UC->>EB: Pedido alterado pelo malware, conta B, valor Y
+    EB-->>UC: QR do desafio (da transação alterada)
+    UC->>C: Exibe o QR (tela mostra a conta A, valor X)
+    UC-->>MD: QR do desafio (óptico)
+    MD->>MD: HMAC confere, pois o QR veio do e-Bank
+    MD->>C: Mostra a conta B, valor Y (dados reais)
+    C->>C: Percebe que não é o que pretendia
+    C->>MD: Cancela
+    MD->>MD: Descarta o desafio, não mostra r_hat
+    Note over EB: O MD não fala com o e-Bank. A transação expira em até 120 s, ou o cliente a cancela no UC.
+    EB->>EB: Timer de 120 s expira, transação cancelada
+```
+
+*Figura 2.1.4 (sequência).* Cancelamento pelo usuário.
+
+#### 2.1.5 Rejeições no MD (QR adulterado, vencido ou inválido)
+
+Cenário em que o UC, tratado como adversário, apresenta ao MD um QR alterado, antigo ou repetido. O MD rejeita, nesta ordem: Base64 inválido ou tamanho insuficiente; etiqueta y' diferente de y (encerra sem decifrar r'); Version, Code, template ou campos inválidos; timestamp com mais de 120 s (desafio expirado) ou mais de 60 s à frente do relógio (verificar data e hora do aparelho). Se o mesmo Nonce já teve o código exibido há menos de 120 s, o MD avisa o Cliente antes de pedir Confirm ou Cancel.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Cliente
+    participant MD as MD (app)
+    participant UC as UC (adversário)
+
+    UC-->>MD: QR de desafio (óptico, possivelmente alterado, antigo ou repetido)
+    alt Base64 inválido ou menos de 64 octetos mais o trans_data mínimo
+        MD->>C: Rejeita o desafio antes de calcular a tag
+    else formato aceitável
+    MD->>MD: Separa trans_data, r' e y
+    MD->>MD: y' = HMAC-SHA-256(k'1, trans_data + r')
+    alt y' diferente de y
+        MD->>C: Erro de integridade ou autenticidade
+        Note over MD: Encerra sem decifrar r'
+    else y' igual a y
+        MD->>MD: Version, Code, número de campos, tipos e caracteres
+        alt Version não suportada, Code ou template da Version desconhecido, campo fora do template
+            MD->>C: Rejeita o desafio
+        else válido
+            MD->>MD: Compara o timestamp com o relógio do aparelho
+            alt passaram mais de 120 s
+                MD->>C: Desafio expirado, inicie nova transação
+            else timestamp mais de 60 s à frente do relógio
+                MD->>C: Verifique a data e a hora do aparelho
+            else dentro da janela
+                opt mesmo Nonce já teve o código exibido há menos de 120 s
+                    MD->>C: Avisa que este desafio já foi apresentado
+                end
+                MD->>C: Mostra a transação e pede Confirm ou Cancel
+            end
+        end
+    end
+    end
+```
+
+*Figura 2.1.5 (sequência).* Rejeições no MD.
+
+#### 2.1.6 Validação do código no e-Bank (tentativas, expiração e erro)
+
+Cenário em que o Cliente digita o código no UC e o e-Bank o valida. A cada tentativa, o e-Bank verifica primeiro o timer de 120 s (expirado cancela a transação), depois compara r_hat com r (igual executa a transação e invalida r) e, se diferente, conta uma falha e responde "código incorreto". Após a terceira falha, o e-Bank invalida o desafio, cancela a transação e registra o evento; a política da instituição pode acionar alerta ou nova autenticação.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Cliente
+    participant UC as UC
+    participant EB as e-Bank
+
+    Note over EB: Desafio emitido, timer de 120 s, contador de tentativas = 0
+    loop até 3 tentativas
+        C->>UC: Digita o código
+        UC->>EB: r_hat
+        break timer de 120 s expirado
+            EB-->>UC: Transação cancelada (expirada)
+            Note over EB: Invalida o desafio e r
+        end
+        break r_hat = r
+            EB->>EB: Executa a transação e invalida r
+            EB-->>UC: Transação concluída
+        end
+        EB->>EB: r_hat diferente de r: conta uma tentativa falha
+        EB-->>UC: Código incorreto
+    end
+    Note over EB: Após a 3ª falha, invalida o desafio, cancela a transação e registra o evento. A política da instituição pode acionar alerta ou nova autenticação.
+```
+
+*Figura 2.1.6 (sequência).* Validação do código no e-Bank.
+
+#### 2.1.7 Perda do celular, revogação e novo cadastro (Seção 7 do draft)
+
+Cenário em que o Cliente perde ou troca o celular. Não existe canal alternativo de autorização: a recuperação é feita somente no ATM ou na agência, com smartcard e PIN. O e-Bank apaga k1 (tornando k irrecuperável no servidor), deixa de gerar desafios, rejeita códigos de desafios pendentes, registra a revogação e avisa o Cliente por canal cadastrado. O novo cadastro repete o provisionamento e a ativação (diagrama 2.1.1) com novo k1, novo key_timestamp e key_version incrementada; a chave k não é exportável nem copiada para outro aparelho.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Cliente
+    participant ATM as ATM ou agência
+    participant EB as e-Bank
+    participant HSM as HSM
+    participant MD2 as Novo MD
+
+    C->>ATM: Informa perda, roubo ou troca do celular
+    C->>ATM: Smartcard + PIN (ou atendimento na agência)
+    ATM->>EB: Pede a revogação do cadastro DAP
+    EB->>EB: Apaga k1 do cliente (k torna-se irrecuperável no servidor)
+    EB->>EB: Para de gerar desafios e rejeita códigos de desafios pendentes
+    EB->>EB: Registra a revogação
+    EB-->>C: Avisa por canal cadastrado (recomendado)
+    EB-->>ATM: Revogação concluída
+
+    Note over C,MD2: Novo cadastro com o procedimento da Seção 5
+    EB->>EB: Novo k1, novo key_timestamp, key_version incrementada
+    Note over C,MD2: Repete o provisionamento e a ativação (diagrama 2.1.1) no novo MD
+    Note over EB: A chave k não é exportável. Ela não é copiada para outro aparelho.
+```
+
+*Figura 2.1.7 (sequência).* Perda do celular, revogação e novo cadastro.
+
+#### 2.1.8 Rotação ou comprometimento da chave-mestra MK (gestão da MK no HSM)
+
+Cenário de gestão da chave-mestra no HSM. Na rotação planejada, o e-Bank cria no HSM uma nova MK com novo key_id e os novos cadastros passam a usá-lo, enquanto a MK antiga permanece no HSM enquanto houver cliente que a use. Se a MK for suspeita de comprometimento, o e-Bank revoga todos os cadastros que usam o key_id e convoca os Clientes afetados a refazer o cadastro e a ativação (diagrama 2.1.1).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant EB as e-Bank
+    participant HSM as HSM
+    actor C as Clientes afetados
+
+    alt rotação planejada
+        EB->>HSM: Cria nova MK com novo key_id
+        EB->>EB: Novos cadastros usam o novo key_id
+        Note over EB,HSM: A MK antiga permanece no HSM enquanto houver cliente que a use
+    else MK suspeita de comprometimento
+        EB->>EB: Revoga todos os cadastros que usam o key_id
+        EB-->>C: Convoca ao novo provisionamento
+        C->>EB: Refaz o cadastro e a ativação (diagrama 2.1.1)
+    end
+```
+
+*Figura 2.1.8 (sequência).* Rotação ou comprometimento da chave-mestra MK.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.
