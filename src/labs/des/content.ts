@@ -2,7 +2,7 @@ import type { ReviewQuestion } from '../../components/ui';
 
 export const DES_OBJECTIVES = [
   'Descrever o DES como uma rede de Feistel de 16 rodadas sobre blocos de 64 bits e chave de 56 bits úteis.',
-  'Acompanhar a geração das 16 subchaves de 48 bits (PC-1, giros de C e D e PC-2) e a função f (expansão E, XOR com a subchave, caixas S e permutação P), conferidas com o exemplo clássico.',
+  'Acompanhar a geração das 16 subchaves de 48 bits (PC-1, giros de C e D e PC-2) e a função f (expansão E, XOR com a subchave, caixas S e permutação P), conferidas com o exemplo clássico, e consultar visualmente as oito caixas S na matriz 4 × 16.',
   'Explicar por que decifrar é cifrar com as subchaves em ordem inversa e qual é o papel das permutações inicial e final.',
   'Mostrar por que 56 bits não bastam: a busca exaustiva de Eva com texto claro conhecido, em escala didática, e a projeção para a chave inteira.',
   'Entender o Triple DES (cifrar, decifrar, cifrar), a segurança efetiva de 112 bits e o limite do bloco de 64 bits (Sweet32).',

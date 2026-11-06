@@ -189,7 +189,7 @@ export interface DesTrace {
   schedule: KeySchedule;
 }
 
-function sbox(box: number, six: Bits): SBoxStep {
+export function sbox(box: number, six: Bits): SBoxStep {
   const row = (six[0] << 1) | six[5];
   const col = (six[1] << 3) | (six[2] << 2) | (six[3] << 1) | six[4];
   const value = SBOXES[box][16 * row + col];

@@ -7,6 +7,21 @@ import { PartC } from './PartC';
 
 type Part = 'a' | 'b' | 'c';
 
+const PART_INFO: Record<Part, { title: string; text: string }> = {
+  a: {
+    title: 'Parte A: o DES por dentro',
+    text: 'Executa o algoritmo operação por operação, sobre uma chave e um bloco que você escolhe: a geração das 16 subchaves, as 16 rodadas da rede de Feistel e a função f, com a consulta visual às oito caixas S. O resultado é conferido com o exemplo clássico e com o OpenSSL.',
+  },
+  b: {
+    title: 'Parte B: o DES em uso',
+    text: 'Reúne Alice, Bob e Eva em três cenários: o DES em modo CBC, em que Alice cifra, Bob decifra e Eva só vê blocos sem padrão (e pode adulterar a cifra); a busca exaustiva da chave por Eva, em escala reduzida; e o Triple DES, que ampliou a vida do algoritmo.',
+  },
+  c: {
+    title: 'Parte C: propriedades do DES',
+    text: 'Mostra o efeito avalanche rodada a rodada, a propriedade do complemento, as chaves fracas e semifracas e uma comparação com o Triple DES e o AES.',
+  },
+};
+
 export default function DesLab() {
   const [part, setPart] = useState<Part>('a');
   return (
@@ -30,10 +45,7 @@ export default function DesLab() {
           e o AES o substituiu. Estudá-lo ainda vale, porque quase tudo o que se diz sobre cifras de bloco (confusão, difusão, Feistel, modos de operação) aparece nele de forma enxuta.
         </p>
         <Callout variant="info" title="Sobre o laboratório">
-          <p>
-            A Parte A executa o DES operação por operação (subchaves, rodadas e função f), conferido com o exemplo clássico e com o OpenSSL. A Parte B reúne Alice, Bob e Eva: o DES em CBC, a busca exaustiva (em
-            escala reduzida) e o Triple DES. A Parte C mostra o avalanche, a propriedade do complemento e as chaves fracas. Implementação didática e lenta: não use para proteger dados reais.
-          </p>
+          <p>O laboratório tem três partes, escolhidas nas abas abaixo; ao escolher uma, a explicação dela aparece logo em seguida. Implementação didática e lenta: não use para proteger dados reais.</p>
         </Callout>
         <Standards
           items={[
@@ -52,6 +64,9 @@ export default function DesLab() {
             { id: 'c', label: 'Parte C: avalanche, complemento e chaves fracas' },
           ]}
         />
+        <Callout variant="info" title={PART_INFO[part].title}>
+          <p>{PART_INFO[part].text}</p>
+        </Callout>
       </LabSection>
 
       {part === 'a' && <PartA key="a" />}

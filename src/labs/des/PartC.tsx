@@ -208,7 +208,7 @@ function WeakKeys() {
     return () => {
       cancelled = true;
     };
-  }, [opt, blockHex, blockErr]);
+  }, [sel, blockHex, blockErr]);
 
   return (
     <div className="space-y-4">

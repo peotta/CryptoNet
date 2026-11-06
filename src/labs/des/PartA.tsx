@@ -5,6 +5,7 @@ import { randomBytes } from '../../crypto/random';
 import { toHex } from '../../crypto/encoding';
 import { Callout, Field, LabSection, buttonClass } from '../../components/ui';
 import { BitTable, Stepper, fromHexInput } from './BitsView';
+import { SBoxPlayground, SBoxStepView } from './SBoxView';
 
 const RFC_KEY = '133457799bbcdff1';
 const RFC_BLOCK = '0123456789abcdef';
@@ -81,6 +82,7 @@ export function PartA() {
             <KeyScheduleViewer schedule={trace.schedule} />
             <BlockViewer trace={trace} isRfc={isRfc} />
             <FunctionViewer trace={trace} />
+            <SBoxPlayground />
           </>
         ) : (
           <p className="text-lg text-muted">Corrija os parâmetros para iniciar.</p>
@@ -234,6 +236,9 @@ function FunctionViewer({ trace }: { trace: DesTrace }) {
       <div>
         <label htmlFor="des-round" className="mb-1 block text-base font-semibold">
           Rodada examinada
+          <span className="ml-2 font-normal text-muted">
+            (uma rodada é uma das 16 repetições da estrutura do DES; cada uma usa a sua subchave K1 a K16 e aplica a função f à metade direita. Escolha qual rodada abrir para acompanhar a f por dentro)
+          </span>
         </label>
         <select
           id="des-round"
@@ -253,7 +258,7 @@ function FunctionViewer({ trace }: { trace: DesTrace }) {
       </div>
       <Stepper step={step} total={F_STAGES.length - 1} labelStart="Iniciar: expandir R" labelNext={F_STAGES[step + 1] === 'S1' ? 'Caixa S1 →' : F_STAGES[step + 1]?.startsWith('S') ? `Caixa ${F_STAGES[step + 1]} →` : F_STAGES[step + 1] === 'P' ? 'Permutação P →' : F_STAGES[step + 1] === 'xorL' ? 'XOR com L →' : 'Próxima etapa →'} onStep={setStep} />
       <p aria-live="polite" className="text-lg">{note}</p>
-      <BitTable caption={caption} rows={rows} />
+      {st.startsWith('S') ? <SBoxStepView mixed={r.mixed} sboxes={r.sboxes} upto={sIdx} /> : <BitTable caption={caption} rows={rows} />}
     </div>
   );
 }
