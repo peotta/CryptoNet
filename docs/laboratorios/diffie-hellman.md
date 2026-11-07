@@ -21,6 +21,132 @@ Acordo de chaves por um canal público, visão de Eva, derivação de chave com 
 
 No Diffie-Hellman, Alice e Bob escolhem expoentes privados a e b e trocam A = gᵃ mod p e B = gᵇ mod p; ambos obtêm K = gᵃᵇ mod p. Eva vê p, g, A e B, mas recuperar a ou b é o problema do logaritmo discreto. O protocolo não autentica ninguém, por isso um homem do meio (Eva ativa) estabelece um segredo com cada lado. Na prática, K passa por uma função de derivação (HKDF) e alimenta um algoritmo simétrico como o AES-GCM.
 
+**Artigo original.**
+
+- Diffie, W.; Hellman, M. E. *New directions in cryptography*. IEEE Transactions on Information Theory, v. IT-22, n. 6, p. 644-654, nov. 1976. [Acessar o artigo (PDF, cópia de Martin Hellman na Universidade de Stanford)](https://ee.stanford.edu/~hellman/publications/24.pdf); [DOI 10.1109/TIT.1976.1055638](https://doi.org/10.1109/TIT.1976.1055638).
+
+### 2.1 Diagramas da geração e da troca de chaves
+
+Os diagramas abaixo mostram o protocolo em si, antes dos cenários executados da seção 5. Alice e Bob são os participantes legítimos e Eva observa o canal. Nas mensagens, **p** é o módulo primo e **g** o gerador, ambos públicos; **a** e **b** são os expoentes privados de Alice e de Bob; **A** e **B** são os valores públicos; **K** é o segredo compartilhado. O segredo K nunca trafega pelo canal.
+
+#### 2.1.1 Geração das chaves e acordo do segredo compartilhado (visão de Eva, observadora passiva)
+
+Cenário-base do protocolo. Alice e Bob combinam o grupo público (p, g). Cada um sorteia um expoente privado, que nunca sai da sua máquina, e calcula o valor público correspondente (A = g^a mod p e B = g^b mod p). Os valores públicos atravessam o canal, onde Eva os copia. Cada lado eleva o valor recebido ao seu expoente privado e chega ao mesmo K = g^(ab) mod p, pois (g^b)^a = (g^a)^b. Eva conhece p, g, A e B, mas obter a ou b a partir deles é o problema do logaritmo discreto, inviável para parâmetros grandes.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: Parâmetros públicos do grupo
+    A->>B: (p, g)
+    Note over E: Eva copia p e g
+    Note over A: Sorteia o expoente privado a<br/>e o mantém em segredo
+    Note over B: Sorteia o expoente privado b<br/>e o mantém em segredo
+    A->>A: A = g^a mod p
+    B->>B: B = g^b mod p
+    A->>B: A
+    B->>A: B
+    Note over E: Eva copia A e B, mas não<br/>conhece a nem b
+    A->>A: K = B^a mod p
+    B->>B: K = A^b mod p
+    Note over A,B: Os dois obtêm<br/>K = g^(ab) mod p,<br/>que nunca trafegou
+    Note over E: Para obter K, Eva precisaria<br/>de a ou de b (logaritmo<br/>discreto)
+```
+
+*Figura 2.1.1 (sequência).* Geração das chaves e acordo do segredo compartilhado.
+
+#### 2.1.2 Do segredo compartilhado à chave de sessão e ao tráfego cifrado (HKDF e AES-GCM)
+
+O segredo K não é usado diretamente como chave. Cada lado o passa por uma função de derivação (HKDF com SHA-256), junto com um sal e um contexto públicos, e obtém uma chave simétrica de sessão com a distribuição e o tamanho adequados. Com ela, Alice cifra a mensagem com o AES-GCM, que usa um nonce único por mensagem e produz uma etiqueta de autenticação. Bob deriva a mesma chave, verifica a etiqueta e só então decifra. Eva vê apenas o nonce, o texto cifrado e a etiqueta; qualquer alteração em trânsito faz a verificação falhar.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: Ponto de partida: ambos têm<br/>o mesmo segredo K
+    A->>A: chave = HKDF-SHA-256(K, sal, contexto)
+    B->>B: chave = HKDF-SHA-256(K, sal, contexto)
+    Note over A,B: As duas chaves de sessão são<br/>idênticas
+    A->>A: Sorteia um nonce único para esta mensagem
+    A->>A: texto cifrado e etiqueta = AES-GCM-Cifrar(chave, nonce, mensagem)
+    A->>B: nonce, texto cifrado, etiqueta
+    Note over E: Eva vê apenas dados cifrados
+    B->>B: Verifica a etiqueta com a chave
+    alt etiqueta correta
+        B->>B: mensagem = AES-GCM-Decifrar(chave, nonce, texto cifrado)
+    else etiqueta incorreta (dado alterado)
+        B->>B: Rejeita a mensagem sem decifrar
+    end
+```
+
+*Figura 2.1.2 (sequência).* Do segredo compartilhado à chave de sessão e ao tráfego cifrado.
+
+#### 2.1.3 Troca de chaves sem autenticação: o homem do meio (Eva ativa)
+
+O Diffie-Hellman garante que o segredo é compartilhado entre quem trocou os valores públicos, mas não prova quem são essas pessoas. Se Eva controla o canal, ela mesma executa o protocolo com cada lado: substitui A por E (o seu valor público) diante de Bob e substitui B por E diante de Alice. O resultado são dois segredos distintos, K_AE entre Alice e Eva e K_EB entre Eva e Bob. Alice e Bob não compartilham nada entre si e acreditam o contrário, enquanto Eva decifra, lê, altera e recifra todo o tráfego.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant E as Eva
+    participant B as Bob
+    Note over A,B: Eva controla o canal entre<br/>Alice e Bob
+    A->>E: A
+    E->>B: E (no lugar de A)
+    B->>E: B
+    E->>A: E (no lugar de B)
+    A->>A: K_AE = E^a mod p
+    B->>B: K_EB = E^b mod p
+    E->>E: K_AE = A^e mod p e K_EB = B^e mod p
+    Note over A,E: Alice compartilha K_AE com<br/>Eva
+    Note over E,B: Bob compartilha<br/>K_EB com Eva
+    Note over A,B: Alice e Bob não compartilham<br/>segredo algum entre si
+    A->>E: Mensagem cifrada com K_AE
+    E->>E: Decifra, lê e pode alterar
+    E->>B: Mensagem recifrada com K_EB
+```
+
+*Figura 2.1.3 (sequência).* Troca de chaves sem autenticação: o homem do meio.
+
+#### 2.1.4 Troca de chaves autenticada com assinatura digital (a defesa usada, por exemplo, no TLS 1.3)
+
+A defesa é vincular os valores públicos a uma identidade verificável. Alice e Bob possuem pares de chaves de assinatura de longo prazo, e a chave pública de cada um é conhecida pelo outro (por exemplo, por meio de um certificado). Cada lado assina os dois valores públicos da troca com a sua chave privada de assinatura, e o outro verifica a assinatura com a chave pública correspondente antes de aceitar o segredo. Se Eva trocar A ou B, a assinatura não confere, pois ela não possui as chaves privadas de assinatura de Alice nem de Bob, e a troca é abortada. Este diagrama é conceitual: mostra a ideia, e não o formato exato de um protocolo específico.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant E as Eva
+    participant B as Bob
+    Note over A,B: Cada um conhece a chave<br/>pública de assinatura do<br/>outro
+    A->>A: A = g^a mod p
+    A->>B: A
+    B->>B: B = g^b mod p
+    B->>B: s_B = Assinar(chave privada de Bob, A e B)
+    B->>A: B e s_B
+    A->>A: Verifica s_B com a chave pública de Bob
+    alt assinatura válida
+        A->>A: K = B^a mod p
+        A->>A: s_A = Assinar(chave privada de Alice, A e B)
+        A->>B: s_A
+        B->>B: Verifica s_A com a chave pública de Alice
+        B->>B: K = A^b mod p
+        Note over A,B: Os dois têm K e sabem<br/>com quem o compartilham
+    else Eva substituiu B ou A (assinatura inválida)
+        A->>A: Aborta a troca sem calcular K
+    end
+    Note over E: Eva não tem as chaves<br/>privadas de assinatura, não<br/>forja s_A nem s_B
+```
+
+*Figura 2.1.4 (sequência).* Troca de chaves autenticada com assinatura digital.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

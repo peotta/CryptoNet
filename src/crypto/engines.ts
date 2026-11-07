@@ -5,6 +5,7 @@
 import type { Curve, EcdsaSignature, EcdsaVerification, Point, RealSigAlgo, RealSigRun } from './ecc';
 import type { TlsHandshake, TlsInput } from './tls13';
 import type { ChaChaBlock } from './chacha20';
+import type { NsRun, RunOptions as NsRunOptions } from './needhamSchroeder';
 import type { FmsVerified, KsaStep, PrgaStep, WepPacket } from './rc4';
 import type { Bits, CbcBlock, DesSearch, DesTrace, KeySchedule, TdesStages } from './des';
 import type { RsaDidacticKeys, RsaPrivateKey, RsaPublicKey } from './rsaDidactic';
@@ -219,6 +220,11 @@ export interface DapEngine extends CryptoEngine {
   reveal(kEnc: Uint8Array, rPrime: Uint8Array): Promise<string | null>;
 }
 
+/** Needham-Schroeder de chave pública (didático): execução completa do protocolo e do ataque de Lowe. */
+export interface NsEngine extends CryptoEngine {
+  run(options: NsRunOptions): Promise<NsRun>;
+}
+
 export interface EngineSet {
   rsaDidactic: RsaDidacticEngine;
   rsaReal: RsaRealEngine;
@@ -234,6 +240,7 @@ export interface EngineSet {
   mlkem: MlKemEngine;
   lwe: LweEngine;
   dap: DapEngine;
+  ns: NsEngine;
 }
 
 // Conjunto completo, usado nos testes e na documentação. Os laboratórios importam apenas a família de que precisam (src/crypto/local/).
@@ -249,5 +256,6 @@ import { engines as tls } from './local/tls';
 import { engines as ecc } from './local/ecc';
 import { engines as mlkem } from './local/mlkem';
 import { engines as dap } from './local/dap';
+import { engines as ns } from './local/needhamSchroeder';
 
-export const engines: EngineSet = { ...rsa, ...diffieHellman, ...hash, ...aes, ...classical, ...chacha, ...des, ...rc4, ...tls, ...ecc, ...mlkem, ...dap };
+export const engines: EngineSet = { ...rsa, ...diffieHellman, ...hash, ...aes, ...classical, ...chacha, ...des, ...rc4, ...tls, ...ecc, ...mlkem, ...dap, ...ns };

@@ -12,6 +12,7 @@ import { createServer } from 'vite';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { FUNDAMENTACAO_DIAGRAMAS } from './diagramas-fundamentacao.mjs';
 import { DAP_RFC_INTRO, DAP_RFC_ATORES, DAP_RFC_DIAGRAMAS } from './dap-rfc-diagramas.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -469,6 +470,42 @@ const SPECS = {
       },
     ],
   },
+  'needham-schroeder': {
+    dir: 'needham-schroeder',
+    motor: 'didático (RSA sem padding com módulo de 128 bits, em BigInt)',
+    engine: 'src/crypto/needhamSchroeder.ts',
+    content: ['NS_OBJECTIVES', 'NS_QUESTIONS'],
+    padroes: [
+      'Needham, R. M.; Schroeder, M. D. *Using encryption for authentication in large networks of computers*. Communications of the ACM, v. 21, n. 12, p. 993-999, 1978',
+      'Lowe, G. *An attack on the Needham-Schroeder public-key authentication protocol*. Information Processing Letters, v. 56, n. 3, p. 131-133, 1995',
+      'Denning, D. E.; Sacco, G. M. *Timestamps in key distribution protocols*. Communications of the ACM, v. 24, n. 8, p. 533-536, 1981',
+      '[RFC 4120](https://www.rfc-editor.org/rfc/rfc4120) (Kerberos versão 5), com atualizações como a [RFC 8429](https://www.rfc-editor.org/rfc/rfc8429)',
+    ],
+    resumo:
+      'O **protocolo de Needham-Schroeder de chave pública** (1978) permite que Alice e Bob, que conhecem as chaves públicas um do outro, se **autentiquem mutuamente** em três mensagens: {Na, A} cifrada para Bob, {Na, Nb} cifrada para Alice e {Nb} cifrada para Bob. Cada um prova que possui a sua chave privada devolvendo um **nonce** (número aleatório usado uma vez) que só quem a possui consegue ler. Em 1995, **Gavin Lowe** mostrou que Eva, um participante legítimo do sistema, pode usar uma sessão que Alice iniciou com ela para se passar por Alice diante de Bob e obter os dois nonces: a falha é de projeto, pois a mensagem 2 não diz quem a gerou, e não depende de quebrar o RSA. A **correção de Lowe** coloca a identidade de Bob dentro da mensagem 2, {Na, Nb, B}, e Alice, ao conferi-la, aborta o protocolo diante do ataque. A versão simétrica do protocolo, com servidor de chaves, tem a falha de repetição descrita por Denning e Sacco (1981) e deu origem ao Kerberos; ela não é simulada porque exige um quarto participante.',
+    limites: [
+      'A cifra é RSA didático sem padding, com módulo de 128 bits: serve para mostrar a lógica do protocolo e é insegura como cifra real.',
+      'A versão simétrica do Needham-Schroeder e o Kerberos aparecem só na comparação, porque exigem um servidor de chaves, um quarto participante além de Alice, Bob e Eva.',
+      'Eva é um participante legítimo, com par de chaves próprio, que escolhe se comportar de modo desonesto; a análise formal da correção não é feita no laboratório.',
+    ],
+    partes: [
+      {
+        titulo: 'O protocolo original',
+        cenarios: [{ titulo: 'Sessão normal entre Alice e Bob', entradas: 'valores fixos', build: async (c) => c.mod.ns.buildNsProtocol(await c.E.ns.run({ variant: 'original', scenario: 'normal', rand: c.mod.ns.fixedRandom(1) })) }],
+      },
+      {
+        titulo: 'O ataque de Lowe',
+        cenarios: [{ titulo: 'Eva se passa por Alice diante de Bob', entradas: 'valores fixos', build: async (c) => c.mod.ns.buildNsProtocol(await c.E.ns.run({ variant: 'original', scenario: 'ataque', rand: c.mod.ns.fixedRandom(1) })) }],
+      },
+      {
+        titulo: 'A correção de Lowe',
+        cenarios: [
+          { titulo: 'Sessão normal com a correção', entradas: 'valores fixos', build: async (c) => c.mod.ns.buildNsProtocol(await c.E.ns.run({ variant: 'corrigido', scenario: 'normal', rand: c.mod.ns.fixedRandom(1) })) },
+          { titulo: 'O mesmo ataque, barrado por Alice', entradas: 'valores fixos', build: async (c) => c.mod.ns.buildNsProtocol(await c.E.ns.run({ variant: 'corrigido', scenario: 'ataque', rand: c.mod.ns.fixedRandom(1) })) },
+        ],
+      },
+    ],
+  },
   rc4: {
     dir: 'rc4',
     motor: 'didático (RC4 com rastro; conferido com vetores conhecidos e com a RFC 6229)',
@@ -593,6 +630,7 @@ const L = {
     buildWep: (await load('/src/labs/rc4/flows.ts')).buildWepProtocol,
     runWep: (await load('/src/labs/rc4/flows.ts')).runWep,
   },
+  ns: await load('/src/labs/needham-schroeder/flows.ts'),
   hmac: { build: (await load('/src/labs/hash-hmac/flows.ts')).buildHmacProtocol },
 };
 /** Instante fixo (2 de novembro de 2026, 13:30:00 UTC) e entradas do DAP, para o documento gerado não mudar entre execuções. */
@@ -684,6 +722,20 @@ async function labDocument(lab) {
   sec++;
 
   O.push(`## ${sec}. Fundamentação`, '', spec.resumo, '');
+  const extra = FUNDAMENTACAO_DIAGRAMAS[lab.id];
+  if (extra?.artigos?.length) {
+    O.push(extra.artigos.length === 1 ? '**Artigo original.**' : '**Artigos originais.**', '');
+    for (const a of extra.artigos) O.push(`- ${a.citacao} ${a.links.map(([rotulo, url]) => `[${rotulo}](${url})`).join('; ')}.`);
+    O.push('');
+  }
+  if (extra) {
+    // Item 2.1: diagramas conceituais do protocolo (geração de chaves, troca, cifragem, assinatura), com Alice, Bob e Eva
+    O.push(`### ${sec}.1 ${extra.titulo}`, '', extra.intro, '');
+    extra.diagramas.forEach((d, i) => {
+      O.push(`#### ${sec}.1.${i + 1} ${d.titulo} (${d.ref})`, '', d.descricao, '', '```mermaid', d.mermaid, '```', '');
+      O.push(`*Figura ${sec}.1.${i + 1} (sequência).* ${d.titulo}.`, '');
+    });
+  }
   if (lab.id === 'dap') {
     // Item 2.1: diagramas do draft, com os atores do próprio draft (Cliente, MD, UC, ATM, e-Bank, HSM)
     O.push(`### ${sec}.1 Diagramas de sequência do protocolo (Internet-Draft)`, '', DAP_RFC_INTRO, '');
@@ -724,7 +776,7 @@ async function labDocument(lab) {
   }
 
   // Participantes (do primeiro cenário)
-  if (lab.id === 'dap') O.push('> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.', '');
+  if (lab.id === 'dap' || extra) O.push('> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.', '');
   O.push(`## ${sec}. Participantes`, '');
   O.push('Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.', '');
   const partyRows = new Map();

@@ -48,7 +48,7 @@ describe('página inicial e categorias', () => {
   it('marca com Novo apenas os três laboratórios mais recentes', () => {
     renderAt('/');
     expect(screen.getAllByText('Novo')).toHaveLength(3);
-    expect(LABS.filter((l) => l.novo).map((l) => l.id).sort()).toEqual(['dap', 'des', 'rc4']);
+    expect(LABS.filter((l) => l.novo).map((l) => l.id).sort()).toEqual(['dap', 'needham-schroeder', 'rc4']);
   });
   it('atualiza o título da aba a cada página', () => {
     renderAt('/lab/rsa');

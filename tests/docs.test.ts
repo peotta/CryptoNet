@@ -51,6 +51,17 @@ describe('documentação dos laboratórios (gerada por npm run docs:labs)', () =
       }
     }
   });
+  it('a Fundamentação de DAP, Diffie-Hellman e RSA traz o item 2.1 com os diagramas do protocolo', () => {
+    const esperado: Record<string, number> = { dap: 8, 'diffie-hellman': 4, rsa: 5 };
+    for (const [id, n] of Object.entries(esperado)) {
+      const text = read(`${id}.md`);
+      const fund = text.slice(text.indexOf('## 2. Fundamentação'), text.indexOf('## 3. Participantes'));
+      expect(fund, id).toMatch(/^### 2\.1 /m);
+      expect(fund.match(/^#### 2\.1\.\d+ /gm) ?? [], id).toHaveLength(n);
+      expect((fund.match(/```mermaid/g) ?? []).length, id).toBe(n);
+      expect(text, id).toContain('a partir deste ponto são apresentados os cenários para simulação em laboratório');
+    }
+  });
   it('não expõe valores aleatórios (hexadecimais longos)', () => {
     for (const f of fs.readdirSync(dir)) expect(/\b[0-9a-f]{32,}\b/.test(read(f)), f).toBe(false);
   });

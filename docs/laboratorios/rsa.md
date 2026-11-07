@@ -20,6 +20,143 @@ Geração de chaves, cifragem, decifragem e assinatura digital, em versão didá
 
 No RSA, n = p·q, e é coprimo de φ(n) e d é o inverso de e módulo φ(n). Cifrar é c = mᵉ mod n e decifrar é m = cᵈ mod n; assinar usa a chave privada e verificar usa a pública. O modo didático usa primos pequenos e nenhum padding (inseguro); o modo real usa RSA-OAEP (cifragem) e RSA-PSS (assinatura) pela Web Crypto, com chaves de 2048 a 4096 bits.
 
+**Artigo original.**
+
+- Rivest, R. L.; Shamir, A.; Adleman, L. *A method for obtaining digital signatures and public-key cryptosystems*. Communications of the ACM, v. 21, n. 2, p. 120-126, fev. 1978. [Acessar o artigo (PDF, cópia de Ronald Rivest no MIT)](https://people.csail.mit.edu/rivest/Rsapaper.pdf); [DOI 10.1145/359340.359342](https://doi.org/10.1145/359340.359342).
+
+### 2.1 Diagramas da geração de chaves, da cifragem e da assinatura digital
+
+Os diagramas abaixo mostram o RSA em operação, antes dos cenários executados da seção 5. Alice e Bob são os participantes legítimos e Eva observa o canal. O **par de chaves** pertence a quem **recebe** a mensagem cifrada (Bob) ou a quem **assina** (Alice): a chave pública (n, e) é divulgada a todos, inclusive a Eva, e a chave privada d fica apenas com o dono. Cifrar usa a chave pública do destinatário, e assinar usa a chave privada do signatário.
+
+#### 2.1.1 Geração do par de chaves e divulgação da chave pública (feita pelo dono do par, aqui Bob)
+
+Bob escolhe dois primos grandes e distintos, p e q, e calcula o módulo n = p·q e o totiente φ(n) = (p-1)(q-1). Escolhe o expoente público e, coprimo de φ(n), e calcula o expoente privado d como o inverso de e módulo φ(n), ou seja, e·d ≡ 1 (mod φ(n)). Divulga (n, e) e guarda d, e também p, q e φ(n), em segredo. Eva e Alice recebem a mesma chave pública; recuperar d a partir de (n, e) exige fatorar n, o que é inviável para módulos de 2048 bits ou mais.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant B as Bob (dono do par)
+    participant A as Alice
+    participant E as Eva
+    B->>B: Escolhe dois primos grandes e distintos, p e q
+    B->>B: n = p · q
+    B->>B: φ(n) = (p - 1) · (q - 1)
+    B->>B: Escolhe e coprimo de φ(n)
+    B->>B: d = inverso de e módulo φ(n), isto é, e · d ≡ 1 mod φ(n)
+    Note over B: Guarda d (e p, q, φ) em<br/>segredo: chave privada
+    B->>A: Chave pública (n, e)
+    B->>E: Chave pública (n, e), pois o canal é aberto
+    Note over E: Eva conhece n e e, mas para<br/>obter d precisaria fatorar<br/>n
+```
+
+*Figura 2.1.1 (sequência).* Geração do par de chaves e divulgação da chave pública.
+
+#### 2.1.2 Cifragem com a chave pública e decifragem com a chave privada (confidencialidade)
+
+Alice quer enviar uma mensagem confidencial a Bob. Ela usa a chave pública de Bob para cifrar (c = m^e mod n) e envia c pelo canal aberto. Eva vê c, n e e, mas não consegue inverter a exponenciação sem d. Bob usa a sua chave privada para decifrar (m = c^d mod n), recuperando a mensagem original, pois m^(e·d) ≡ m (mod n). Qualquer um pode cifrar para Bob, mas só Bob decifra. Neste diagrama a mensagem é um número m < n, como no modo didático sem padding do laboratório (inseguro); o RSA real usa o preenchimento do diagrama seguinte.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice (remetente)
+    participant B as Bob (destinatário)
+    participant E as Eva
+    B->>A: Chave pública (n, e)
+    Note over A: Mensagem m, com 0 ≤ m < n
+    A->>A: c = m^e mod n (usa a chave pública de Bob)
+    A->>B: c
+    Note over E: Eva vê c, n e e, mas não<br/>consegue calcular m sem d
+    B->>B: m = c^d mod n (usa a chave privada de Bob)
+    Note over B: Bob recupera m, pois m^(e·d)<br/>≡ m mod n
+```
+
+*Figura 2.1.2 (sequência).* Cifragem com a chave pública e decifragem com a chave privada.
+
+#### 2.1.3 Cifragem real com RSA-OAEP (com preenchimento aleatório)
+
+O RSA de livro-texto é determinístico e maleável: a mesma mensagem produz sempre a mesma cifra, e Eva pode manipular a cifra de modo previsível. O RSA-OAEP corrige isso. Antes de exponenciar, Alice monta um bloco com a mensagem, um rótulo opcional e um valor aleatório, misturados por uma função de hash (máscara). Como o valor aleatório muda a cada cifragem, a mesma mensagem gera cifras diferentes. Ao decifrar, Bob desfaz a máscara e confere a estrutura do bloco; se a cifra foi alterada, a conferência falha e a mensagem é rejeitada.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice (remetente)
+    participant B as Bob (destinatário)
+    participant E as Eva
+    B->>A: Chave pública (n, e)
+    A->>A: Sorteia um valor aleatório (semente)
+    A->>A: Monta o bloco OAEP com a mensagem, o rótulo e a semente, mascarados por hash
+    A->>A: c = (bloco)^e mod n
+    A->>B: c
+    Note over E: Eva vê c, mas cifrar a mesma<br/>mensagem de novo daria outra<br/>cifra
+    B->>B: bloco = c^d mod n
+    B->>B: Desfaz a máscara e confere a estrutura do bloco
+    alt estrutura válida
+        B->>B: Extrai a mensagem
+    else cifra alterada ou chave errada
+        B->>B: Rejeita sem revelar o motivo
+    end
+```
+
+*Figura 2.1.3 (sequência).* Cifragem real com RSA-OAEP.
+
+#### 2.1.4 Assinatura digital com a chave privada e verificação com a chave pública (autenticidade e integridade)
+
+Aqui o par de chaves pertence a Alice, a signatária. Ela calcula o resumo (hash) da mensagem e o transforma com a sua chave privada, obtendo a assinatura s = h^d mod n, e envia a mensagem e a assinatura. Bob calcula o hash da mensagem recebida e aplica a chave pública de Alice à assinatura (h' = s^e mod n). Se os dois valores coincidem, a mensagem veio de quem possui a chave privada de Alice e não foi alterada. Se Eva muda a mensagem, o hash muda e a verificação falha; Eva não consegue refazer a assinatura sem a chave privada. No modo didático do laboratório assina-se o número m diretamente, e no RSA-PSS real o resumo passa por um preenchimento probabilístico antes da exponenciação.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice (signatária)
+    participant B as Bob (verificador)
+    participant E as Eva
+    A->>B: Chave pública (n, e)
+    A->>A: h = Hash(m)
+    A->>A: s = h^d mod n (usa a chave privada de Alice)
+    A->>E: (m, s) passa pelo canal
+    alt Eva não altera
+        E->>B: (m, s)
+    else Eva altera a mensagem
+        E->>B: (m', s) com m' diferente de m
+    end
+    B->>B: h1 = Hash(mensagem recebida)
+    B->>B: h2 = s^e mod n (usa a chave pública de Alice)
+    alt h1 igual a h2
+        B->>B: Assinatura válida: autêntica e íntegra
+    else h1 diferente de h2
+        B->>B: Assinatura inválida: mensagem alterada ou assinatura forjada
+    end
+```
+
+*Figura 2.1.4 (sequência).* Assinatura digital com a chave privada e verificação com a chave pública.
+
+#### 2.1.5 Cifrar e assinar a mesma mensagem (confidencialidade, autenticidade e integridade)
+
+Os dois usos se combinam, cada um com a chave certa. Alice assina a mensagem com a sua chave privada (prova de autoria e integridade) e cifra o conjunto com a chave pública de Bob (confidencialidade). Bob decifra com a sua chave privada e, em seguida, verifica a assinatura com a chave pública de Alice. Eva vê apenas a cifra e não consegue lê-la nem alterá-la sem que a verificação falhe. Cada par de chaves serve a um único propósito: o de Bob, para receber cifras, e o de Alice, para assinar. Em sistemas reais, a mensagem longa é cifrada com uma chave simétrica e só essa chave é protegida pelo RSA.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: Cada um conhece a chave<br/>pública do outro
+    A->>A: s = Assinar(chave privada de Alice, Hash(m))
+    A->>A: c = Cifrar(chave pública de Bob, m e s)
+    A->>B: c
+    Note over E: Eva vê apenas c, que não lê<br/>nem altera sem ser detectada
+    B->>B: m e s = Decifrar(chave privada de Bob, c)
+    B->>B: Verificar(chave pública de Alice, s, Hash(m))
+    alt assinatura válida
+        B->>B: Aceita m: confidencial, autêntica e íntegra
+    else assinatura inválida
+        B->>B: Rejeita m
+    end
+```
+
+*Figura 2.1.5 (sequência).* Cifrar e assinar a mesma mensagem.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

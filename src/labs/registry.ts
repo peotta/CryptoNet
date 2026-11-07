@@ -171,6 +171,16 @@ export const LABS: LabMeta[] = [
     component: lazy(() => import('./dap/DapLab')),
   },
   {
+    id: 'needham-schroeder',
+    novo: true,
+    category: 'autenticacao',
+    title: 'Needham-Schroeder e o ataque de Lowe',
+    summary: 'Autenticação mútua com chave pública em três mensagens, o ataque de Lowe com que Eva se passa por Alice diante de Bob e a correção que coloca a identidade de Bob na mensagem 2.',
+    objectives: ['Executar as três mensagens e conferir os nonces', 'Reproduzir o ataque de Lowe com Eva como participante legítimo', 'Aplicar a correção e ver Alice abortar o protocolo'],
+    status: 'available',
+    component: lazy(() => import('./needham-schroeder/NsLab')),
+  },
+  {
     id: 'tls13',
     category: 'assimetrica',
     title: 'Handshake do TLS 1.3',
@@ -181,7 +191,6 @@ export const LABS: LabMeta[] = [
   },
   {
     id: 'des',
-    novo: true,
     category: 'simetrica',
     title: 'DES e Triple DES',
     summary: 'A rede de Feistel de 16 rodadas operação por operação, a busca exaustiva de Eva contra a chave de 56 bits e o Triple DES, com Alice e Bob.',

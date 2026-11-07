@@ -29,6 +29,7 @@ describe('normas e referências na introdução dos laboratórios', () => {
     ['rc4', [/RFC 6229/, /RFC 7465/, /RFC 8758/, /não é um algoritmo aprovado pelo NIST/]],
     ['des', [/FIPS 46-3/, /SP 800-67 Rev\. 2/, /FIPS 197/]],
     ['chacha20', [/RFC 8439.*ChaCha20/, /não é um algoritmo aprovado pelo NIST/]],
+    ['needham-schroeder', [/Needham, R. M./, /Lowe, G./, /RFC 4120/]],
   ] as const)('%s', async (id, expected) => {
     const box = await openLab(id);
     for (const re of expected) expect(box.textContent, String(re)).toMatch(re);
