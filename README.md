@@ -9,6 +9,8 @@ Laboratório Virtual de Criptografia e Protocolos Seguros, da Universidade de Br
 
 Projeto acadêmico do curso de Engenharia de Redes de Comunicação, sob responsabilidade do Prof. Dr. Laerte Peotta de Melo. Projeto irmão: [Simul-Net](https://peotta.github.io/Simul-Net/), simuladores visuais de redes e protocolos seguros.
 
+![Página inicial do CryptoNet Lab, com as categorias de laboratórios](docs/imagens/hub.png)
+
 Destaques: nada avança sozinho (cada etapa executa uma única operação e espera a confirmação do aluno); modos didáticos com BigInt ao lado de operações reais pela Web Crypto; resultados conferidos com vetores oficiais (FIPS 46-3, FIPS 197, RFC 6229, RFC 8439, RFC 8448, RFC 4231); acessibilidade verificada por testes automáticos (axe-core).
 
 **Atores:** em todos os laboratórios, Alice e Bob são os participantes legítimos e Eva é a atacante (observadora passiva ou, quando há adulteração, ativa).

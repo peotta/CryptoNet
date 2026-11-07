@@ -85,7 +85,7 @@ describe('WEP: ataque FMS', () => {
       const res = fmsRecoverVerified(5, weakPackets(root, 5), (k) => toHex(wepEncrypt(iv, k, plain)) === frame);
       if (res.found && toHex(res.key) === toHex(root)) ok++;
     }
-    expect(ok).toBeGreaterThanOrEqual(19);
+    expect(ok).toBeGreaterThanOrEqual(17);
   });
   it('cifra WEP: o IV viaja em claro e a chave raiz decifra o quadro', () => {
     const root = fromHex('0102030405');

@@ -9,15 +9,48 @@ export function Home() {
   const planned = LABS.filter((l) => l.status === 'planned');
   return (
     <div className="space-y-12">
-      <section aria-labelledby="titulo" className="max-w-4xl space-y-3">
-        <h1 id="titulo" className="text-4xl font-bold">
-          CryptoNet Lab
-        </h1>
-        <p className="text-2xl text-muted">Laboratório Virtual de Criptografia e Protocolos Seguros</p>
-        <p className="text-lg">
-          Projeto acadêmico do curso de Engenharia de Redes de Comunicação da Universidade de Brasília (UnB), sob responsabilidade do Prof. Dr. Laerte Peotta de Melo. Cada
-          operação criptográfica pode ser acompanhada passo a passo, com animações, fórmulas com os valores substituídos e a visão de quem observa a rede.
-        </p>
+      <section aria-labelledby="titulo" className="max-w-5xl space-y-3">
+        <div className="flex flex-col items-start gap-6 md:flex-row md:items-center md:gap-8">
+          <img
+            src={`${import.meta.env.BASE_URL}favicon.svg`}
+            alt="Logotipo do CryptoNet Lab: um cadeado protege o enlace entre dois nós, Alice e Bob, enquanto Eva observa de fora"
+            width={160}
+            height={160}
+            className="h-28 w-28 shrink-0 md:h-40 md:w-40"
+          />
+          <div className="max-w-4xl space-y-3">
+            <h1 id="titulo" className="text-4xl font-bold">
+              CryptoNet Lab
+            </h1>
+            <p className="text-2xl text-muted">Laboratório Virtual de Criptografia e Protocolos Seguros</p>
+            <p className="text-lg">
+              Projeto acadêmico do curso de Engenharia de Redes de Comunicação da Universidade de Brasília (UnB), sob responsabilidade do Prof. Dr. Laerte Peotta de Melo. Cada
+              operação criptográfica pode ser acompanhada passo a passo, com animações, fórmulas com os valores substituídos e a visão de quem observa a rede.
+            </p>
+          </div>
+        </div>
+        <aside aria-labelledby="normas-vigentes" className="mt-4 rounded-xl border-l-4 border-accent bg-surface p-5">
+          <h2 id="normas-vigentes" className="text-xl font-bold">
+            Baseados em normas vigentes e com documentação própria
+          </h2>
+          <p className="mt-1 text-lg">
+            Todos os laboratórios são desenvolvidos a partir das RFCs e dos padrões do NIST mais recentes, conferidos no texto oficial do{' '}
+            <a href="https://www.rfc-editor.org" target="_blank" rel="noopener noreferrer" className="font-semibold text-accent underline">
+              RFC Editor
+            </a>{' '}
+            e do{' '}
+            <a href="https://csrc.nist.gov" target="_blank" rel="noopener noreferrer" className="font-semibold text-accent underline">
+              NIST
+            </a>
+            , com atenção às versões substituídas ou atualizadas. Os resultados são conferidos com os vetores de teste oficiais.
+          </p>
+          <p className="mt-3 text-lg">
+            Cada laboratório tem ainda uma documentação própria, parte essencial do estudo. Ela apresenta a <strong>fundamentação</strong> do algoritmo, com os{' '}
+            <strong>diagramas de sequência</strong> que mostram a ordem exata das mensagens trocadas entre Alice, Bob e Eva, os <strong>artigos clássicos dos criadores</strong> dos algoritmos e protocolos e os <strong>trabalhos acadêmicos</strong> de referência, com link direto para leitura, e os{' '}
+            <strong>cenários</strong> executados na simulação (o funcionamento normal, as falhas e as defesas). Com esse material, o estudante relaciona o que vê na animação com o que a
+            especificação determina e chega a um entendimento aprofundado dos algoritmos e protocolos. Use o link &quot;Documentação&quot; no cartão de cada laboratório.
+          </p>
+        </aside>
       </section>
 
       <section aria-labelledby="categorias" className="space-y-4">
