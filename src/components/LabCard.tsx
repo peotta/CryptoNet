@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import type { LabMeta } from '../labs/registry';
 
-export function LabCard({ lab, headingLevel = 3 }: { lab: LabMeta; headingLevel?: 2 | 3 }) {
-  const Heading = `h${headingLevel}` as 'h2' | 'h3';
+export function LabCard({ lab, headingLevel = 3 }: { lab: LabMeta; headingLevel?: 2 | 3 | 4 }) {
+  const Heading = `h${headingLevel}` as 'h2' | 'h3' | 'h4';
   const available = lab.status === 'available';
   return (
     <article className={`flex flex-col rounded-xl border bg-surface p-5 ${available ? 'border-line' : 'border-dashed border-line'}`}>

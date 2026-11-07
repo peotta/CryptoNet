@@ -5,7 +5,6 @@ import { CATEGORIES, LABS, labsByCategory } from '../labs/registry';
 
 export function Home() {
   useDocumentTitle();
-  const available = LABS.filter((l) => l.status === 'available');
   const planned = LABS.filter((l) => l.status === 'planned');
   return (
     <div className="space-y-12">
@@ -92,11 +91,25 @@ export function Home() {
         <h2 id="disponiveis" className="text-2xl font-bold">
           Laboratórios disponíveis
         </h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          {available.map((l) => (
-            <LabCard key={l.id} lab={l} />
-          ))}
-        </div>
+        {CATEGORIES.map((c) => {
+          const labs = labsByCategory(c.id).filter((l) => l.status === 'available');
+          if (labs.length === 0) return null;
+          return (
+            <div key={c.id} className="space-y-3">
+              <h3 className="border-b border-line pb-1 text-xl font-bold">
+                <Link to={`/categoria/${c.id}`} className="text-accent underline">
+                  {c.title}
+                </Link>{' '}
+                <span className="text-base font-semibold text-muted">({labs.length})</span>
+              </h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                {labs.map((l) => (
+                  <LabCard key={l.id} lab={l} headingLevel={4} />
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </section>
 
       {planned.length > 0 && (
