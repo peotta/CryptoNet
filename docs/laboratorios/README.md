@@ -50,11 +50,12 @@ Algoritmos que resistem a computadores quânticos, como o ML-KEM ([FIPS 203](htt
 
 ## Autenticação e Protocolos Seguros
 
-Protocolos que combinam primitivas para provar quem são os participantes e autenticá-los mutuamente, como o Needham-Schroeder e o ataque de Lowe.
+Protocolos que combinam primitivas para provar quem são os participantes e autenticá-los mutuamente, como o Needham-Schroeder, o ataque de Lowe e as senhas de uso único HOTP e TOTP.
 
 | Laboratório | Resumo | Motor | Padrões e referências |
 | --- | --- | --- | --- |
 | [Needham-Schroeder e o ataque de Lowe](needham-schroeder.md) | Autenticação mútua com chave pública em três mensagens, o ataque de Lowe com que Eva se passa por Alice diante de Bob e a correção que coloca a identidade de Bob na mensagem 2. | didático (RSA sem padding com módulo de 128 bits, em BigInt) | Needham, R. M.; Schroeder, M. D. *Using encryption for authentication in large networks of computers*. Communications of the ACM, v. 21, n. 12, p. 993-999, 1978; Lowe, G. *An attack on the Needham-Schroeder public-key authentication protocol*. Information Processing Letters, v. 56, n. 3, p. 131-133, 1995; Denning, D. E.; Sacco, G. M. *Timestamps in key distribution protocols*. Communications of the ACM, v. 24, n. 8, p. 533-536, 1981; [RFC 4120](https://www.rfc-editor.org/rfc/rfc4120) (Kerberos versão 5), com atualizações como a [RFC 8429](https://www.rfc-editor.org/rfc/rfc8429) |
+| [HOTP e TOTP: senhas de uso único](totp-hotp.md) | Segundo fator dos aplicativos autenticadores ([RFC 4226](https://www.rfc-editor.org/rfc/rfc4226) e [RFC 6238](https://www.rfc-editor.org/rfc/rfc6238)): contador, HMAC e truncamento dinâmico passo a passo, conferidos com os vetores das RFCs, e o que Eva consegue com um código capturado. | real (HMAC pela Web Crypto API) com truncamento dinâmico calculado passo a passo | [RFC 4226](https://www.rfc-editor.org/rfc/rfc4226) (HOTP: algoritmo de senha de uso único baseado em HMAC) e [RFC 6238](https://www.rfc-editor.org/rfc/rfc6238) (TOTP: algoritmo de senha de uso único baseado em tempo), seção 5.2 sobre a validação; [RFC 2104](https://www.rfc-editor.org/rfc/rfc2104) (HMAC) e [RFC 4648](https://www.rfc-editor.org/rfc/rfc4648) (Base32, usado na entrega do segredo por QR code); As RFCs 4226 e 6238 são informativas e continuam vigentes: não foram substituídas nem atualizadas |
 
 ## DAP: Autorização de Transações
 

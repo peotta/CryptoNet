@@ -36,10 +36,9 @@ const partB = async (scenario?: RegExp) => {
 };
 
 describe('laboratório de RC4 e do ataque ao WEP', () => {
-  it('está na categoria Simétrica e marcado como Novo', () => {
+  it('está na categoria Simétrica', () => {
     renderAt('/categoria/simetrica');
     expect(screen.getAllByRole('link', { name: /Abrir laboratório\s*: RC4 e o ataque ao WEP/ })).toHaveLength(1);
-    expect(screen.getAllByText('Novo').length).toBeGreaterThan(0);
   });
 
   it('Parte A: a primeira troca da KSA usa j = 0 + S[0] + K[0]', async () => {

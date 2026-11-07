@@ -24,6 +24,7 @@ import type { DhSession, MitmSession } from './diffieHellman';
 import type { PublicKeyInfo, RsaKeySize } from './rsaWebCrypto';
 import type { DecapsDetail, EncapsDetail, KeyGenDetail, MlKemParams } from './mlkem';
 import type { LweAttack, LweCiphertext, LweDecryption, LweKeys, LweParams } from './lwe';
+import type { HotpTrace, OtpAlgo, VectorCheck, VerifyOptions, VerifyResult } from './otpAuth';
 import type { Challenge, CustomerRecord, KeyShareQr, ShareParse, SplitChallenge, SubKeys } from './dap';
 
 export type EngineKind = 'educational' | 'webcrypto' | 'remote';
@@ -225,6 +226,14 @@ export interface NsEngine extends CryptoEngine {
   run(options: NsRunOptions): Promise<NsRun>;
 }
 
+/** Senhas de uso único HOTP e TOTP (RFC 4226 e RFC 6238), com HMAC pela Web Crypto. */
+export interface OtpAuthEngine extends CryptoEngine {
+  hotp(key: Uint8Array, counter: bigint, digits: number, algo: OtpAlgo): Promise<HotpTrace>;
+  totp(key: Uint8Array, unixSeconds: number, digits: number, algo: OtpAlgo): Promise<HotpTrace>;
+  verify(key: Uint8Array, unixSeconds: number, code: string, options?: VerifyOptions): Promise<VerifyResult>;
+  checkVectors(): Promise<VectorCheck[]>;
+}
+
 export interface EngineSet {
   rsaDidactic: RsaDidacticEngine;
   rsaReal: RsaRealEngine;
@@ -241,6 +250,7 @@ export interface EngineSet {
   lwe: LweEngine;
   dap: DapEngine;
   ns: NsEngine;
+  otpAuth: OtpAuthEngine;
 }
 
 // Conjunto completo, usado nos testes e na documentação. Os laboratórios importam apenas a família de que precisam (src/crypto/local/).
@@ -257,5 +267,6 @@ import { engines as ecc } from './local/ecc';
 import { engines as mlkem } from './local/mlkem';
 import { engines as dap } from './local/dap';
 import { engines as ns } from './local/needhamSchroeder';
+import { engines as otpAuth } from './local/otpAuth';
 
-export const engines: EngineSet = { ...rsa, ...diffieHellman, ...hash, ...aes, ...classical, ...chacha, ...des, ...rc4, ...tls, ...ecc, ...mlkem, ...dap, ...ns };
+export const engines: EngineSet = { ...rsa, ...diffieHellman, ...hash, ...aes, ...classical, ...chacha, ...des, ...rc4, ...tls, ...ecc, ...mlkem, ...dap, ...ns, ...otpAuth };

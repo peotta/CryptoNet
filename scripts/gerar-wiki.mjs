@@ -16,6 +16,7 @@ import { FUNDAMENTACAO_DIAGRAMAS } from './diagramas-fundamentacao.mjs';
 import { ARTIGOS_FUNDAMENTACAO, FUNDAMENTACAO_FASE1 } from './diagramas-fase1.mjs';
 import { FUNDAMENTACAO_FASE2 } from './diagramas-fase2.mjs';
 import { FUNDAMENTACAO_FASE3 } from './diagramas-fase3.mjs';
+import { FUNDAMENTACAO_AUTENTICACAO } from './diagramas-autenticacao.mjs';
 import { DAP_RFC_INTRO, DAP_RFC_ATORES, DAP_RFC_DIAGRAMAS } from './dap-rfc-diagramas.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -556,6 +557,45 @@ const SPECS = {
       },
     ],
   },
+  'totp-hotp': {
+    dir: 'totp-hotp',
+    motor: 'real (HMAC pela Web Crypto API) com truncamento dinâmico calculado passo a passo',
+    engine: 'src/crypto/otpAuth.ts',
+    content: ['TOTP_OBJECTIVES', 'TOTP_QUESTIONS'],
+    padroes: [
+      '[RFC 4226](https://www.rfc-editor.org/rfc/rfc4226) (HOTP: algoritmo de senha de uso único baseado em HMAC) e [RFC 6238](https://www.rfc-editor.org/rfc/rfc6238) (TOTP: algoritmo de senha de uso único baseado em tempo), seção 5.2 sobre a validação.',
+      '[RFC 2104](https://www.rfc-editor.org/rfc/rfc2104) (HMAC) e [RFC 4648](https://www.rfc-editor.org/rfc/rfc4648) (Base32, usado na entrega do segredo por QR code).',
+      'As RFCs 4226 e 6238 são informativas e continuam vigentes: não foram substituídas nem atualizadas.',
+    ],
+    resumo:
+      'O HOTP e o TOTP são as senhas de uso único dos aplicativos autenticadores. Alice e Bob compartilham um segredo K; a cada autenticação, Alice calcula o HMAC de um contador de 8 bytes com K, aplica o truncamento dinâmico (os 4 bits menos significativos do último byte dão o deslocamento de 4 bytes, de que se apaga o bit de sinal) e reduz o inteiro a 6 dígitos. Bob repete a conta e compara.\n\n' +
+      'No HOTP o contador é o número de códigos gerados; no TOTP é o número de passos de 30 segundos desde 1970, e por isso Alice e Bob chegam ao mesmo código sem trocar mensagens e o código expira sozinho. O código prova a posse do segredo, mas não cifra nada e não identifica o site em que é digitado.\n\n' +
+      'Por isso Eva lê o código no canal e o usa se o servidor ainda o aceitar, repete-o dentro da janela se o servidor não registrar o último contador aceito (RFC 6238, seção 5.2), retransmite-o em tempo real a partir de um site falso (phishing) e tenta adivinhá-lo, o que só é contido limitando as tentativas. A Parte A calcula o código operação por operação e confere os vetores das RFCs; a Parte B executa quatro cenários com Alice, Bob e Eva.',
+    limites: [
+      'O HMAC é o da Web Crypto API, e o segredo é gerado no navegador; nada é armazenado.',
+      'O servidor do laboratório aceita o contador atual e um vizinho de cada lado; servidores reais podem usar outra tolerância e também ressincronizar o relógio do usuário.',
+      'O cenário de phishing mostra o limite do TOTP; a defesa por verificação de origem (WebAuthn) não é implementada neste laboratório.',
+    ],
+    partes: [
+      {
+        titulo: 'Do segredo ao código',
+        cenarios: [
+          { titulo: 'HOTP com o contador 0 (vetor da RFC 4226)', entradas: 'segredo "12345678901234567890", contador 0, 6 dígitos, HMAC-SHA-1', build: async (c) => c.mod.totp.buildAlgoProtocol(await c.mod.totp.runAlgo(c.E.otpAuth, { mode: 'hotp', secret: '12345678901234567890', counter: 0, time: 0, digits: 6, algo: 'SHA-1' })) },
+          { titulo: 'TOTP no instante 59 s (vetor da RFC 6238)', entradas: 'segredo "12345678901234567890", tempo 59 s, 8 dígitos, HMAC-SHA-1', build: async (c) => c.mod.totp.buildAlgoProtocol(await c.mod.totp.runAlgo(c.E.otpAuth, { mode: 'totp', secret: '12345678901234567890', counter: 0, time: 59, digits: 8, algo: 'SHA-1' })) },
+        ],
+      },
+      {
+        titulo: 'Alice, Bob e Eva',
+        cenarios: [
+          { titulo: 'Código vencido', entradas: 'segredo fixo, primeiro acesso às 13:30:10 UTC, segundo acesso 90 s depois', build: async (c) => c.mod.totp.buildScenarioProtocol(await c.mod.totp.runScenario(c.E.otpAuth, { scenario: 'normal', key: fixedBytes(21).slice(0, 20), time: c.mod.totp.DEFAULT_TIME, rejectUsed: false, limit: 5 })) },
+          { titulo: 'Repetição do código dentro da janela', entradas: 'servidor sem registro do último contador aceito', build: async (c) => c.mod.totp.buildScenarioProtocol(await c.mod.totp.runScenario(c.E.otpAuth, { scenario: 'replay', key: fixedBytes(21).slice(0, 20), time: c.mod.totp.DEFAULT_TIME, rejectUsed: false, limit: 5 })) },
+          { titulo: 'Repetição recusada pelo servidor', entradas: 'servidor com registro do último contador aceito', build: async (c) => c.mod.totp.buildScenarioProtocol(await c.mod.totp.runScenario(c.E.otpAuth, { scenario: 'replay', key: fixedBytes(21).slice(0, 20), time: c.mod.totp.DEFAULT_TIME, rejectUsed: true, limit: 5 })) },
+          { titulo: 'Phishing em tempo real', entradas: 'Eva retransmite o código 4 s depois', build: async (c) => c.mod.totp.buildScenarioProtocol(await c.mod.totp.runScenario(c.E.otpAuth, { scenario: 'phishing', key: fixedBytes(21).slice(0, 20), time: c.mod.totp.DEFAULT_TIME, rejectUsed: false, limit: 5 })) },
+          { titulo: 'Adivinhar o código', entradas: 'cinco palpites antes do bloqueio da conta', build: async (c) => c.mod.totp.buildScenarioProtocol(await c.mod.totp.runScenario(c.E.otpAuth, { scenario: 'forca-bruta', key: fixedBytes(21).slice(0, 20), time: c.mod.totp.DEFAULT_TIME, rejectUsed: false, limit: 5 })) },
+        ],
+      },
+    ],
+  },
 };
 
 async function hmacFlow(c, message, tamper) {
@@ -634,6 +674,7 @@ const L = {
     runWep: (await load('/src/labs/rc4/flows.ts')).runWep,
   },
   ns: await load('/src/labs/needham-schroeder/flows.ts'),
+  totp: await load('/src/labs/totp-hotp/flows.ts'),
   hmac: { build: (await load('/src/labs/hash-hmac/flows.ts')).buildHmacProtocol },
 };
 /** Instante fixo (2 de novembro de 2026, 13:30:00 UTC) e entradas do DAP, para o documento gerado não mudar entre execuções. */
@@ -725,7 +766,7 @@ async function labDocument(lab) {
   sec++;
 
   O.push(`## ${sec}. Fundamentação`, '', spec.resumo, '');
-  const extra = FUNDAMENTACAO_DIAGRAMAS[lab.id] ?? FUNDAMENTACAO_FASE1[lab.id] ?? FUNDAMENTACAO_FASE2[lab.id] ?? FUNDAMENTACAO_FASE3[lab.id];
+  const extra = FUNDAMENTACAO_DIAGRAMAS[lab.id] ?? FUNDAMENTACAO_FASE1[lab.id] ?? FUNDAMENTACAO_FASE2[lab.id] ?? FUNDAMENTACAO_FASE3[lab.id] ?? FUNDAMENTACAO_AUTENTICACAO[lab.id];
   const artigos = extra?.artigos ?? ARTIGOS_FUNDAMENTACAO[lab.id];
   if (artigos?.length) {
     O.push(extra?.rotuloArtigos ?? (artigos.length === 1 ? '**Artigo original.**' : '**Artigos originais.**'), '');

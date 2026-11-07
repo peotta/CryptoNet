@@ -45,7 +45,7 @@ export const CATEGORIES: Category[] = [
   {
     id: 'autenticacao',
     title: 'Autenticação e Protocolos Seguros',
-    description: 'Protocolos que combinam primitivas para provar quem são os participantes e autenticá-los mutuamente, como o Needham-Schroeder e o ataque de Lowe.',
+    description: 'Protocolos que combinam primitivas para provar quem são os participantes e autenticá-los mutuamente, como o Needham-Schroeder, o ataque de Lowe e as senhas de uso único HOTP e TOTP.',
   },
   {
     id: 'dap',
@@ -186,6 +186,16 @@ export const LABS: LabMeta[] = [
     component: lazy(() => import('./needham-schroeder/NsLab')),
   },
   {
+    id: 'totp-hotp',
+    novo: true,
+    category: 'autenticacao',
+    title: 'HOTP e TOTP: senhas de uso único',
+    summary: 'Segundo fator dos aplicativos autenticadores (RFC 4226 e RFC 6238): contador, HMAC e truncamento dinâmico passo a passo, conferidos com os vetores das RFCs, e o que Eva consegue com um código capturado.',
+    objectives: ['Calcular o código a partir do segredo e do contador', 'Ver por que o código vencido e o já usado não servem a Eva', 'Reconhecer o limite do TOTP diante do phishing em tempo real'],
+    status: 'available',
+    component: lazy(() => import('./totp-hotp/TotpLab')),
+  },
+  {
     id: 'tls13',
     category: 'assimetrica',
     title: 'Handshake do TLS 1.3',
@@ -223,7 +233,6 @@ export const LABS: LabMeta[] = [
   },
   {
     id: 'rc4',
-    novo: true,
     category: 'simetrica',
     title: 'RC4 e o ataque ao WEP',
     summary: 'Cifra de fluxo clássica: KSA e PRGA troca por troca, a maleabilidade e o ataque FMS, com que Eva recupera a chave do WEP por votação.',

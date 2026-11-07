@@ -37,10 +37,9 @@ const partB = async (scenario?: RegExp) => {
 };
 
 describe('laboratório de DES e Triple DES', () => {
-  it('está na categoria Simétrica e marcado como Novo', () => {
+  it('está na categoria Simétrica', () => {
     renderAt('/categoria/simetrica');
     expect(screen.getAllByRole('link', { name: /Abrir laboratório\s*: DES e Triple DES/ })).toHaveLength(1);
-    expect(screen.getAllByText('Novo').length).toBeGreaterThan(0);
   });
 
   it('A.1: a primeira subchave confere com o exemplo clássico', async () => {
