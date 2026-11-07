@@ -184,6 +184,15 @@ sequenceDiagram
 - A chave tem de 1 a 20 letras; textos curtos tornam o ataque estatístico pouco confiável.
 - Uso exclusivamente didático: os laboratórios não devem proteger dados reais.
 
+## 8. Glossário
+
+Significado e finalidade das siglas usadas neste documento.
+
+| Sigla | Significado | Para que serve |
+| --- | --- | --- |
+| **IC** | Índice de Coincidência (Index of Coincidence) | probabilidade de duas letras sorteadas do texto serem iguais; distingue um texto de substituição simples de um polialfabético |
+
+
 ---
 
 *CryptoNet é um projeto mantido pelo Prof. Dr. Laerte Peotta de Melo, com apoio de IA generativa no processo de desenvolvimento, com sua estrita supervisão, revisão técnica e responsabilidade. Uso exclusivo para fins de ensino e pesquisa. Universidade de Brasília (UnB) - Departamento de Engenharia Elétrica. Código aberto (licença MIT).*

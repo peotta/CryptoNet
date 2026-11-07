@@ -99,8 +99,18 @@ const components: Components = {
 export const withoutCredit = (markdown: string) => markdown.replace(/\n+---\n+\*[^*\n]+ é um projeto mantido pelo [^*\n]+\*\s*$/, '\n');
 
 export function DocView({ markdown }: { markdown: string }) {
+  const siglas = /^## ((?:\d+\. )?Glossário)$/m.exec(markdown);
   return (
     <div className="min-w-0 max-w-4xl">
+      {siglas && (
+        <p className="mb-4 rounded-lg border border-line bg-surface px-3 py-2 text-base text-muted" role="note">
+          <strong className="text-ink">Dúvida sobre uma sigla?</strong> O significado e a finalidade de cada uma estão na seção{' '}
+          <button type="button" onClick={() => goTo(slug(siglas[1]))} className="font-semibold text-accent underline">
+            {siglas[1]}
+          </button>
+          , no fim desta página.
+        </p>
+      )}
       <Markdown remarkPlugins={[remarkGfm]} components={components}>
         {withoutCredit(markdown)}
       </Markdown>

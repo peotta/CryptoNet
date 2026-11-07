@@ -251,6 +251,19 @@ sequenceDiagram
 - Eva é um participante legítimo, com par de chaves próprio, que escolhe se comportar de modo desonesto; a análise formal da correção não é feita no laboratório.
 - Uso exclusivamente didático: os laboratórios não devem proteger dados reais.
 
+## 8. Glossário
+
+Significado e finalidade das siglas usadas neste documento.
+
+| Sigla | Significado | Para que serve |
+| --- | --- | --- |
+| **ACM** | Association for Computing Machinery | sociedade científica que edita periódicos e anais de computação, como o Communications of the ACM |
+| **DOI** | Digital Object Identifier, identificador de objeto digital | identificador permanente de uma publicação, que leva ao artigo pelo endereço doi.org |
+| **FDR** | Failures-Divergences Refinement | verificador de modelos com que Lowe encontrou o ataque ao protocolo Needham-Schroeder |
+| **PDF** | Portable Document Format, formato de documento portátil | formato de arquivo das cópias dos artigos citados |
+| **RSA** | Rivest, Shamir e Adleman | sistema de chave pública cuja segurança vem da dificuldade de fatorar o produto de dois primos grandes; cifra e assina |
+
+
 ---
 
 *CryptoNet é um projeto mantido pelo Prof. Dr. Laerte Peotta de Melo, com apoio de IA generativa no processo de desenvolvimento, com sua estrita supervisão, revisão técnica e responsabilidade. Uso exclusivo para fins de ensino e pesquisa. Universidade de Brasília (UnB) - Departamento de Engenharia Elétrica. Código aberto (licença MIT).*

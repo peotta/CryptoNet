@@ -596,6 +596,39 @@ const SPECS = {
       },
     ],
   },
+  kerberos: {
+    dir: 'kerberos',
+    motor: 'real (PBKDF2-HMAC-SHA-256 e AES-256-GCM pela Web Crypto API), simplificado em relação ao RFC 3962',
+    engine: 'src/crypto/kerberos.ts',
+    content: ['KRB_OBJECTIVES', 'KRB_QUESTIONS'],
+    padroes: [
+      '[RFC 4120](https://www.rfc-editor.org/rfc/rfc4120) (Kerberos V5), vigente e atualizada por outras RFCs, entre elas a [RFC 8429](https://www.rfc-editor.org/rfc/rfc8429) (recomendações sobre cifras).',
+      '[RFC 3962](https://www.rfc-editor.org/rfc/rfc3962) (AES no Kerberos 5), [RFC 6113](https://www.rfc-editor.org/rfc/rfc6113) (framework de pré-autenticação e FAST) e [RFC 6649](https://www.rfc-editor.org/rfc/rfc6649) (abandono do DES e do RC4-HMAC-EXP).',
+      '[RFC 4121](https://www.rfc-editor.org/rfc/rfc4121) (mecanismo GSS-API do Kerberos 5), que descreve como as aplicações usam o Kerberos.',
+    ],
+    resumo:
+      'O Kerberos autentica usuários e serviços numa rede insegura sem enviar senhas. Um terceiro de confiança, o centro de distribuição de chaves (KDC), conhece a chave de cada participante. Na troca AS, Alice recebe um tíquete de concessão de tíquetes (TGT) e uma chave de sessão cifrada com a chave derivada da sua senha; na troca TGS, troca o TGT por um tíquete para o serviço de Bob; na troca AP, apresenta esse tíquete a Bob, que não precisa consultar o KDC.\n\n' +
+      'Cada tíquete é cifrado com a chave de quem o consome, de modo que Alice o carrega sem poder lê-lo. Um autenticador, com o horário, mostra que quem apresenta o tíquete conhece a chave de sessão naquele instante, e a devolução do horário por Bob dá a autenticação mútua. A segurança depende da senha de Alice e de relógios sincronizados dentro de uma tolerância (por padrão, 5 minutos).\n\n' +
+      'Eva vê todas as mensagens, mas só texto cifrado. Ela reapresenta o autenticador capturado, que vale dentro da tolerância de relógio e só é barrado se o serviço guardar os autenticadores já vistos; e pede ao KDC uma resposta para Alice para testar senhas offline, o que a pré-autenticação impede e uma senha forte torna inviável. O palco tem quatro participantes: Alice, o KDC, Eva e Bob.',
+    limites: [
+      'As chaves derivam da senha por PBKDF2 com SHA-256 e as mensagens usam AES-256-GCM; o RFC 3962 define PBKDF2 com HMAC-SHA-1 e AES-CTS com HMAC-SHA1. O laboratório não interopera com um KDC real.',
+      'Os tíquetes e as mensagens são serializados como JSON, não como estruturas ASN.1 do RFC 4120; delegação, renovação de tíquetes e referências entre reinos não são representadas.',
+      'O KDC reúne o serviço de autenticação (AS) e o de concessão de tíquetes (TGS), como na maioria das instalações. A defesa por FAST (RFC 6113) é apenas citada.',
+    ],
+    partes: [
+      {
+        titulo: 'Alice, o KDC, Eva e Bob',
+        cenarios: [
+          { titulo: 'Troca completa com Eva no canal', entradas: 'senha fraca "primavera", tolerância de 300 s, horário fixo das 13:30:10 UTC', build: async (c) => c.mod.krb.buildProtocol(await c.mod.krb.runScenario(c.E.kerberos, { scenario: 'normal', password: c.mod.krb.WEAK_PASSWORD, now: c.mod.krb.DEFAULT_NOW, skew: 300, replayCache: false, preauth: false, dictionary: c.mod.krb.DEFAULT_DICTIONARY }, fixedRand())) },
+          { titulo: 'Repetição do autenticador sem registro', entradas: 'Eva reenvia o AP-REQ 60 s depois; o serviço não guarda autenticadores', build: async (c) => c.mod.krb.buildProtocol(await c.mod.krb.runScenario(c.E.kerberos, { scenario: 'replay', password: c.mod.krb.WEAK_PASSWORD, now: c.mod.krb.DEFAULT_NOW, skew: 300, replayCache: false, preauth: false, dictionary: c.mod.krb.DEFAULT_DICTIONARY }, fixedRand())) },
+          { titulo: 'Repetição recusada pelo serviço', entradas: 'o serviço guarda os autenticadores já vistos', build: async (c) => c.mod.krb.buildProtocol(await c.mod.krb.runScenario(c.E.kerberos, { scenario: 'replay', password: c.mod.krb.WEAK_PASSWORD, now: c.mod.krb.DEFAULT_NOW, skew: 300, replayCache: true, preauth: false, dictionary: c.mod.krb.DEFAULT_DICTIONARY }, fixedRand())) },
+          { titulo: 'Adivinhar a senha fraca, sem pré-autenticação', entradas: 'dicionário de 10 palavras que inclui a senha', build: async (c) => c.mod.krb.buildProtocol(await c.mod.krb.runScenario(c.E.kerberos, { scenario: 'guess', password: c.mod.krb.WEAK_PASSWORD, now: c.mod.krb.DEFAULT_NOW, skew: 300, replayCache: false, preauth: false, dictionary: c.mod.krb.DEFAULT_DICTIONARY }, fixedRand())) },
+          { titulo: 'Senha forte, sem pré-autenticação', entradas: 'o mesmo dicionário não contém a senha', build: async (c) => c.mod.krb.buildProtocol(await c.mod.krb.runScenario(c.E.kerberos, { scenario: 'guess', password: c.mod.krb.STRONG_PASSWORD, now: c.mod.krb.DEFAULT_NOW, skew: 300, replayCache: false, preauth: false, dictionary: c.mod.krb.DEFAULT_DICTIONARY }, fixedRand())) },
+          { titulo: 'Pré-autenticação exigida pelo KDC', entradas: 'o KDC recusa o pedido de Eva e não entrega texto cifrado', build: async (c) => c.mod.krb.buildProtocol(await c.mod.krb.runScenario(c.E.kerberos, { scenario: 'guess', password: c.mod.krb.WEAK_PASSWORD, now: c.mod.krb.DEFAULT_NOW, skew: 300, replayCache: false, preauth: true, dictionary: c.mod.krb.DEFAULT_DICTIONARY }, fixedRand())) },
+        ],
+      },
+    ],
+  },
 };
 
 async function hmacFlow(c, message, tamper) {
@@ -675,12 +708,18 @@ const L = {
   },
   ns: await load('/src/labs/needham-schroeder/flows.ts'),
   totp: await load('/src/labs/totp-hotp/flows.ts'),
+  krb: await load('/src/labs/kerberos/flows.ts'),
   hmac: { build: (await load('/src/labs/hash-hmac/flows.ts')).buildHmacProtocol },
 };
 /** Instante fixo (2 de novembro de 2026, 13:30:00 UTC) e entradas do DAP, para o documento gerado não mudar entre execuções. */
 const DAP_T0 = Date.UTC(2026, 10, 2, 13, 30, 0);
 const DAP_TX = (c, scenario) => ({ scenario, seeds: c.mod.dap.makeSeeds(c.mod.dap.fixedRandom(1)), t0: DAP_T0, scanSec: 20, typeSec: 45, mdOffset: 0, payee: 'Maria Silva', amount: '1500,00' });
 /** 32 bytes determinísticos, para que o documento gerado não mude entre execuções. */
+/** Gerador reproduzível de n bytes (chaves de sessão, nonces e vetores de inicialização do Kerberos). */
+const fixedRand = () => {
+  let c = 1;
+  return (n) => Uint8Array.from({ length: n }, () => (c++ * 37) & 0xff);
+};
 const fixedBytes = (seed) => Uint8Array.from({ length: 32 }, (_, i) => (i * 31 + seed * 17 + (i >> 3)) & 0xff);
 const rndLetters = (n) => Array.from(rnd(n), (b) => String.fromCharCode(65 + (b % 26))).join('');
 const lweMod = await load('/src/crypto/lwe.ts');
@@ -917,7 +956,9 @@ function indice() {
 // ---------------------------------------------------------------------------------------------
 // Páginas da wiki
 // ---------------------------------------------------------------------------------------------
-for (const l of labs) files[`${pageName(l.id)}.md`] = docs[l.id];
+// Siglas: acrescenta a seção "Glossário" no fim do documento de cada laboratório.
+const { comSecaoDeSiglas } = await server.ssrLoadModule('/src/docs/glossario.ts');
+for (const l of labs) files[`${pageName(l.id)}.md`] = linkRfcs(comSecaoDeSiglas(docs[l.id], l.id));
 files[DOCS ? 'README.md' : 'laboratorios.md'] = indice().replace('# Laboratórios\n', DOCS ? '# Documentação dos laboratórios\n' : '# Laboratórios\n') + footer;
 
 if (!DOCS) {

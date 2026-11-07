@@ -279,6 +279,39 @@ sequenceDiagram
 - A mensagem é limitada a 40 bytes.
 - Uso exclusivamente didático: os laboratórios não devem proteger dados reais.
 
+## 8. Glossário
+
+Significado e finalidade das siglas usadas neste documento.
+
+| Sigla | Significado | Para que serve |
+| --- | --- | --- |
+| **ACM** | Association for Computing Machinery | sociedade científica que edita periódicos e anais de computação, como o Communications of the ACM |
+| **AEAD** | Authenticated Encryption with Associated Data, cifra autenticada com dados associados | cifra que protege o sigilo e a integridade juntos e também autentica dados que ficam em claro, como cabeçalhos |
+| **AES** | Advanced Encryption Standard, padrão de criptografia avançado | cifra de bloco de 128 bits com chaves de 128, 192 ou 256 bits, padronizada no [FIPS 197](https://csrc.nist.gov/pubs/fips/197/final) |
+| **CBC** | Cipher Block Chaining, encadeamento de blocos cifrados | modo em que cada bloco é combinado por XOR com o bloco cifrado anterior antes de cifrar; exige vetor de inicialização imprevisível |
+| **CCS** | Change Cipher Spec (no TLS) / Computer and Communications Security (conferência da ACM) | no TLS 1.3, mensagem mantida só por compatibilidade com middleboxes; nas referências, o simpósio ACM CCS |
+| **DES** | Data Encryption Standard, padrão de criptografia de dados | cifra de bloco de 64 bits com chave efetiva de 56 bits, padronizada em 1977 e hoje obsoleta |
+| **DOI** | Digital Object Identifier, identificador de objeto digital | identificador permanente de uma publicação, que leva ao artigo pelo endereço doi.org |
+| **EFF** | Electronic Frontier Foundation | organização de defesa de direitos digitais que construiu, em 1998, a máquina que quebrou o DES por força bruta |
+| **FIPS** | Federal Information Processing Standards, padrões federais de processamento de informação | padrões do NIST de uso obrigatório nos órgãos americanos, como o [FIPS 197](https://csrc.nist.gov/pubs/fips/197/final) (AES) e o [FIPS 203](https://csrc.nist.gov/pubs/fips/203/final) (ML-KEM) |
+| **GCM** | Galois/Counter Mode, modo de Galois com contador | modo de operação que cifra em modo contador e autentica com um hash universal; é um modo AEAD ([SP 800-38D](https://csrc.nist.gov/pubs/sp/800/38/d/final)) |
+| **HMAC** | Keyed-Hash Message Authentication Code, código de autenticação de mensagem com chave | autentica uma mensagem com uma chave secreta e uma função de hash ([RFC 2104](https://www.rfc-editor.org/rfc/rfc2104)) |
+| **HTTP** | Hypertext Transfer Protocol, protocolo de transferência de hipertexto | protocolo de aplicação da Web |
+| **HTTPS** | HTTP over TLS, HTTP sobre TLS | HTTP protegido por TLS |
+| **IP** | Internet Protocol, protocolo de internet | endereça e encaminha pacotes entre redes, de origem a destino |
+| **IV** | Initialization Vector, vetor de inicialização | valor que torna distintas duas cifragens com a mesma chave; em geral público, mas único ou imprevisível conforme o modo |
+| **NBS** | National Bureau of Standards | antigo nome do NIST, que publicou o DES em 1977 |
+| **NIST** | National Institute of Standards and Technology, Instituto Nacional de Padrões e Tecnologia (EUA) | publica os padrões criptográficos federais americanos, como os FIPS e as SP 800 |
+| **PC-1** | Permuted Choice 1, escolha permutada 1 | permutação que reduz a chave de 64 para 56 bits no escalonamento de chaves do DES |
+| **PC-2** | Permuted Choice 2, escolha permutada 2 | permutação que seleciona 48 bits para formar cada subchave de rodada do DES |
+| **PDF** | Portable Document Format, formato de documento portátil | formato de arquivo das cópias dos artigos citados |
+| **PKCS** | Public-Key Cryptography Standards, padrões de criptografia de chave pública | série de padrões da RSA Laboratories, como o PKCS #1 (RSA) e o PKCS #5 (senhas) |
+| **SP** | Special Publication, publicação especial | série de recomendações do NIST, como a [SP 800-38A](https://csrc.nist.gov/pubs/sp/800/38/a/final) (modos de operação) e a [SP 800-38D](https://csrc.nist.gov/pubs/sp/800/38/d/final) (modo GCM) |
+| **TLS** | Transport Layer Security, segurança da camada de transporte | protocolo que cifra e autentica a comunicação entre cliente e servidor; sucessor do SSL |
+| **UTF-8** | Unicode Transformation Format, 8 bits | codificação de texto Unicode em bytes, compatível com o ASCII |
+| **XOR** | Exclusive OR, ou exclusivo | operação bit a bit que combina o texto claro com o fluxo de chave e é a sua própria inversa |
+
+
 ---
 
 *CryptoNet é um projeto mantido pelo Prof. Dr. Laerte Peotta de Melo, com apoio de IA generativa no processo de desenvolvimento, com sua estrita supervisão, revisão técnica e responsabilidade. Uso exclusivo para fins de ensino e pesquisa. Universidade de Brasília (UnB) - Departamento de Engenharia Elétrica. Código aberto (licença MIT).*

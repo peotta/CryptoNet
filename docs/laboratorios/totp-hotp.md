@@ -381,6 +381,22 @@ sequenceDiagram
 - O cenário de phishing mostra o limite do TOTP; a defesa por verificação de origem (WebAuthn) não é implementada neste laboratório.
 - Uso exclusivamente didático: os laboratórios não devem proteger dados reais.
 
+## 8. Glossário
+
+Significado e finalidade das siglas usadas neste documento.
+
+| Sigla | Significado | Para que serve |
+| --- | --- | --- |
+| **ACM** | Association for Computing Machinery | sociedade científica que edita periódicos e anais de computação, como o Communications of the ACM |
+| **API** | Application Programming Interface, interface de programação de aplicações | conjunto de funções que um programa oferece a outros, como a Web Crypto API usada no navegador |
+| **DOI** | Digital Object Identifier, identificador de objeto digital | identificador permanente de uma publicação, que leva ao artigo pelo endereço doi.org |
+| **HMAC** | Keyed-Hash Message Authentication Code, código de autenticação de mensagem com chave | autentica uma mensagem com uma chave secreta e uma função de hash ([RFC 2104](https://www.rfc-editor.org/rfc/rfc2104)) |
+| **HOTP** | HMAC-based One-Time Password, senha de uso único baseada em HMAC | código de uso único derivado de um segredo e de um contador de eventos ([RFC 4226](https://www.rfc-editor.org/rfc/rfc4226)) |
+| **QR** | Quick Response, resposta rápida | código de barras bidimensional; entrega o segredo do TOTP ao aplicativo autenticador, e no DAP leva a chave pelo canal óptico |
+| **TOTP** | Time-based One-Time Password, senha de uso único baseada em tempo | código que muda a cada 30 segundos, derivado de um segredo e do relógio ([RFC 6238](https://www.rfc-editor.org/rfc/rfc6238)), usado como segundo fator |
+| **UTC** | Coordinated Universal Time, tempo universal coordenado | referência de horário usada nos exemplos de TOTP e Kerberos |
+
+
 ---
 
 *CryptoNet é um projeto mantido pelo Prof. Dr. Laerte Peotta de Melo, com apoio de IA generativa no processo de desenvolvimento, com sua estrita supervisão, revisão técnica e responsabilidade. Uso exclusivo para fins de ensino e pesquisa. Universidade de Brasília (UnB) - Departamento de Engenharia Elétrica. Código aberto (licença MIT).*

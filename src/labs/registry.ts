@@ -45,7 +45,7 @@ export const CATEGORIES: Category[] = [
   {
     id: 'autenticacao',
     title: 'Autenticação e Protocolos Seguros',
-    description: 'Protocolos que combinam primitivas para provar quem são os participantes e autenticá-los mutuamente, como o Needham-Schroeder, o ataque de Lowe e as senhas de uso único HOTP e TOTP.',
+    description: 'Protocolos que combinam primitivas para provar quem são os participantes e autenticá-los mutuamente, como o Needham-Schroeder, o ataque de Lowe, as senhas de uso único HOTP e TOTP e o Kerberos.',
   },
   {
     id: 'dap',
@@ -194,6 +194,15 @@ export const LABS: LabMeta[] = [
     objectives: ['Calcular o código a partir do segredo e do contador', 'Ver por que o código vencido e o já usado não servem a Eva', 'Reconhecer o limite do TOTP diante do phishing em tempo real'],
     status: 'available',
     component: lazy(() => import('./totp-hotp/TotpLab')),
+  },
+  {
+    id: 'kerberos',
+    category: 'autenticacao',
+    title: 'Kerberos: tíquetes e login único',
+    summary: 'Autenticação por terceiro de confiança (RFC 4120): as trocas AS, TGS e AP com tíquetes e autenticadores, a repetição do autenticador por Eva e a adivinhação da senha contra o KDC.',
+    objectives: ['Acompanhar as trocas AS, TGS e AP com quatro participantes', 'Ver como o registro de autenticadores fecha a repetição', 'Mostrar o papel da pré-autenticação contra a adivinhação de senha'],
+    status: 'available',
+    component: lazy(() => import('./kerberos/KerberosLab')),
   },
   {
     id: 'tls13',

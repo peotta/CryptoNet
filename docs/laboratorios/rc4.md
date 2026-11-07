@@ -240,6 +240,38 @@ sequenceDiagram
 - A mensagem é limitada a 120 bytes.
 - Uso exclusivamente didático: os laboratórios não devem proteger dados reais.
 
+## 8. Glossário
+
+Significado e finalidade das siglas usadas neste documento.
+
+| Sigla | Significado | Para que serve |
+| --- | --- | --- |
+| **AEAD** | Authenticated Encryption with Associated Data, cifra autenticada com dados associados | cifra que protege o sigilo e a integridade juntos e também autentica dados que ficam em claro, como cabeçalhos |
+| **AES-CTR** | AES no modo contador | cifra de fluxo construída com o AES; não autentica a mensagem |
+| **AES-GCM** | AES no modo Galois/Counter | cifra autenticada de uso corrente no TLS e em armazenamento: cifra e detecta alteração com a mesma chave |
+| **DOI** | Digital Object Identifier, identificador de objeto digital | identificador permanente de uma publicação, que leva ao artigo pelo endereço doi.org |
+| **FIPS** | Federal Information Processing Standards, padrões federais de processamento de informação | padrões do NIST de uso obrigatório nos órgãos americanos, como o [FIPS 197](https://csrc.nist.gov/pubs/fips/197/final) (AES) e o [FIPS 203](https://csrc.nist.gov/pubs/fips/203/final) (ML-KEM) |
+| **FMS** | Fluhrer, Mantin e Shamir | ataque de 2001 que recupera a chave do WEP a partir dos primeiros bytes do fluxo de chave do RC4 |
+| **IP** | Internet Protocol, protocolo de internet | endereça e encaminha pacotes entre redes, de origem a destino |
+| **IV** | Initialization Vector, vetor de inicialização | valor que torna distintas duas cifragens com a mesma chave; em geral público, mas único ou imprevisível conforme o modo |
+| **KSA** | Key-Scheduling Algorithm, algoritmo de escalonamento de chave | fase do RC4 que embaralha a permutação inicial com a chave |
+| **NIST** | National Institute of Standards and Technology, Instituto Nacional de Padrões e Tecnologia (EUA) | publica os padrões criptográficos federais americanos, como os FIPS e as SP 800 |
+| **PDF** | Portable Document Format, formato de documento portátil | formato de arquivo das cópias dos artigos citados |
+| **PRGA** | Pseudo-Random Generation Algorithm, algoritmo de geração pseudoaleatória | fase do RC4 que produz o fluxo de chave byte a byte |
+| **PTW** | Pyshkin, Tews e Weinmann | ataque de 2007 ao WEP que precisa de bem menos pacotes que o FMS |
+| **RC4** | Rivest Cipher 4 | cifra de fluxo antiga, hoje proibida em protocolos modernos por vieses no fluxo de chaves |
+| **SAC** | Selected Areas in Cryptography | conferência de criptografia em que foram publicados artigos sobre o RC4 |
+| **SP** | Special Publication, publicação especial | série de recomendações do NIST, como a [SP 800-38A](https://csrc.nist.gov/pubs/sp/800/38/a/final) (modos de operação) e a [SP 800-38D](https://csrc.nist.gov/pubs/sp/800/38/d/final) (modo GCM) |
+| **SSH** | Secure Shell | protocolo de acesso remoto e de transferência de arquivos com autenticação e cifra |
+| **TLS** | Transport Layer Security, segurança da camada de transporte | protocolo que cifra e autentica a comunicação entre cliente e servidor; sucessor do SSL |
+| **USENIX** | Advanced Computing Systems Association (nome histórico: Unix Users Group) | associação que realiza conferências de sistemas e segurança, como o USENIX Security |
+| **UTF-8** | Unicode Transformation Format, 8 bits | codificação de texto Unicode em bytes, compatível com o ASCII |
+| **WEP** | Wired Equivalent Privacy, privacidade equivalente à de redes cabeadas | mecanismo de segurança do Wi-Fi original, baseado em RC4 e quebrado por falhas no uso do vetor de inicialização |
+| **WPA** | Wi-Fi Protected Access, acesso protegido Wi-Fi | sucessor do WEP no Wi-Fi, com renovação das chaves por pacote |
+| **WPA2** | Wi-Fi Protected Access 2 | versão do WPA que usa o AES no modo CCMP |
+| **XOR** | Exclusive OR, ou exclusivo | operação bit a bit que combina o texto claro com o fluxo de chave e é a sua própria inversa |
+
+
 ---
 
 *CryptoNet é um projeto mantido pelo Prof. Dr. Laerte Peotta de Melo, com apoio de IA generativa no processo de desenvolvimento, com sua estrita supervisão, revisão técnica e responsabilidade. Uso exclusivo para fins de ensino e pesquisa. Universidade de Brasília (UnB) - Departamento de Engenharia Elétrica. Código aberto (licença MIT).*

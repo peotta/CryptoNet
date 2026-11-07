@@ -273,6 +273,32 @@ sequenceDiagram
 - O certificado é gerado no laboratório e não é validado por uma cadeia de uma autoridade certificadora real.
 - Uso exclusivamente didático: os laboratórios não devem proteger dados reais.
 
+## 8. Glossário
+
+Significado e finalidade das siglas usadas neste documento.
+
+| Sigla | Significado | Para que serve |
+| --- | --- | --- |
+| **AES** | Advanced Encryption Standard, padrão de criptografia avançado | cifra de bloco de 128 bits com chaves de 128, 192 ou 256 bits, padronizada no [FIPS 197](https://csrc.nist.gov/pubs/fips/197/final) |
+| **AES-GCM** | AES no modo Galois/Counter | cifra autenticada de uso corrente no TLS e em armazenamento: cifra e detecta alteração com a mesma chave |
+| **ECDH** | Elliptic Curve Diffie-Hellman, Diffie-Hellman em curvas elípticas | acordo de chaves que obtém o mesmo segredo compartilhado com chaves bem menores que as do DH clássico |
+| **ECDHE** | Elliptic Curve Diffie-Hellman Ephemeral, Diffie-Hellman efêmero em curvas elípticas | ECDH com chaves novas a cada sessão, o que dá sigilo perfeito para a frente |
+| **ECDSA** | Elliptic Curve Digital Signature Algorithm, algoritmo de assinatura digital em curvas elípticas | assinatura digital sobre curvas elípticas ([FIPS 186-5](https://csrc.nist.gov/pubs/fips/186-5/final)) |
+| **FIPS** | Federal Information Processing Standards, padrões federais de processamento de informação | padrões do NIST de uso obrigatório nos órgãos americanos, como o [FIPS 197](https://csrc.nist.gov/pubs/fips/197/final) (AES) e o [FIPS 203](https://csrc.nist.gov/pubs/fips/203/final) (ML-KEM) |
+| **GCM** | Galois/Counter Mode, modo de Galois com contador | modo de operação que cifra em modo contador e autentica com um hash universal; é um modo AEAD ([SP 800-38D](https://csrc.nist.gov/pubs/sp/800/38/d/final)) |
+| **HKDF** | HMAC-based Key Derivation Function, função de derivação de chaves baseada em HMAC | extrai e expande um segredo em várias chaves independentes ([RFC 5869](https://www.rfc-editor.org/rfc/rfc5869)) |
+| **HMAC** | Keyed-Hash Message Authentication Code, código de autenticação de mensagem com chave | autentica uma mensagem com uma chave secreta e uma função de hash ([RFC 2104](https://www.rfc-editor.org/rfc/rfc2104)) |
+| **HS** | Handshake Secret, segredo do handshake | segredo do cronograma de chaves do TLS 1.3 de que saem as chaves de tráfego do handshake |
+| **IETF** | Internet Engineering Task Force | organização aberta que desenvolve e publica os padrões da Internet, as RFCs |
+| **IV** | Initialization Vector, vetor de inicialização | valor que torna distintas duas cifragens com a mesma chave; em geral público, mas único ou imprevisível conforme o modo |
+| **NIST** | National Institute of Standards and Technology, Instituto Nacional de Padrões e Tecnologia (EUA) | publica os padrões criptográficos federais americanos, como os FIPS e as SP 800 |
+| **PSK** | Pre-Shared Key, chave pré-compartilhada | segredo combinado antes da sessão, usado para autenticar ou derivar chaves |
+| **RSA** | Rivest, Shamir e Adleman | sistema de chave pública cuja segurança vem da dificuldade de fatorar o produto de dois primos grandes; cifra e assina |
+| **SP** | Special Publication, publicação especial | série de recomendações do NIST, como a [SP 800-38A](https://csrc.nist.gov/pubs/sp/800/38/a/final) (modos de operação) e a [SP 800-38D](https://csrc.nist.gov/pubs/sp/800/38/d/final) (modo GCM) |
+| **TLS** | Transport Layer Security, segurança da camada de transporte | protocolo que cifra e autentica a comunicação entre cliente e servidor; sucessor do SSL |
+| **XOR** | Exclusive OR, ou exclusivo | operação bit a bit que combina o texto claro com o fluxo de chave e é a sua própria inversa |
+
+
 ---
 
 *CryptoNet é um projeto mantido pelo Prof. Dr. Laerte Peotta de Melo, com apoio de IA generativa no processo de desenvolvimento, com sua estrita supervisão, revisão técnica e responsabilidade. Uso exclusivo para fins de ensino e pesquisa. Universidade de Brasília (UnB) - Departamento de Engenharia Elétrica. Código aberto (licença MIT).*

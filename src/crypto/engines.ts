@@ -24,6 +24,7 @@ import type { DhSession, MitmSession } from './diffieHellman';
 import type { PublicKeyInfo, RsaKeySize } from './rsaWebCrypto';
 import type { DecapsDetail, EncapsDetail, KeyGenDetail, MlKemParams } from './mlkem';
 import type { LweAttack, LweCiphertext, LweDecryption, LweKeys, LweParams } from './lwe';
+import type { KrbOptions, KrbRun } from './kerberos';
 import type { HotpTrace, OtpAlgo, VectorCheck, VerifyOptions, VerifyResult } from './otpAuth';
 import type { Challenge, CustomerRecord, KeyShareQr, ShareParse, SplitChallenge, SubKeys } from './dap';
 
@@ -234,6 +235,11 @@ export interface OtpAuthEngine extends CryptoEngine {
   checkVectors(): Promise<VectorCheck[]>;
 }
 
+/** Kerberos 5 simplificado (RFC 4120): trocas AS, TGS e AP, com os cenários de repetição e de adivinhação de senha. */
+export interface KerberosEngine extends CryptoEngine {
+  run(options: KrbOptions): Promise<KrbRun>;
+}
+
 export interface EngineSet {
   rsaDidactic: RsaDidacticEngine;
   rsaReal: RsaRealEngine;
@@ -251,6 +257,7 @@ export interface EngineSet {
   dap: DapEngine;
   ns: NsEngine;
   otpAuth: OtpAuthEngine;
+  kerberos: KerberosEngine;
 }
 
 // Conjunto completo, usado nos testes e na documentação. Os laboratórios importam apenas a família de que precisam (src/crypto/local/).
@@ -268,5 +275,6 @@ import { engines as mlkem } from './local/mlkem';
 import { engines as dap } from './local/dap';
 import { engines as ns } from './local/needhamSchroeder';
 import { engines as otpAuth } from './local/otpAuth';
+import { engines as kerberos } from './local/kerberos';
 
-export const engines: EngineSet = { ...rsa, ...diffieHellman, ...hash, ...aes, ...classical, ...chacha, ...des, ...rc4, ...tls, ...ecc, ...mlkem, ...dap, ...ns, ...otpAuth };
+export const engines: EngineSet = { ...rsa, ...diffieHellman, ...hash, ...aes, ...classical, ...chacha, ...des, ...rc4, ...tls, ...ecc, ...mlkem, ...dap, ...ns, ...otpAuth, ...kerberos };

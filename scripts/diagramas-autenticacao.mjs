@@ -87,4 +87,92 @@ export const FUNDAMENTACAO_AUTENTICACAO = {
       },
     ],
   },
+  kerberos: {
+    artigos: [
+      {
+        citacao: 'Neuman, C.; Yu, T.; Hartman, S.; Raeburn, K. *The Kerberos Network Authentication Service (V5)*. [RFC 4120](https://www.rfc-editor.org/rfc/rfc4120), jul. 2005 (atualizada por outras RFCs, entre elas a RFC 8429).',
+        links: [],
+      },
+      {
+        citacao: 'Needham, R. M.; Schroeder, M. D. *Using encryption for authentication in large networks of computers*. Communications of the ACM, v. 21, n. 12, p. 993-999, dez. 1978, base do uso de um servidor de chaves de confiança.',
+        links: [['DOI 10.1145/359657.359659', 'https://doi.org/10.1145/359657.359659']],
+      },
+      {
+        citacao: 'Denning, D. E.; Sacco, G. M. *Timestamps in key distribution protocols*. Communications of the ACM, v. 24, n. 8, p. 533-536, ago. 1981, origem do uso de carimbos de tempo, adotado pelo Kerberos no lugar dos nonces nas mensagens com o serviço.',
+        links: [['DOI 10.1145/358722.358740', 'https://doi.org/10.1145/358722.358740']],
+      },
+      {
+        citacao: 'Hartman, S.; Zhu, L. *A Generalized Framework for Kerberos Pre-Authentication*. [RFC 6113](https://www.rfc-editor.org/rfc/rfc6113), abr. 2011, que define o FAST, a proteção do pedido inicial.',
+        links: [],
+      },
+    ],
+    rotuloArtigos: '**Especificação e artigos de origem.**',
+    titulo: 'Diagramas do Kerberos',
+    intro:
+      'Os diagramas abaixo mostram o Kerberos antes dos cenários executados da seção 5. Alice é a cliente, o KDC reúne o serviço de autenticação (AS) e o de concessão de tíquetes (TGS), Bob é o serviço e Eva observa o canal e age na rede. **K_c** é a chave derivada da senha de Alice, **K_AT** e **K_AB** são chaves de sessão e **K_b** é a chave de Bob. O último diagrama é um fluxograma da validação feita pelo serviço.',
+    diagramas: [
+      {
+        titulo: 'As três trocas: AS, TGS e AP',
+        ref: 'RFC 4120, seções 3.1 a 3.2',
+        descricao:
+          'Na troca AS, o KDC entrega a Alice a chave de sessão K_AT cifrada com K_c e o tíquete de concessão de tíquetes (TGT), selado com a chave do TGS, que Alice não consegue ler. Na troca TGS, Alice apresenta o TGT e um autenticador e recebe a chave K_AB e o tíquete de Bob, selado com K_b. Na troca AP, Alice apresenta a Bob o tíquete e um autenticador; Bob o valida sem consultar o KDC e prova quem é devolvendo o horário cifrado com K_AB. Eva vê todas as mensagens, mas só texto cifrado.',
+        mermaid: `sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant K as KDC
+    participant B as Bob
+    participant E as Eva
+    A->>K: AS-REQ: alice, krbtgt, N1
+    K->>A: AS-REP: TGT e {K_AT, N1}K_c
+    Note over E: Eva vê tudo,<br/>mas só texto cifrado
+    A->>K: TGS-REQ: TGT, {alice, T}K_AT, bob, N2
+    K->>A: TGS-REP: tíquete de Bob<br/>e {K_AB, N2}K_AT
+    A->>B: AP-REQ: tíquete de Bob<br/>e {alice, T}K_AB
+    B->>B: Abre o tíquete com K_b<br/>e o autenticador com K_AB
+    B->>A: AP-REP: {T}K_AB`,
+      },
+      {
+        titulo: 'O que Eva consegue fazer',
+        ref: 'RFC 4120, seções 3.2.3 e 5.2.7.2; RFC 6113',
+        descricao:
+          'Dois ataques mostram os limites do protocolo. Na repetição, Eva reenvia o tíquete e o autenticador capturados: dentro da tolerância de relógio o carimbo de tempo ainda vale, e só o serviço que guarda os autenticadores já vistos recusa a repetição (KRB_AP_ERR_REPEAT). Na adivinhação de senha, Eva pede ao KDC uma resposta para Alice e testa senhas offline contra o texto cifrado com K_c; a pré-autenticação faz o KDC exigir antes uma prova de que o solicitante conhece K_c.',
+        mermaid: `sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant K as KDC
+    participant B as Bob
+    participant E as Eva
+    A->>B: AP-REQ com tíquete<br/>e autenticador
+    Note over E: Eva captura o AP-REQ
+    E->>B: AP-REQ repetido, 60 s depois
+    B->>E: Sem registro: aceito<br/>Com registro: KRB_AP_ERR_REPEAT
+    Note over E,K: Adivinhação de senha
+    E->>K: AS-REQ em nome de Alice
+    K->>E: Sem pré-autenticação: {K_AT, N1}K_c
+    E->>E: Testa senhas offline<br/>até abrir a resposta
+    K->>E: Com pré-autenticação:<br/>KDC_ERR_PREAUTH_REQUIRED`,
+      },
+      {
+        tipo: 'fluxograma',
+        titulo: 'Estrutura interna: validação do AP-REQ pelo serviço',
+        ref: 'fluxograma',
+        descricao:
+          'O serviço abre o tíquete com a sua chave K_b, o que prova que o KDC o emitiu para ele, e dele tira a chave de sessão K_AB. Com K_AB abre o autenticador, confere que o nome coincide com o do tíquete, que o horário está dentro da tolerância de relógio e que o autenticador não foi visto antes. Só então aceita o cliente e, se for pedida a autenticação mútua, devolve o horário cifrado com K_AB.',
+        mermaid: `flowchart TD
+    R["AP-REQ: tíquete e autenticador"] --> T{"Tíquete abre com K_b?"}
+    T -->|"Não"| X1["Recusa: tíquete inválido"]
+    T -->|"Sim"| S["Extrai K_AB, o cliente e a validade"]
+    S --> V{"Tíquete dentro da validade?"}
+    V -->|"Não"| X2["Recusa: KRB_AP_ERR_TKT_EXPIRED"]
+    V -->|"Sim"| A{"Autenticador abre com K_AB e o nome confere?"}
+    A -->|"Não"| X3["Recusa: autenticador inválido"]
+    A -->|"Sim"| C{"Horário dentro da tolerância de relógio?"}
+    C -->|"Não"| X4["Recusa: KRB_AP_ERR_SKEW"]
+    C -->|"Sim"| Q{"Autenticador já visto?"}
+    Q -->|"Sim"| X5["Recusa: KRB_AP_ERR_REPEAT"]
+    Q -->|"Não"| OK["Aceita e registra o autenticador"]
+    OK --> M["AP-REP: horário cifrado com K_AB"]`,
+      },
+    ],
+  },
 };

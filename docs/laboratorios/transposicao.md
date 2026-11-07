@@ -248,6 +248,19 @@ sequenceDiagram
 - A anagramação cobre de 2 a 8 colunas e a legibilidade é medida por bigramas do português.
 - Uso exclusivamente didático: os laboratórios não devem proteger dados reais.
 
+## 8. Glossário
+
+Significado e finalidade das siglas usadas neste documento.
+
+| Sigla | Significado | Para que serve |
+| --- | --- | --- |
+| **ADFGVX** | letras A, D, F, G, V e X (nome da cifra alemã de 1918) | cifra produto que combinava um quadrado de substituição com uma transposição, quebrada em 1918 |
+| **AES** | Advanced Encryption Standard, padrão de criptografia avançado | cifra de bloco de 128 bits com chaves de 128, 192 ou 256 bits, padronizada no [FIPS 197](https://csrc.nist.gov/pubs/fips/197/final) |
+| **DES** | Data Encryption Standard, padrão de criptografia de dados | cifra de bloco de 64 bits com chave efetiva de 56 bits, padronizada em 1977 e hoje obsoleta |
+| **IC** | Índice de Coincidência (Index of Coincidence) | probabilidade de duas letras sorteadas do texto serem iguais; distingue um texto de substituição simples de um polialfabético |
+| **PDF** | Portable Document Format, formato de documento portátil | formato de arquivo das cópias dos artigos citados |
+
+
 ---
 
 *CryptoNet é um projeto mantido pelo Prof. Dr. Laerte Peotta de Melo, com apoio de IA generativa no processo de desenvolvimento, com sua estrita supervisão, revisão técnica e responsabilidade. Uso exclusivo para fins de ensino e pesquisa. Universidade de Brasília (UnB) - Departamento de Engenharia Elétrica. Código aberto (licença MIT).*

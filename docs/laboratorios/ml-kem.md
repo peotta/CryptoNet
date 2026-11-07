@@ -369,6 +369,33 @@ sequenceDiagram
 - O laboratório trata só do estabelecimento de chaves. O modo híbrido com o X25519 é descrito na Parte C, mas não é executado, e as assinaturas pós-quânticas (ML-DSA e SLH-DSA) não estão implementadas.
 - Uso exclusivamente didático: os laboratórios não devem proteger dados reais.
 
+## 8. Glossário
+
+Significado e finalidade das siglas usadas neste documento.
+
+| Sigla | Significado | Para que serve |
+| --- | --- | --- |
+| **ACM** | Association for Computing Machinery | sociedade científica que edita periódicos e anais de computação, como o Communications of the ACM |
+| **AES** | Advanced Encryption Standard, padrão de criptografia avançado | cifra de bloco de 128 bits com chaves de 128, 192 ou 256 bits, padronizada no [FIPS 197](https://csrc.nist.gov/pubs/fips/197/final) |
+| **AES-GCM** | AES no modo Galois/Counter | cifra autenticada de uso corrente no TLS e em armazenamento: cifra e detecta alteração com a mesma chave |
+| **CCA** | Chosen-Ciphertext Attack, ataque de texto cifrado escolhido | modelo de ataque em que o adversário pede a decifração de textos cifrados à sua escolha; "CCA-secure" é resistir a ele |
+| **ECDH** | Elliptic Curve Diffie-Hellman, Diffie-Hellman em curvas elípticas | acordo de chaves que obtém o mesmo segredo compartilhado com chaves bem menores que as do DH clássico |
+| **FIPS** | Federal Information Processing Standards, padrões federais de processamento de informação | padrões do NIST de uso obrigatório nos órgãos americanos, como o [FIPS 197](https://csrc.nist.gov/pubs/fips/197/final) (AES) e o [FIPS 203](https://csrc.nist.gov/pubs/fips/203/final) (ML-KEM) |
+| **IACR** | International Association for Cryptologic Research | associação que organiza as conferências de criptologia e mantém o repositório de artigos ePrint |
+| **IEEE** | Institute of Electrical and Electronics Engineers | entidade profissional que publica padrões e periódicos, como o IEEE Transactions on Information Theory |
+| **KEM** | Key Encapsulation Mechanism, mecanismo de encapsulamento de chave | esquema de chave pública que transporta um segredo compartilhado: quem encapsula gera o segredo e o texto cifrado, e quem desencapsula recupera o segredo |
+| **LWE** | Learning With Errors, aprendizado com erros | problema de reticulados, difícil mesmo para computadores quânticos, em que se baseiam o ML-KEM e outros esquemas pós-quânticos |
+| **ML-DSA** | Module-Lattice-Based Digital Signature Algorithm | assinatura pós-quântica padronizada no [FIPS 204](https://csrc.nist.gov/pubs/fips/204/final), derivada do CRYSTALS-Dilithium |
+| **ML-KEM** | Module-Lattice-Based Key-Encapsulation Mechanism, mecanismo de encapsulamento de chave baseado em reticulados de módulo | KEM pós-quântico padronizado no [FIPS 203](https://csrc.nist.gov/pubs/fips/203/final), derivado do CRYSTALS-Kyber |
+| **NIST** | National Institute of Standards and Technology, Instituto Nacional de Padrões e Tecnologia (EUA) | publica os padrões criptográficos federais americanos, como os FIPS e as SP 800 |
+| **NTT** | Number-Theoretic Transform, transformada teórica dos números | análogo da FFT em corpos finitos, que acelera a multiplicação de polinômios no ML-KEM |
+| **PDF** | Portable Document Format, formato de documento portátil | formato de arquivo das cópias dos artigos citados |
+| **RSA** | Rivest, Shamir e Adleman | sistema de chave pública cuja segurança vem da dificuldade de fatorar o produto de dois primos grandes; cifra e assina |
+| **SHA-3** | Secure Hash Algorithm 3 | família de hashes baseada na esponja Keccak, padronizada no [FIPS 202](https://csrc.nist.gov/pubs/fips/202/final) |
+| **SLH-DSA** | Stateless Hash-Based Digital Signature Algorithm | assinatura pós-quântica baseada em hash, padronizada no [FIPS 205](https://csrc.nist.gov/pubs/fips/205/final) |
+| **TLS** | Transport Layer Security, segurança da camada de transporte | protocolo que cifra e autentica a comunicação entre cliente e servidor; sucessor do SSL |
+
+
 ---
 
 *CryptoNet é um projeto mantido pelo Prof. Dr. Laerte Peotta de Melo, com apoio de IA generativa no processo de desenvolvimento, com sua estrita supervisão, revisão técnica e responsabilidade. Uso exclusivo para fins de ensino e pesquisa. Universidade de Brasília (UnB) - Departamento de Engenharia Elétrica. Código aberto (licença MIT).*

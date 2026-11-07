@@ -219,6 +219,18 @@ sequenceDiagram
 - O alfabeto é o de 26 letras sem acentos; o texto é normalizado (maiúsculas, sem acentos nem pontuação).
 - Uso exclusivamente didático: os laboratórios não devem proteger dados reais.
 
+## 8. Glossário
+
+Significado e finalidade das siglas usadas neste documento.
+
+| Sigla | Significado | Para que serve |
+| --- | --- | --- |
+| **AES** | Advanced Encryption Standard, padrão de criptografia avançado | cifra de bloco de 128 bits com chaves de 128, 192 ou 256 bits, padronizada no [FIPS 197](https://csrc.nist.gov/pubs/fips/197/final) |
+| **CBC** | Cipher Block Chaining, encadeamento de blocos cifrados | modo em que cada bloco é combinado por XOR com o bloco cifrado anterior antes de cifrar; exige vetor de inicialização imprevisível |
+| **CTR** | Counter mode, modo contador | transforma uma cifra de bloco em cifra de fluxo cifrando contadores sucessivos |
+| **GCM** | Galois/Counter Mode, modo de Galois com contador | modo de operação que cifra em modo contador e autentica com um hash universal; é um modo AEAD ([SP 800-38D](https://csrc.nist.gov/pubs/sp/800/38/d/final)) |
+
+
 ---
 
 *CryptoNet é um projeto mantido pelo Prof. Dr. Laerte Peotta de Melo, com apoio de IA generativa no processo de desenvolvimento, com sua estrita supervisão, revisão técnica e responsabilidade. Uso exclusivo para fins de ensino e pesquisa. Universidade de Brasília (UnB) - Departamento de Engenharia Elétrica. Código aberto (licença MIT).*

@@ -868,6 +868,43 @@ sequenceDiagram
 - Os valores aleatórios vêm da Web Crypto, e a implementação não tem proteção contra ataques de canal lateral nem armazenamento protegido de verdade: não a use para proteger dados reais.
 - Uso exclusivamente didático: os laboratórios não devem proteger dados reais.
 
+## 8. Glossário
+
+Significado e finalidade das siglas usadas neste documento.
+
+| Sigla | Significado | Para que serve |
+| --- | --- | --- |
+| **AES** | Advanced Encryption Standard, padrão de criptografia avançado | cifra de bloco de 128 bits com chaves de 128, 192 ou 256 bits, padronizada no [FIPS 197](https://csrc.nist.gov/pubs/fips/197/final) |
+| **ASCII** | American Standard Code for Information Interchange | código que associa números aos caracteres básicos de texto |
+| **ATM** | Automated Teller Machine, caixa eletrônico | terminal bancário usado como canal de autenticação no DAP |
+| **CBC** | Cipher Block Chaining, encadeamento de blocos cifrados | modo em que cada bloco é combinado por XOR com o bloco cifrado anterior antes de cifrar; exige vetor de inicialização imprevisível |
+| **CMS** | Cryptographic Message Syntax | formato padronizado para mensagens assinadas e cifradas ([RFC 5652](https://www.rfc-editor.org/rfc/rfc5652)) |
+| **DAP** | Dynamic Authorization Protocol, protocolo de autorização dinâmica | protocolo de autorização de transações com canal óptico fora de banda entre o computador e o celular |
+| **DOI** | Digital Object Identifier, identificador de objeto digital | identificador permanente de uma publicação, que leva ao artigo pelo endereço doi.org |
+| **FIPS** | Federal Information Processing Standards, padrões federais de processamento de informação | padrões do NIST de uso obrigatório nos órgãos americanos, como o [FIPS 197](https://csrc.nist.gov/pubs/fips/197/final) (AES) e o [FIPS 203](https://csrc.nist.gov/pubs/fips/203/final) (ML-KEM) |
+| **HMAC** | Keyed-Hash Message Authentication Code, código de autenticação de mensagem com chave | autentica uma mensagem com uma chave secreta e uma função de hash ([RFC 2104](https://www.rfc-editor.org/rfc/rfc2104)) |
+| **HOTP** | HMAC-based One-Time Password, senha de uso único baseada em HMAC | código de uso único derivado de um segredo e de um contador de eventos ([RFC 4226](https://www.rfc-editor.org/rfc/rfc4226)) |
+| **HSM** | Hardware Security Module, módulo de segurança em hardware | dispositivo que guarda chaves e executa operações criptográficas sem expô-las |
+| **ID** | Identifier, identificador | valor que nomeia uma chave, um usuário ou uma sessão |
+| **IETF** | Internet Engineering Task Force | organização aberta que desenvolve e publica os padrões da Internet, as RFCs |
+| **ISO/IEC** | International Organization for Standardization / International Electrotechnical Commission | organizações internacionais que publicam normas técnicas conjuntas, inclusive de segurança da informação |
+| **IV** | Initialization Vector, vetor de inicialização | valor que torna distintas duas cifragens com a mesma chave; em geral público, mas único ou imprevisível conforme o modo |
+| **MD** | Mobile Device, dispositivo móvel | o celular do usuário, que exibe os dados da transação e confirma a autorização |
+| **MITB** | Man-in-the-Browser, homem no navegador | ataque em que um código malicioso no navegador altera o que o usuário vê e envia |
+| **MK** | Master Key, chave-mestra | chave guardada no HSM do banco, da qual derivam as chaves de cada usuário |
+| **PDF** | Portable Document Format, formato de documento portátil | formato de arquivo das cópias dos artigos citados |
+| **PIN** | Personal Identification Number, número de identificação pessoal | senha numérica curta que, com o cartão, autentica o usuário |
+| **QR** | Quick Response, resposta rápida | código de barras bidimensional; entrega o segredo do TOTP ao aplicativo autenticador, e no DAP leva a chave pelo canal óptico |
+| **RFC** | Request for Comments, pedido de comentários | documento numerado do IETF que define ou descreve um protocolo da Internet; cada documento do projeto cita as RFCs com link para o RFC Editor |
+| **SHA-2** | Secure Hash Algorithm 2 | família de hashes (SHA-224 a SHA-512) padronizada no [FIPS 180-4](https://csrc.nist.gov/pubs/fips/180-4/upd1/final) |
+| **SHA-256** | Secure Hash Algorithm, saída de 256 bits | hash da família SHA-2 de uso mais comum |
+| **SMS** | Short Message Service, serviço de mensagens curtas | mensagem de texto de celular, às vezes usada para entregar um código de uso único |
+| **SP** | Special Publication, publicação especial | série de recomendações do NIST, como a [SP 800-38A](https://csrc.nist.gov/pubs/sp/800/38/a/final) (modos de operação) e a [SP 800-38D](https://csrc.nist.gov/pubs/sp/800/38/d/final) (modo GCM) |
+| **TOTP** | Time-based One-Time Password, senha de uso único baseada em tempo | código que muda a cada 30 segundos, derivado de um segredo e do relógio ([RFC 6238](https://www.rfc-editor.org/rfc/rfc6238)), usado como segundo fator |
+| **UC** | Untrusted Computer, computador não confiável | o computador do usuário, que pode estar comprometido e por isso não é o único canal de autorização |
+| **WYSIWYS** | What You See Is What You Sign, o que você vê é o que você assina | princípio de que a tela confiável mostra os dados exatos que serão autenticados |
+
+
 ---
 
 *CryptoNet é um projeto mantido pelo Prof. Dr. Laerte Peotta de Melo, com apoio de IA generativa no processo de desenvolvimento, com sua estrita supervisão, revisão técnica e responsabilidade. Uso exclusivo para fins de ensino e pesquisa. Universidade de Brasília (UnB) - Departamento de Engenharia Elétrica. Código aberto (licença MIT).*

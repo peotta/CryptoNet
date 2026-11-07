@@ -344,6 +344,32 @@ sequenceDiagram
 - Não há preenchimento: a mensagem é completada com espaços até múltiplo de 16 bytes.
 - Uso exclusivamente didático: os laboratórios não devem proteger dados reais.
 
+## 8. Glossário
+
+Significado e finalidade das siglas usadas neste documento.
+
+| Sigla | Significado | Para que serve |
+| --- | --- | --- |
+| **AEAD** | Authenticated Encryption with Associated Data, cifra autenticada com dados associados | cifra que protege o sigilo e a integridade juntos e também autentica dados que ficam em claro, como cabeçalhos |
+| **AES** | Advanced Encryption Standard, padrão de criptografia avançado | cifra de bloco de 128 bits com chaves de 128, 192 ou 256 bits, padronizada no [FIPS 197](https://csrc.nist.gov/pubs/fips/197/final) |
+| **AES-GCM** | AES no modo Galois/Counter | cifra autenticada de uso corrente no TLS e em armazenamento: cifra e detecta alteração com a mesma chave |
+| **BEAST** | Browser Exploit Against SSL/TLS | ataque de 2011 ao CBC com vetor de inicialização previsível no TLS 1.0 |
+| **CBC** | Cipher Block Chaining, encadeamento de blocos cifrados | modo em que cada bloco é combinado por XOR com o bloco cifrado anterior antes de cifrar; exige vetor de inicialização imprevisível |
+| **CTR** | Counter mode, modo contador | transforma uma cifra de bloco em cifra de fluxo cifrando contadores sucessivos |
+| **ECB** | Electronic Codebook, livro de códigos eletrônico | modo em que cada bloco é cifrado separadamente; blocos iguais geram textos cifrados iguais, o que revela padrões |
+| **FIPS** | Federal Information Processing Standards, padrões federais de processamento de informação | padrões do NIST de uso obrigatório nos órgãos americanos, como o [FIPS 197](https://csrc.nist.gov/pubs/fips/197/final) (AES) e o [FIPS 203](https://csrc.nist.gov/pubs/fips/203/final) (ML-KEM) |
+| **GCM** | Galois/Counter Mode, modo de Galois com contador | modo de operação que cifra em modo contador e autentica com um hash universal; é um modo AEAD ([SP 800-38D](https://csrc.nist.gov/pubs/sp/800/38/d/final)) |
+| **GF** | Galois Field, corpo de Galois | corpo finito em que o AES e o GHASH fazem suas multiplicações |
+| **GHASH** | Galois Hash | função de autenticação do GCM, calculada por multiplicação no corpo de Galois GF(2^128) |
+| **IACR** | International Association for Cryptologic Research | associação que organiza as conferências de criptologia e mantém o repositório de artigos ePrint |
+| **IV** | Initialization Vector, vetor de inicialização | valor que torna distintas duas cifragens com a mesma chave; em geral público, mas único ou imprevisível conforme o modo |
+| **NIST** | National Institute of Standards and Technology, Instituto Nacional de Padrões e Tecnologia (EUA) | publica os padrões criptográficos federais americanos, como os FIPS e as SP 800 |
+| **PDF** | Portable Document Format, formato de documento portátil | formato de arquivo das cópias dos artigos citados |
+| **SP** | Special Publication, publicação especial | série de recomendações do NIST, como a [SP 800-38A](https://csrc.nist.gov/pubs/sp/800/38/a/final) (modos de operação) e a [SP 800-38D](https://csrc.nist.gov/pubs/sp/800/38/d/final) (modo GCM) |
+| **TLS** | Transport Layer Security, segurança da camada de transporte | protocolo que cifra e autentica a comunicação entre cliente e servidor; sucessor do SSL |
+| **XOR** | Exclusive OR, ou exclusivo | operação bit a bit que combina o texto claro com o fluxo de chave e é a sua própria inversa |
+
+
 ---
 
 *CryptoNet é um projeto mantido pelo Prof. Dr. Laerte Peotta de Melo, com apoio de IA generativa no processo de desenvolvimento, com sua estrita supervisão, revisão técnica e responsabilidade. Uso exclusivo para fins de ensino e pesquisa. Universidade de Brasília (UnB) - Departamento de Engenharia Elétrica. Código aberto (licença MIT).*

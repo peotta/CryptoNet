@@ -4,7 +4,7 @@ import { Formula } from './Formula';
 import { KIND_META, KindIcon } from './kinds';
 import { motionDuration } from './motion';
 
-const X: Record<PartyDef['position'], number> = { left: 0, center: 50, right: 100 };
+const X: Record<PartyDef['position'], number> = { left: 0, 'center-left': 100 / 3, center: 50, 'center-right': 200 / 3, right: 100 };
 /** A margem lateral da trilha (7,5 rem) comporta metade da largura máxima da mensagem (14 rem), que é centralizada na origem e no destino. */
 const LANE_HEIGHT = 76;
 

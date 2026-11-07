@@ -80,7 +80,7 @@ export interface PartyDef {
   name: string;
   role: string;
   /** Posição no cenário; define também de onde as mensagens saem no canal. */
-  position: 'left' | 'center' | 'right';
+  position: 'left' | 'center-left' | 'center' | 'center-right' | 'right';
   slots: SlotDef[];
   /** Observador do canal (ex.: Eva). */
   adversary?: boolean;
