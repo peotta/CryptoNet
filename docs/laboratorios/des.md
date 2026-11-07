@@ -21,6 +21,100 @@ A rede de Feistel de 16 rodadas operação por operação, a busca exaustiva de 
 
 O DES cifra blocos de 64 bits com uma chave de 56 bits úteis, em 16 rodadas de uma rede de Feistel: a função f expande a metade direita para 48 bits, soma (XOR) a subchave, passa por oito caixas S e por uma permutação. Decifrar é cifrar com as subchaves em ordem inversa. A chave pequena permite a busca exaustiva (o EFF DES Cracker a fez em 56 horas, em 1998), e o Triple DES, que aplica cifrar, decifrar e cifrar, mantém o limite do bloco de 64 bits (ataque Sweet32). O padrão vigente é o AES.
 
+**Artigos originais.**
+
+- Feistel, H. *Cryptography and computer privacy*. Scientific American, v. 228, n. 5, p. 15-23, maio 1973. [DOI 10.1038/scientificamerican0573-15](https://doi.org/10.1038/scientificamerican0573-15).
+- Diffie, W.; Hellman, M. E. *Exhaustive cryptanalysis of the NBS Data Encryption Standard*. Computer, v. 10, n. 6, p. 74-84, jun. 1977. [Acessar o artigo (PDF, Universidade de Stanford)](https://ee.stanford.edu/~hellman/publications/27.pdf).
+- Bhargavan, K.; Leurent, G. *On the practical (in-)security of 64-bit block ciphers: collision attacks on HTTP over TLS and OpenVPN* (Sweet32). In: ACM CCS 2016. [Página do ataque Sweet32](https://sweet32.info/).
+
+### 2.1 Diagramas do DES em uso e da rede de Feistel
+
+Os diagramas abaixo mostram o DES antes dos cenários executados da seção 5. Alice cifra, Bob decifra e Eva observa o canal e, quando indicado, altera a cifra ou testa chaves. **K** é a chave secreta, **IV** o vetor de inicialização (*initialization vector*), **P_i** o bloco i do texto claro (8 bytes) e **C_i** o bloco i da cifra. O último diagrama é um fluxograma da estrutura interna: a rede de Feistel de 16 rodadas e o escalonamento de chaves.
+
+#### 2.1.1 DES em modo CBC e a alteração de um bit pela Eva (Cipher Block Chaining)
+
+Alice completa a mensagem até um múltiplo de 8 bytes (preenchimento PKCS#7), sorteia um IV novo e cifra bloco a bloco: cada bloco claro é somado (XOR) à cifra anterior antes de entrar no DES, e o primeiro usa o IV. O IV trafega em claro junto com a cifra. Eva inverte um bit do bloco cifrado 2 e reenvia. Bob decifra: o bloco 2 sai embaralhado e o bloco 3 sai com exatamente o mesmo bit invertido, sem que o DES, que não autentica, perceba a alteração.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: K combinada antes<br/>por canal seguro
+    A->>A: Completa a mensagem em blocos de 8 bytes
+    A->>A: Sorteia um IV novo
+    A->>A: C1 = DES(K, P1 xor IV)
+    A->>A: Ci = DES(K, Pi xor C(i-1))
+    A->>E: IV e C1, C2, C3 pelo canal público
+    Note over E: Eva inverte<br/>um bit de C2
+    E->>B: IV, C1, C2', C3
+    B->>B: Pi = DES inverso(Ci) xor C(i-1)
+    Note over B: P2 sai embaralhado<br/>e P3 sai com o bit<br/>invertido de Eva
+```
+
+*Figura 2.1.1 (sequência).* DES em modo CBC e a alteração de um bit pela Eva.
+
+#### 2.1.2 Busca exaustiva contra o DES e o Triple DES (chave de 56 bits e bloco de 64 bits)
+
+Eva conhece o início do texto claro (um cabeçalho de protocolo) e captura o IV e a cifra. Para cada uma das chaves possíveis ela decifra o primeiro bloco e compara com o cabeçalho conhecido; a chave que confere é a correta. Com 56 bits úteis o espaço é de 2^56 chaves, viável com máquinas dedicadas (o EFF DES Cracker o percorreu em 56 horas, em 1998). O Triple DES (cifrar, decifrar, cifrar com K1, K2 e K3) eleva o custo da busca, mas mantém o bloco de 64 bits: após cerca de 2^32 blocos sob a mesma chave, o paradoxo do aniversário produz colisões que vazam informação (ataque Sweet32).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    A->>B: IV e cifra em CBC com o DES
+    Note over E: Eva captura o IV<br/>e a cifra
+    E->>E: X = P1 conhecido xor IV
+    loop Para cada chave K' possível
+        E->>E: Calcula DES(K', X)
+        E->>E: Compara com C1
+    end
+    Note over E: A chave que confere<br/>é a chave de Alice
+    E->>E: Decifra a mensagem inteira
+    Note over A,B: Troca para o Triple DES<br/>com K1, K2 e K3
+    A->>A: C = E(K3, D(K2, E(K1, X)))
+    A->>B: IV e cifra
+    B->>B: Decifra na ordem inversa
+    Note over E: A busca fica inviável,<br/>mas o bloco continua<br/>com 64 bits (Sweet32)
+```
+
+*Figura 2.1.2 (sequência).* Busca exaustiva contra o DES e o Triple DES.
+
+#### 2.1.3 Estrutura interna: rede de Feistel de 16 rodadas e escalonamento de chaves (fluxograma)
+
+O bloco de 64 bits sofre a permutação inicial (IP) e é dividido em duas metades de 32 bits, L e R. Em cada uma das 16 rodadas, a metade direita passa pela função f e o resultado é somado (XOR) à metade esquerda; depois as metades trocam de lugar. Dentro de f, R é expandido para 48 bits, somado à subchave da rodada, dividido em oito grupos de 6 bits que passam pelas caixas S (cada uma devolve 4 bits) e os 32 bits resultantes são permutados (P). Ao final, as metades são trocadas uma última vez e aplica-se a permutação final (IP inversa). As 16 subchaves de 48 bits vêm da chave de 64 bits (56 úteis): a permutação PC-1 descarta os bits de paridade, as duas metades de 28 bits sofrem rotações à esquerda a cada rodada e a permutação PC-2 seleciona 48 bits. Decifrar é executar o mesmo caminho com as subchaves em ordem inversa.
+
+```mermaid
+flowchart TD
+    P["Bloco claro de 64 bits"] --> IP["Permutação inicial IP"]
+    IP --> SPL["Divide em L0 e R0, 32 bits cada"]
+    SPL --> RD
+    subgraph RD["Rodada i, de 1 a 16"]
+        direction TB
+        R1["R(i-1), 32 bits"] --> EX["Expansão E: 48 bits"]
+        EX --> XK["XOR com a subchave Ki"]
+        XK --> SB["Oito caixas S: 6 bits entram, 4 saem"]
+        SB --> PP["Permutação P: 32 bits"]
+        PP --> XL["XOR com L(i-1)"]
+        XL --> NR["Ri = resultado e Li = R(i-1)"]
+    end
+    RD --> SW["Troca final das metades"]
+    SW --> FP["Permutação final IP inversa"]
+    FP --> C["Bloco cifrado de 64 bits"]
+    K["Chave de 64 bits, 56 úteis"] --> PC1["PC-1: descarta paridade"]
+    PC1 --> ROT["Rotações à esquerda de C e D"]
+    ROT --> PC2["PC-2: seleciona 48 bits"]
+    PC2 --> KI["Subchave Ki"]
+    KI --> XK
+```
+
+*Figura 2.1.3 (estrutura interna).* Estrutura interna: rede de Feistel de 16 rodadas e escalonamento de chaves.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

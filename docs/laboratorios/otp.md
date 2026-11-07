@@ -21,6 +21,81 @@ Sigilo perfeito de Shannon, a maleabilidade e a destruição do sigilo quando a 
 
 O one-time pad soma a mensagem a uma chave verdadeiramente aleatória, do tamanho da mensagem e usada uma única vez. Nessas condições o sigilo é perfeito: o texto cifrado não revela nada além do tamanho. A cifra é maleável (Eva altera o claro sem conhecer a chave) e, se a chave for reutilizada, a soma das duas cifras elimina a chave e expõe a soma dos claros, que Eva explora com o arrasto de texto provável (como no projeto Venona).
 
+**Artigos originais.**
+
+- Shannon, C. E. *Communication theory of secrecy systems*. Bell System Technical Journal, v. 28, n. 4, p. 656-715, out. 1949. [Acessar o artigo (Internet Archive)](https://archive.org/details/bstj28-4-656); [PDF hospedado pela Universidade de Virgínia](https://www.cs.virginia.edu/~evans/greatworks/shannon1949.pdf).
+- Vernam, G. S. *Secret signaling system*. Patente US 1.310.719, 1919, origem da cifra com chave de uso único. [Acessar a patente (Google Patents)](https://patents.google.com/patent/US1310719A/en).
+
+### 2.1 Diagramas do one-time pad e do seu uso incorreto
+
+Os diagramas abaixo mostram o one-time pad antes dos cenários executados da seção 5. Alice cifra, Bob decifra e Eva observa o canal e, quando indicado, altera a cifra ou explora a reutilização da chave. **K** é a chave aleatória do tamanho da mensagem, **P** o texto claro e **C** a cifra. O último diagrama é um fluxograma do ciclo de vida da chave.
+
+#### 2.1.1 Sigilo perfeito e a maleabilidade da cifra (uso correto)
+
+Alice e Bob possuem a mesma chave K, verdadeiramente aleatória, do tamanho da mensagem. Alice soma K ao claro letra a letra (módulo 26) e Bob subtrai K da cifra para recuperar a mensagem. Eva vê apenas C: como qualquer texto de mesmo tamanho é compatível com alguma chave, a cifra não revela nada além do tamanho, e esta é a propriedade que Shannon chamou de sigilo perfeito. Mesmo assim a cifra é maleável: se Eva soma 1 a uma letra da cifra, Bob obtém o claro com aquela letra somada de 1, sem que a chave seja conhecida por Eva.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: K aleatória, do tamanho<br/>da mensagem, combinada antes
+    A->>A: Ci = (Pi + Ki) mod 26
+    A->>E: C pelo canal público
+    Note over E: Qualquer claro de mesmo<br/>tamanho é compatível<br/>com alguma chave
+    E->>B: C' com uma letra somada de 1
+    B->>B: Pi' = (C'i - Ki) mod 26
+    Note over B: A letra alterada sai<br/>somada de 1 no claro
+```
+
+*Figura 2.1.1 (sequência).* Sigilo perfeito e a maleabilidade da cifra.
+
+#### 2.1.2 Reutilização da chave (two-time pad) (a mesma K em duas mensagens)
+
+Alice usa a mesma chave K em duas mensagens P1 e P2. Eva captura C1 e C2 e subtrai uma da outra: a chave se cancela e sobra P1 - P2 (módulo 26), a diferença dos dois claros. Eva arrasta um texto provável sobre essa diferença e, onde o palpite acerta, aparece o trecho correspondente da outra mensagem. Foi assim que o projeto Venona decifrou parte do tráfego soviético, produzido com blocos de chaves repetidos. Bob decifra normalmente e não detecta nada. A chave de uso único só é segura se for usada uma vez.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: A mesma K<br/>nas duas mensagens
+    A->>A: C1 = P1 + K, mod 26
+    A->>A: C2 = P2 + K, mod 26
+    A->>E: C1
+    A->>E: C2
+    E->>E: C1 - C2 = P1 - P2
+    Note over E: A chave K<br/>se cancelou
+    E->>E: Arrasta um texto provável<br/>sobre P1 - P2
+    Note over E: Onde o palpite acerta,<br/>surge texto legível<br/>da outra mensagem
+    E->>B: C1 e C2 seguem a Bob
+    B->>B: Decifra normalmente
+```
+
+*Figura 2.1.2 (sequência).* Reutilização da chave (two-time pad).
+
+#### 2.1.3 Ciclo de vida da chave de uso único (fluxograma)
+
+A segurança do one-time pad está inteira no tratamento da chave. Ela deve vir de uma fonte verdadeiramente aleatória, ter pelo menos o tamanho da mensagem, ser entregue a Alice e a Bob por um meio seguro antes da comunicação e ser destruída logo depois do uso. O fluxograma mostra o caminho correto e o desvio perigoso: reutilizar uma chave já gasta leva ao two-time pad do diagrama anterior.
+
+```mermaid
+flowchart TD
+    G["Gera a chave com fonte verdadeiramente aleatória"] --> L["Tamanho da chave igual ou maior que o da mensagem"]
+    L --> D["Entrega a Alice e a Bob por meio seguro"]
+    D --> U{"A chave já foi usada?"}
+    U -->|"não"| EN["Alice cifra: C = P + K, módulo 26"]
+    EN --> DE["Bob decifra: P = C - K, módulo 26"]
+    DE --> X["Destrói a chave nos dois lados"]
+    U -->|"sim"| R["Reutilização: Eva obtém P1 - P2"]
+    R --> F["Sigilo perfeito perdido"]
+```
+
+*Figura 2.1.3 (estrutura interna).* Ciclo de vida da chave de uso único.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

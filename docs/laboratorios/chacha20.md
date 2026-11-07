@@ -21,6 +21,96 @@ Cifra de fluxo ARX ([RFC 8439](https://www.rfc-editor.org/rfc/rfc8439)): quarter
 
 O ChaCha20 é uma cifra de fluxo ARX (soma módulo 2³², rotação e XOR): o bloco de 64 bytes é calculado em 20 rodadas sobre um estado com constantes, chave de 256 bits, contador e nonce de 96 bits, e o fluxo de chaves é combinado com a mensagem por XOR. Repetir o par (chave, nonce) permite a Eva obter m1 ⊕ m2, e sem autenticação ela inverte bits do claro sem conhecer a chave.
 
+**Artigos originais.**
+
+- Bernstein, D. J. *ChaCha, a variant of Salsa20*. Documento técnico, 28 jan. 2008. [Acessar o documento (PDF, autor)](https://cr.yp.to/chacha/chacha-20080128.pdf).
+- Bernstein, D. J. *The Salsa20 family of stream ciphers*, cifra da qual o ChaCha deriva. [Página da família Salsa20](https://cr.yp.to/snuffle.html); [Especificação do Salsa20 (PDF)](https://cr.yp.to/snuffle/spec.pdf).
+- Nir, Y.; Langley, A. *ChaCha20 and Poly1305 for IETF Protocols*. [RFC 8439](https://www.rfc-editor.org/rfc/rfc8439), jun. 2018, que define o ChaCha20 de 96 bits de nonce e o modo autenticado.
+
+### 2.1 Diagramas do ChaCha20 em uso e da estrutura do bloco
+
+Os diagramas abaixo mostram o ChaCha20 antes dos cenários executados da seção 5. Alice cifra, Bob decifra e Eva observa o canal e, quando indicado, altera a cifra. **K** é a chave de 256 bits, **N** o nonce de 96 bits, **KS** o fluxo de chaves e **m** a mensagem. O último diagrama é um fluxograma da estrutura interna: o estado de 16 palavras, as 20 rodadas e o *quarter round*.
+
+#### 2.1.1 Cifragem com nonce novo e a alteração de um bit pela Eva (uso correto sem autenticação)
+
+Alice e Bob compartilham K. Para cada mensagem Alice sorteia um nonce novo, calcula os blocos de 64 bytes do fluxo de chaves com o contador 1, 2, 3 e assim por diante, e soma o fluxo à mensagem por XOR. O nonce trafega em claro junto com a cifra. Como a cifra é só um XOR, Eva inverte um bit da cifra e o mesmo bit sai invertido no claro de Bob, que não percebe: o ChaCha20 sozinho garante sigilo, não integridade. A prática é usá-lo com o autenticador Poly1305 (ChaCha20-Poly1305).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: K de 256 bits<br/>combinada antes
+    A->>A: Sorteia um nonce N novo
+    A->>A: KS = ChaCha20(K, N, contador 1, 2, ...)
+    A->>A: C = m xor KS
+    A->>E: N e C pelo canal público
+    Note over E: Eva inverte<br/>um bit de C
+    E->>B: N e C'
+    B->>B: KS = ChaCha20(K, N, contador 1, 2, ...)
+    B->>B: m' = C' xor KS
+    Note over B: O mesmo bit de m<br/>sai invertido<br/>e Bob aceita
+```
+
+*Figura 2.1.1 (sequência).* Cifragem com nonce novo e a alteração de um bit pela Eva.
+
+#### 2.1.2 Reutilização do nonce e o arrasto de texto provável (mesmo par (K, N) em duas mensagens)
+
+Alice comete o erro de usar o mesmo nonce em duas mensagens, de modo que as duas são somadas ao mesmo fluxo de chaves. Eva captura as duas cifras e as soma: o fluxo se cancela e sobra m1 xor m2. Eva então arrasta um trecho de texto que ela supõe existir em uma das mensagens (um texto provável, ou *crib*) sobre m1 xor m2; onde o palpite acerta, aparece trecho legível da outra mensagem. Bob decifra normalmente e não detecta o problema. A regra é nunca repetir o par (chave, nonce).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: Mesma K e mesmo N<br/>nas duas mensagens
+    A->>A: C1 = m1 xor KS
+    A->>A: C2 = m2 xor KS
+    A->>E: N e C1
+    A->>E: N e C2
+    E->>E: C1 xor C2 = m1 xor m2
+    Note over E: O fluxo KS<br/>se cancelou
+    E->>E: Arrasta um texto provável<br/>sobre m1 xor m2
+    Note over E: Onde o palpite acerta,<br/>surge texto legível<br/>da outra mensagem
+    E->>B: C1 e C2 seguem a Bob
+    B->>B: Decifra normalmente
+```
+
+*Figura 2.1.2 (sequência).* Reutilização do nonce e o arrasto de texto provável.
+
+#### 2.1.3 Estrutura interna: estado, 20 rodadas e quarter round (fluxograma)
+
+O estado é uma matriz de 4 por 4 palavras de 32 bits: quatro constantes ("expand 32-byte k"), as oito palavras da chave, o contador de bloco e as três palavras do nonce. O bloco executa 20 rodadas, agrupadas em 10 pares: uma rodada de colunas e uma rodada de diagonais, cada uma aplicando o *quarter round* a quatro palavras. O quarter round usa apenas soma módulo 2^32, XOR e rotação (por isso se diz ARX, de *add-rotate-xor*), com rotações de 16, 12, 8 e 7 bits. Ao final, o estado inicial é somado ao estado embaralhado e o resultado é serializado em 64 bytes de fluxo de chaves. Cada bloco usa um valor diferente do contador.
+
+```mermaid
+flowchart TD
+    CST["4 constantes"] --> ST
+    KEY["Chave K: 8 palavras"] --> ST
+    CTR["Contador de bloco"] --> ST
+    NON["Nonce N: 3 palavras"] --> ST
+    ST["Estado inicial: matriz 4 por 4 de palavras de 32 bits"] --> DR
+    subgraph DR["10 repetições de um par de rodadas"]
+        direction TB
+        COL["Rodada de colunas: 4 quarter rounds"] --> DIA["Rodada de diagonais: 4 quarter rounds"]
+    end
+    DR --> ADD["Soma do estado inicial ao estado final, palavra a palavra"]
+    ADD --> SER["Serializa em 64 bytes do fluxo de chaves"]
+    SER --> XR["XOR com 64 bytes da mensagem"]
+    subgraph QR["Quarter round sobre a, b, c, d"]
+        direction TB
+        Q1["a = a + b, d = d xor a, d gira 16 bits"] --> Q2["c = c + d, b = b xor c, b gira 12 bits"]
+        Q2 --> Q3["a = a + b, d = d xor a, d gira 8 bits"]
+        Q3 --> Q4["c = c + d, b = b xor c, b gira 7 bits"]
+    end
+    COL -.-> QR
+```
+
+*Figura 2.1.3 (estrutura interna).* Estrutura interna: estado, 20 rodadas e quarter round.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

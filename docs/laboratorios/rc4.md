@@ -21,6 +21,93 @@ Cifra de fluxo clássica: KSA e PRGA troca por troca, a maleabilidade e o ataque
 
 O RC4 mantém um estado de 256 bytes. A KSA o embaralha com a chave em 256 trocas e a PRGA emite um byte por troca; a mensagem é combinada com o fluxo por XOR. Não há nonce, o fluxo tem vieses (o segundo byte vale zero com probabilidade próxima de 2/256) e a cifra não autentica. No WEP, a chave de cada quadro é o IV de 3 bytes, em claro, seguido da chave raiz, e o ataque FMS recupera a chave raiz por votação a partir do primeiro byte de fluxo de quadros com IV fracos, sabendo que o claro começa por 0xAA.
 
+**Artigos e especificação.** O RC4 foi projetado por Ronald Rivest em 1987 e nunca foi publicado oficialmente: o algoritmo tornou-se público por divulgação não autorizada em 1994, de modo que não há artigo original do autor.
+
+- Fluhrer, S.; Mantin, I.; Shamir, A. *Weaknesses in the Key Scheduling Algorithm of RC4*. In: Selected Areas in Cryptography (SAC 2001), Lecture Notes in Computer Science, v. 2259. Springer, 2001. [Acessar o artigo (PDF, cópia hospedada na Universidade Cornell)](https://www.cs.cornell.edu/people/egs/615/rc4_ksaproc.pdf); [DOI 10.1007/3-540-45537-X_1](https://doi.org/10.1007/3-540-45537-X_1).
+- AlFardan, N. J.; Bernstein, D. J.; Paterson, K. G.; Poettering, B.; Schuldt, J. C. N. *On the Security of RC4 in TLS*. In: 22nd USENIX Security Symposium, 2013. [Acessar o artigo (PDF, USENIX)](https://www.usenix.org/system/files/conference/usenixsecurity13/sec13-paper_alfardan.pdf).
+- Popov, A. *Prohibiting RC4 Cipher Suites*. [RFC 7465](https://www.rfc-editor.org/rfc/rfc7465), fev. 2015.
+
+### 2.1 Diagramas do RC4 em uso, do ataque ao WEP e da estrutura interna
+
+Os diagramas abaixo mostram o RC4 antes dos cenários executados da seção 5. Alice cifra, Bob decifra e Eva observa o canal e, quando indicado, altera a cifra ou coleta quadros. **K** é a chave, **S** o estado de 256 bytes, **KS** o fluxo de chaves e **m** a mensagem. O último diagrama é um fluxograma da estrutura interna: o escalonamento de chaves (KSA) e a geração do fluxo (PRGA).
+
+#### 2.1.1 Chave de sessão, cifragem e a alteração de um bit pela Eva (uso sem nonce)
+
+Alice e Bob compartilham K. Cada um executa o KSA, que embaralha o estado S com a chave, e depois o PRGA, que emite um byte de fluxo por troca de elementos de S. Alice soma o fluxo à mensagem por XOR. O RC4 não tem nonce: usar a mesma chave duas vezes reproduz o mesmo fluxo. Eva inverte um bit da cifra e o mesmo bit sai invertido no claro de Bob, que não percebe, pois a cifra não autentica. Além disso, o fluxo tem vieses estatísticos (o segundo byte vale zero com probabilidade próxima de 2/256, o dobro do esperado), o que motivou a proibição do RC4 no TLS.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: K combinada antes<br/>por canal seguro
+    A->>A: KSA: embaralha S com K
+    A->>A: PRGA: gera KS byte a byte
+    A->>A: C = m xor KS
+    A->>E: C pelo canal público
+    Note over E: Eva inverte<br/>um bit de C
+    E->>B: C'
+    B->>B: KSA e PRGA com a mesma K
+    B->>B: m' = C' xor KS
+    Note over B: O mesmo bit de m<br/>sai invertido<br/>e Bob aceita
+```
+
+*Figura 2.1.1 (sequência).* Chave de sessão, cifragem e a alteração de um bit pela Eva.
+
+#### 2.1.2 WEP: Eva recupera a chave raiz (ataque FMS) (IV de 3 bytes em claro)
+
+No WEP, a estação (Alice) cifra cada quadro com o RC4 usando como chave o IV de 3 bytes, transmitido em claro, seguido da chave raiz K compartilhada com o ponto de acesso (Bob). Como o IV é curto e visível, Eva colhe quadros e separa os que têm IV fracos (na forma A+3, 255, X). Todo quadro começa com o cabeçalho 0xAA, então Eva obtém o primeiro byte do fluxo de cada quadro por z0 = c0 xor 0xAA. Pelo ataque de Fluhrer, Mantin e Shamir, cada quadro fraco vota em um valor para o byte seguinte da chave raiz com probabilidade acima da ao acaso (cerca de 5%); com votos suficientes o valor mais votado é o byte correto. Byte a byte, Eva reconstrói a chave raiz e passa a ler o tráfego.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice (estação)
+    participant B as Bob (ponto de acesso)
+    participant E as Eva
+    Note over A,B: Chave raiz K<br/>compartilhada
+    A->>A: Chave do quadro = IV seguido de K
+    A->>B: IV em claro e quadro cifrado com RC4
+    B->>B: Decifra com IV seguido de K
+    Note over E: Eva colhe quadros<br/>e guarda os de IV fraco
+    E->>E: z0 = c0 xor 0xAA
+    loop Para cada byte da chave raiz
+        E->>E: Cada quadro fraco vota<br/>no próximo byte de K
+        E->>E: Fica com o valor mais votado
+    end
+    Note over E: Chave raiz recuperada,<br/>o tráfego é legível
+```
+
+*Figura 2.1.2 (sequência).* WEP: Eva recupera a chave raiz (ataque FMS).
+
+#### 2.1.3 Estrutura interna: KSA e PRGA (fluxograma)
+
+O estado S começa como a permutação identidade dos valores 0 a 255. No KSA (*key-scheduling algorithm*), um índice j é atualizado com j = j + S[i] + K[i mod n] (módulo 256) e S[i] troca de lugar com S[j], para i de 0 a 255; a chave decide como o estado é embaralhado. No PRGA (*pseudo-random generation algorithm*), a cada byte de saída i avança uma posição, j soma S[i], os elementos S[i] e S[j] trocam de lugar e o byte do fluxo é S[(S[i] + S[j]) mod 256]. O fluxo é combinado com a mensagem por XOR.
+
+```mermaid
+flowchart TD
+    K["Chave K de n bytes"] --> KSA
+    subgraph KSA["KSA, escalonamento de chaves"]
+        direction TB
+        I0["S = 0, 1, ..., 255 e j = 0"] --> KL["Para i de 0 a 255: j = j + S i + K i mod n, módulo 256"]
+        KL --> KS1["Troca S i com S j"]
+        KS1 -->|"próximo i"| KL
+    end
+    KSA --> PRGA
+    subgraph PRGA["PRGA, geração do fluxo de chaves"]
+        direction TB
+        P0["i = 0 e j = 0"] --> PL["i = i + 1 e j = j + S i, módulo 256"]
+        PL --> PS["Troca S i com S j"]
+        PS --> PO["Byte de saída = S de S i + S j, módulo 256"]
+        PO -->|"próximo byte"| PL
+    end
+    PO --> XR["XOR do byte de saída com um byte da mensagem"]
+```
+
+*Figura 2.1.3 (estrutura interna).* Estrutura interna: KSA e PRGA.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.
