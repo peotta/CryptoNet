@@ -21,6 +21,103 @@ ECDHE, cronograma de chaves com HKDF, certificado, CertificateVerify e Finished,
 
 O handshake de 1-RTT do TLS 1.3 acorda a chave com ECDHE, deriva os segredos pelo cronograma de chaves (HKDF-Extract e HKDF-Expand-Label), autentica o servidor com certificado e CertificateVerify e confirma tudo com o Finished. Eva vê o ClientHello e o ServerHello, mas não as mensagens cifradas. Como homem do meio, ela só passa se o cliente deixar de validar o certificado.
 
+Especificação.
+
+- IETF. *The Transport Layer Security (TLS) Protocol Version 1.3*. [RFC 9846](https://www.rfc-editor.org/rfc/rfc9846), 2026, que substitui a [RFC 8446](https://www.rfc-editor.org/rfc/rfc8446).
+
+### 2.1 Diagramas do handshake e do cronograma de chaves
+
+Os diagramas abaixo mostram o TLS 1.3 em si, antes dos cenários executados da seção 5. Alice é o cliente, Bob é o servidor e Eva observa o canal (e, quando indicado, o controla). **ECDHE** é o acordo de chaves com curvas elípticas efêmeras; **HKDF** é a função de derivação de chaves; o **transcrito** é o resumo de todas as mensagens do handshake até aquele ponto. As mensagens marcadas como cifradas já usam as chaves de handshake.
+
+#### 2.1.1 Handshake completo de 1-RTT (ClientHello até os dados de aplicação)
+
+Alice envia o ClientHello com um valor aleatório, as suítes aceitas e a sua parte do acordo ECDHE (key_share). Bob responde com o ServerHello, que traz a parte dele do ECDHE, e a partir daí os dois derivam o segredo de handshake e passam a cifrar tudo. Bob então envia, cifrados, as extensões, o certificado, o CertificateVerify (assinatura do transcrito com a chave privada do certificado) e o Finished (um HMAC do transcrito). Alice valida o certificado, a assinatura e o Finished, responde com o seu Finished e ambos derivam as chaves de tráfego da aplicação. Eva vê o ClientHello e o ServerHello, mas as demais mensagens estão cifradas.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice (cliente)
+    participant B as Bob (servidor)
+    participant E as Eva
+    A->>A: Gera o par ECDHE efêmero e um valor aleatório
+    A->>B: ClientHello (valor aleatório, suítes e key_share)
+    Note over E: Eva vê o ClientHello
+    B->>B: Gera o par ECDHE efêmero
+    B->>A: ServerHello (suíte escolhida e key_share)
+    Note over E: Eva vê o ServerHello, mas<br/>não as próximas mensagens
+    A->>A: Segredo ECDHE e chaves de handshake
+    B->>B: Segredo ECDHE e chaves de handshake
+    B->>A: EncryptedExtensions (cifrada)
+    B->>A: Certificate (cifrada)
+    B->>A: CertificateVerify, assinatura do transcrito (cifrada)
+    B->>A: Finished, HMAC do transcrito (cifrada)
+    A->>A: Valida o certificado, a assinatura e o Finished
+    A->>B: Finished do cliente (cifrada)
+    B->>B: Valida o Finished do cliente
+    A->>A: Deriva as chaves de tráfego da aplicação
+    B->>B: Deriva as chaves de tráfego da aplicação
+    A->>B: Dados de aplicação (cifrados)
+    B->>A: Dados de aplicação (cifrados)
+```
+
+*Figura 2.1.1 (sequência).* Handshake completo de 1-RTT.
+
+#### 2.1.2 Cronograma de chaves com HKDF (do segredo ECDHE às chaves de tráfego)
+
+Cada lado, com os mesmos insumos, executa a mesma sequência de derivações. Parte-se de um Early Secret (sem chave pré-compartilhada, entra um valor nulo). O Handshake Secret mistura o segredo ECDHE ao anterior com o HKDF-Extract, e dele saem, com o transcrito do ClientHello ao ServerHello, os segredos de tráfego de handshake de cada sentido. O Master Secret é derivado do Handshake Secret, e dele saem, com o transcrito até o Finished do servidor, os segredos de tráfego da aplicação. De cada segredo de tráfego o HKDF-Expand-Label extrai a chave e o IV usados pelo algoritmo de cifragem autenticada. Como o ECDHE é efêmero, o comprometimento futuro das chaves de longo prazo não expõe o tráfego passado (sigilo futuro).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice (cliente)
+    participant B as Bob (servidor)
+    Note over A,B: Mesmos insumos nos dois<br/>lados
+    A->>A: Early Secret = HKDF-Extract(nulo, nulo)
+    B->>B: Early Secret = HKDF-Extract(nulo, nulo)
+    A->>A: Handshake Secret = HKDF-Extract(derivado do anterior, segredo ECDHE)
+    B->>B: Handshake Secret = HKDF-Extract(derivado do anterior, segredo ECDHE)
+    A->>A: Segredos de tráfego de handshake (cliente e servidor)
+    B->>B: Segredos de tráfego de handshake (cliente e servidor)
+    A->>A: Master Secret = HKDF-Extract(derivado do Handshake Secret, nulo)
+    B->>B: Master Secret = HKDF-Extract(derivado do Handshake Secret, nulo)
+    A->>A: Segredos de tráfego da aplicação
+    B->>B: Segredos de tráfego da aplicação
+    A->>A: Chave e IV = HKDF-Expand-Label de cada segredo
+    B->>B: Chave e IV = HKDF-Expand-Label de cada segredo
+```
+
+*Figura 2.1.2 (sequência).* Cronograma de chaves com HKDF.
+
+#### 2.1.3 Eva como homem do meio diante de um cliente que valida (a autenticação do servidor barra o ataque)
+
+Eva intercepta o ClientHello e responde a Alice com o seu próprio ServerHello, fazendo o ECDHE com ela. Para completar o handshake, porém, precisa provar que é Bob. Se apresenta o seu próprio certificado, Alice o recusa, pois não é válido para o nome de Bob nem emitido por uma autoridade confiável. Se repassa o certificado verdadeiro de Bob, que é público, não consegue produzir o CertificateVerify, porque a assinatura do transcrito exige a chave privada de Bob. Nos dois casos Alice aborta o handshake. O ataque só passa se o cliente deixar de validar o certificado.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice (cliente)
+    participant E as Eva
+    participant B as Bob (servidor)
+    A->>E: ClientHello (key_share de Alice)
+    E->>A: ServerHello (key_share de Eva)
+    Note over A,E: Alice e Eva derivam chaves<br/>de handshake
+    alt Eva apresenta o próprio certificado
+        E->>A: Certificate de Eva (cifrada)
+        A->>A: O certificado não vale para o nome de Bob
+        A->>E: Alerta e aborta o handshake
+    else Eva repassa o certificado real de Bob
+        E->>A: Certificate de Bob (cifrada)
+        E->>A: CertificateVerify forjado (cifrada)
+        A->>A: A assinatura não confere com a chave pública de Bob
+        A->>E: Alerta e aborta o handshake
+    end
+    Note over B: Bob nunca chega a falar com<br/>Alice
+```
+
+*Figura 2.1.3 (sequência).* Eva como homem do meio diante de um cliente que valida.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

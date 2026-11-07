@@ -21,6 +21,117 @@ O problema LWE em escala didática e o ML-KEM ([FIPS 203](https://csrc.nist.gov/
 
 O ML-KEM é o mecanismo de encapsulamento de chave pós-quântico padronizado pelo NIST. Sua segurança vem do problema Module-LWE: a chave pública é uma sequência de equações lineares com ruído pequeno, que só quem conhece o segredo consegue resolver. Alice gera o par de chaves, Bob encapsula uma chave de 32 bytes na chave pública dela e Alice a recupera por desencapsulamento. Se Eva alterar o texto cifrado, a transformação de Fujisaki-Okamoto faz Alice derivar uma chave diferente, sem aviso de erro (rejeição implícita). A Parte A mostra o LWE com números minúsculos, em que Eva vence; a Parte B executa o ML-KEM real; a Parte C compara tamanhos e trata do modo híbrido com o X25519.
 
+**Artigos originais.**
+
+- Regev, O. *On lattices, learning with errors, random linear codes, and cryptography*. In: ACM Symposium on Theory of Computing (STOC), p. 84-93, 2005. Versão estendida no Journal of the ACM, v. 56, n. 6, art. 34, 2009. [Acessar o artigo (PDF, página do autor)](https://cims.nyu.edu/~regev/papers/qcrypto.pdf).
+- Bos, J.; Ducas, L.; Kiltz, E.; Lepoint, T.; Lyubashevsky, V.; Schanck, J. M.; Schwabe, P.; Seiler, G.; Stehlé, D. *CRYSTALS-Kyber: a CCA-secure module-lattice-based KEM*. In: IEEE European Symposium on Security and Privacy (EuroS&P), 2018. [Acessar o artigo (ePrint IACR 2017/634)](https://eprint.iacr.org/2017/634).
+
+### 2.1 Diagramas do LWE, do encapsulamento de chave e do modo híbrido
+
+Os diagramas abaixo mostram o protocolo em si, antes dos cenários executados da seção 5. Alice gera o par de chaves e Bob encapsula uma chave nela; Eva observa o canal e, quando indicado, altera o texto cifrado. **ek** é a chave de encapsulamento (pública), **dk** a de desencapsulamento (privada), **c** o texto cifrado e **K** a chave compartilhada de 32 bytes. Os valores aqui são símbolos, não números.
+
+#### 2.1.1 Cifragem de um bit com LWE em escala didática (a ideia do aprendizado com erros)
+
+A chave secreta de Alice é um vetor pequeno s. Ela publica uma matriz aleatória A e o vetor b = A·s + e, em que e é um erro pequeno: sem o erro, s sairia de um sistema linear; com ele, o problema é difícil. Para cifrar um bit, Bob escolhe um vetor r pequeno e calcula u = rᵀ·A e v = rᵀ·b + bit·⌊q/2⌋. Alice calcula v - u·s = rᵀ·e + bit·⌊q/2⌋: o termo de erro é pequeno, e o resultado fica perto de 0 (bit 0) ou perto de q/2 (bit 1). Eva, que vê A, b, u e v, não separa o erro do segredo.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    A->>A: Escolhe o segredo s e o erro pequeno e
+    A->>A: b = A · s + e
+    A->>B: Chave pública (A, b)
+    Note over E: Eva copia (A, b)
+    B->>B: Escolhe r pequeno
+    B->>B: u = rᵀ · A e v = rᵀ · b + bit · ⌊q/2⌋
+    B->>A: (u, v)
+    Note over E: Eva vê (u, v), mas não<br/>separa o erro do segredo
+    A->>A: d = v - u · s = rᵀ · e + bit · ⌊q/2⌋
+    A->>A: Perto de 0 é bit 0, perto de q/2 é bit 1
+```
+
+*Figura 2.1.1 (sequência).* Cifragem de um bit com LWE em escala didática.
+
+#### 2.1.2 Geração de chaves, encapsulamento e desencapsulamento (o fluxo do ML-KEM)
+
+Alice executa a geração de chaves e obtém ek e dk; envia ek a Bob e guarda dk. Bob sorteia uma mensagem m, executa o encapsulamento sobre ek e obtém a chave K e o texto cifrado c; envia c a Alice e mantém K. Alice executa o desencapsulamento com dk e c e recupera a mesma K. Eva vê ek e c, mas sem dk não resolve o problema Module-LWE que protege K. A chave K é então usada em um algoritmo simétrico, e não para cifrar dados diretamente.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    A->>A: (ek, dk) = ML-KEM.KeyGen
+    A->>B: ek
+    Note over E: Eva copia ek
+    B->>B: Sorteia a mensagem m
+    B->>B: (K, c) = ML-KEM.Encaps(ek, m)
+    B->>A: c
+    Note over E: Eva copia c, mas não obtém K
+    A->>A: K = ML-KEM.Decaps(dk, c)
+    Note over A,B: Os dois têm a mesma chave K<br/>de 32 bytes
+    A->>B: Dados cifrados com K (algoritmo simétrico)
+```
+
+*Figura 2.1.2 (sequência).* Geração de chaves, encapsulamento e desencapsulamento.
+
+#### 2.1.3 Eva altera o texto cifrado: rejeição implícita (a transformação de Fujisaki-Okamoto)
+
+Se Eva inverte um bit de c, Alice não recebe nenhum erro. No desencapsulamento, ela decifra, recifra o resultado com a chave pública e compara com o c recebido. Como o c alterado não confere, em vez de devolver a chave derivada da mensagem Alice devolve uma chave pseudoaleatória calculada a partir de um valor secreto de dk e do próprio c. A chave de Alice passa a ser diferente da de Bob, e a falha só aparece depois, quando os dados cifrados com K não decifram. Não há mensagem de erro que sirva de oráculo para Eva.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant E as Eva
+    participant B as Bob
+    B->>B: (K, c) = ML-KEM.Encaps(ek, m)
+    B->>E: c
+    E->>E: Inverte um bit, obtendo c'
+    E->>A: c'
+    A->>A: m' = decifra c' com dk
+    A->>A: Recifra m' e compara com c'
+    alt a comparação falha (c' foi alterado)
+        A->>A: K' = Hash(valor secreto de dk e c'), pseudoaleatória
+    else a comparação confere
+        A->>A: K = derivada de m'
+    end
+    Note over A,B: Alice não vê erro algum, mas<br/>K' é diferente de K
+    A->>B: Dados cifrados com K'
+    B->>B: A autenticação falha e os dados são descartados
+```
+
+*Figura 2.1.3 (sequência).* Eva altera o texto cifrado: rejeição implícita.
+
+#### 2.1.4 Modo híbrido com X25519 (clássico e pós-quântico juntos)
+
+No modo híbrido, o acordo combina um segredo clássico (ECDH com X25519) e um segredo pós-quântico (ML-KEM). Cada lado calcula os dois segredos e os concatena como entrada de uma função de derivação, de modo que a chave final só é obtida por Eva se ela quebrar os dois mecanismos. Isso protege contra um computador quântico futuro, sem abrir mão da segurança comprovada ao longo de anos do X25519 caso o ML-KEM tenha uma falha ainda desconhecida. O custo é o aumento do tamanho das mensagens trocadas.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    A->>A: Gera o par X25519 e o par ML-KEM
+    A->>B: Chave pública X25519 e ek
+    B->>B: Gera o par X25519 e encapsula em ek
+    B->>A: Chave pública X25519 e c
+    Note over E: Eva vê as duas chaves<br/>públicas, ek e c
+    A->>A: K1 = X25519 e K2 = Decaps(dk, c)
+    B->>B: K1 = X25519 e K2 = chave encapsulada
+    A->>A: K = KDF(K1 e K2)
+    B->>B: K = KDF(K1 e K2)
+    Note over E: Eva precisa quebrar o X25519<br/>e o ML-KEM
+```
+
+*Figura 2.1.4 (sequência).* Modo híbrido com X25519.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

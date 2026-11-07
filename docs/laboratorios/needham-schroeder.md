@@ -21,6 +21,12 @@ Autenticação mútua com chave pública em três mensagens, o ataque de Lowe co
 
 O **protocolo de Needham-Schroeder de chave pública** (1978) permite que Alice e Bob, que conhecem as chaves públicas um do outro, se **autentiquem mutuamente** em três mensagens: {Na, A} cifrada para Bob, {Na, Nb} cifrada para Alice e {Nb} cifrada para Bob. Cada um prova que possui a sua chave privada devolvendo um **nonce** (número aleatório usado uma vez) que só quem a possui consegue ler. Em 1995, **Gavin Lowe** mostrou que Eva, um participante legítimo do sistema, pode usar uma sessão que Alice iniciou com ela para se passar por Alice diante de Bob e obter os dois nonces: a falha é de projeto, pois a mensagem 2 não diz quem a gerou, e não depende de quebrar o RSA. A **correção de Lowe** coloca a identidade de Bob dentro da mensagem 2, {Na, Nb, B}, e Alice, ao conferi-la, aborta o protocolo diante do ataque. A versão simétrica do protocolo, com servidor de chaves, tem a falha de repetição descrita por Denning e Sacco (1981) e deu origem ao Kerberos; ela não é simulada porque exige um quarto participante.
 
+**Artigos originais.**
+
+- Needham, R. M.; Schroeder, M. D. *Using encryption for authentication in large networks of computers*. Communications of the ACM, v. 21, n. 12, p. 993-999, dez. 1978. [Acessar o artigo (PDF, cópia hospedada na Universidade de Washington)](https://homes.cs.washington.edu/~arvind/cs422/doc/needham.pdf); [DOI 10.1145/359657.359659](https://doi.org/10.1145/359657.359659).
+- Lowe, G. *An attack on the Needham-Schroeder public-key authentication protocol*. Information Processing Letters, v. 56, n. 3, p. 131-133, nov. 1995. [Página da publicação na Universidade de Oxford](https://www.cs.ox.ac.uk/publications/publication641-abstract.html); [DOI 10.1016/0020-0190(95)00144-2](https://doi.org/10.1016/0020-0190(95)00144-2).
+- Denning, D. E.; Sacco, G. M. *Timestamps in key distribution protocols*. Communications of the ACM, v. 24, n. 8, p. 533-536, ago. 1981. [DOI 10.1145/358722.358740](https://doi.org/10.1145/358722.358740).
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

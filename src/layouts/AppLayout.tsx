@@ -35,6 +35,9 @@ export function AppLayout() {
             <NavLink to="/categoria/autenticacao" className={link}>
               Autenticação
             </NavLink>
+            <NavLink to="/categoria/dap" className={link}>
+              DAP
+            </NavLink>
           </nav>
           <button
             type="button"

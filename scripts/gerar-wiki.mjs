@@ -13,6 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { FUNDAMENTACAO_DIAGRAMAS } from './diagramas-fundamentacao.mjs';
+import { ARTIGOS_FUNDAMENTACAO, FUNDAMENTACAO_FASE1 } from './diagramas-fase1.mjs';
 import { DAP_RFC_INTRO, DAP_RFC_ATORES, DAP_RFC_DIAGRAMAS } from './dap-rfc-diagramas.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -722,13 +723,14 @@ async function labDocument(lab) {
   sec++;
 
   O.push(`## ${sec}. Fundamentação`, '', spec.resumo, '');
-  const extra = FUNDAMENTACAO_DIAGRAMAS[lab.id];
-  if (extra?.artigos?.length) {
-    O.push(extra.artigos.length === 1 ? '**Artigo original.**' : '**Artigos originais.**', '');
-    for (const a of extra.artigos) O.push(`- ${a.citacao} ${a.links.map(([rotulo, url]) => `[${rotulo}](${url})`).join('; ')}.`);
+  const extra = FUNDAMENTACAO_DIAGRAMAS[lab.id] ?? FUNDAMENTACAO_FASE1[lab.id];
+  const artigos = extra?.artigos ?? ARTIGOS_FUNDAMENTACAO[lab.id];
+  if (artigos?.length) {
+    O.push(extra?.rotuloArtigos ?? (artigos.length === 1 ? '**Artigo original.**' : '**Artigos originais.**'), '');
+    for (const a of artigos) O.push(a.links.length ? `- ${a.citacao} ${a.links.map(([rotulo, url]) => `[${rotulo}](${url})`).join('; ')}.` : `- ${a.citacao}`);
     O.push('');
   }
-  if (extra) {
+  if (extra?.diagramas) {
     // Item 2.1: diagramas conceituais do protocolo (geração de chaves, troca, cifragem, assinatura), com Alice, Bob e Eva
     O.push(`### ${sec}.1 ${extra.titulo}`, '', extra.intro, '');
     extra.diagramas.forEach((d, i) => {
@@ -776,7 +778,7 @@ async function labDocument(lab) {
   }
 
   // Participantes (do primeiro cenário)
-  if (lab.id === 'dap' || extra) O.push('> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.', '');
+  if (lab.id === 'dap' || extra?.diagramas) O.push('> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.', '');
   O.push(`## ${sec}. Participantes`, '');
   O.push('Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.', '');
   const partyRows = new Map();

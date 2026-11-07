@@ -58,8 +58,8 @@ describe('página de documentação (Markdown e Mermaid)', () => {
     expect(screen.getByRole('heading', { level: 2, name: '5. Cenários' })).toBeTruthy();
     expect(screen.getAllByRole('table').length).toBeGreaterThan(0);
     // um diagrama por cenário (ECB, CBC, CTR e GCM), todos desenhados
-    await waitFor(() => expect(screen.getAllByRole('img', { name: /Diagrama de sequência/ })).toHaveLength(4), { timeout: 10000 });
-    await waitFor(() => expect(document.querySelectorAll('figure svg')).toHaveLength(4), { timeout: 10000 });
+    await waitFor(() => expect(screen.getAllByRole('img', { name: /Diagrama de sequência/ })).toHaveLength(9), { timeout: 10000 });
+    await waitFor(() => expect(document.querySelectorAll('figure svg')).toHaveLength(9), { timeout: 10000 });
     expect(render_.mock.calls[0][1]).toMatch(/^sequenceDiagram/);
     // o Mermaid usa as cores padrão (como no GitHub) e roda em modo estrito
     const cfg = initialize.mock.calls[0][0] as { securityLevel: string; theme: string };
@@ -127,7 +127,7 @@ describe('página de documentação (Markdown e Mermaid)', () => {
       this.dispatchEvent(new Event('close'));
     };
     await open();
-    await waitFor(() => expect(screen.getAllByRole('button', { name: 'Ampliar diagrama' })).toHaveLength(4), { timeout: 10000 });
+    await waitFor(() => expect(screen.getAllByRole('button', { name: 'Ampliar diagrama' })).toHaveLength(9), { timeout: 10000 });
     fireEvent.click(screen.getAllByRole('button', { name: 'Ampliar diagrama' })[0]);
     const dialog = await screen.findByRole('dialog', { name: /Diagrama de sequência/ });
     expect(within(dialog).getByRole('button', { name: 'Aumentar o zoom' })).toBeTruthy();
@@ -150,7 +150,7 @@ describe('página de documentação (Markdown e Mermaid)', () => {
 
   it('não tem violações de acessibilidade', async () => {
     await open('aes');
-    await waitFor(() => expect(document.querySelectorAll('figure svg')).toHaveLength(4), { timeout: 10000 });
+    await waitFor(() => expect(document.querySelectorAll('figure svg')).toHaveLength(9), { timeout: 10000 });
     const result = await axe.run(document.body, { rules: { 'color-contrast': { enabled: false } } });
     expect(result.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`)).toEqual([]);
   }, 60000);

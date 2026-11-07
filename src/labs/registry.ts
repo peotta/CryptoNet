@@ -1,6 +1,6 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 
-export type CategoryId = 'classica' | 'simetrica' | 'assimetrica' | 'posquantica' | 'autenticacao';
+export type CategoryId = 'classica' | 'simetrica' | 'assimetrica' | 'posquantica' | 'autenticacao' | 'dap';
 
 export interface Category {
   id: CategoryId;
@@ -45,7 +45,12 @@ export const CATEGORIES: Category[] = [
   {
     id: 'autenticacao',
     title: 'Autenticação e Protocolos Seguros',
-    description: 'Protocolos que combinam primitivas para provar quem é o usuário e o que ele autorizou, como a autorização de transações fora de banda do DAP.',
+    description: 'Protocolos que combinam primitivas para provar quem são os participantes e autenticá-los mutuamente, como o Needham-Schroeder e o ataque de Lowe.',
+  },
+  {
+    id: 'dap',
+    title: 'DAP: Autorização de Transações',
+    description: 'O Dynamic Authorization Protocol (DAP), protocolo de autorização de transações fora de banda proposto na tese de Laerte Peotta de Melo, com QR code, chave em duas metades e tela confiável do celular.',
   },
 ];
 
@@ -163,7 +168,7 @@ export const LABS: LabMeta[] = [
   {
     id: 'dap',
     novo: true,
-    category: 'autenticacao',
+    category: 'dap',
     title: 'DAP: autorização visual de transações',
     summary: 'Segundo fator fora de banda por QR code: chave em duas metades, desafio com AES-256-CBC e HMAC-SHA-256, tela confiável do celular (WYSIWYS) e os ataques de Eva ao computador não confiável.',
     objectives: ['Provisionar a chave k = k1 ⊕ k2 por dois canais e ativá-la', 'Montar e verificar o desafio com dados, código cifrado e etiqueta HMAC', 'Ver como o protocolo reage à alteração do QR, ao MITB, ao chute e à repetição do código'],

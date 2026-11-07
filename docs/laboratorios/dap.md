@@ -2,7 +2,7 @@
 
 Segundo fator fora de banda por QR code: chave em duas metades, desafio com AES-256-CBC e HMAC-SHA-256, tela confiável do celular (WYSIWYS) e os ataques de Eva ao computador não confiável.
 
-- **Categoria:** Autenticação e Protocolos Seguros
+- **Categoria:** DAP: Autorização de Transações
 - **Abrir o laboratório:** <https://peotta.github.io/CryptoNet/#/lab/dap>
 - **Motor:** real (Web Crypto: HMAC-SHA-512, HMAC-SHA-256, SHA-256 e AES-256-CBC), com QR code desenhado na tela
 - **Código-fonte:** `src/labs/dap/` (interface e fluxos) e `src/crypto/dap.ts` (operações)
@@ -36,6 +36,11 @@ O **DAP** (*Dynamic Authorization Protocol*) é um protocolo de **autorização 
 **Provisionamento da chave.** A chave k, de 512 bits, chega ao MD em **duas metades por canais separados** (**k = k1 ⊕ k2**) e é ativada com o código 000. Alice é a usuária com o MD, Bob é o e-Bank com o HSM e Eva é o UC, que controla o canal da Internet.
 
 **Partes do laboratório.** A Parte A cobre o provisionamento da chave, inclusive a troca de k1 por Eva e a observação do ATM; a Parte B cobre a ativação do dispositivo, que confirma que as duas pontas têm a mesma chave; a Parte C cobre a transação e os ataques de Eva: alteração do QR, pedido trocado por malware (MITB), chute do código e repetição do código.
+
+**Artigos originais.**
+
+- Melo, L. P. de. *DAP (Dynamic Authorization Protocol): Uma Abordagem Segura Out-of-Band para E-Bank com um Segundo Fator de Autenticação Visual*. Tese (Doutorado em Engenharia Elétrica), Universidade de Brasília, 2012. [Acessar a tese (PDF, repositório da UnB)](https://repositorioantigo.bce.unb.br/bitstream/10482/12963/1/2012_LaertePeottadeMelo.pdf).
+- Melo, L. P. de; Amaral, D. M.; Albuquerque, R. de O.; Gondim, J. J. C.; Mendonça, F. L. L. de. *A Secure Approach Out-of-Band for e-Bank with Visual Two-Factor Authorization Protocol*. Cryptography, v. 8, n. 4, art. 51, 2024. [Acessar o artigo (acesso aberto, MDPI)](https://www.mdpi.com/2410-387X/8/4/51); [DOI 10.3390/cryptography8040051](https://doi.org/10.3390/cryptography8040051).
 
 ### 2.1 Diagramas de sequência do protocolo (Internet-Draft)
 

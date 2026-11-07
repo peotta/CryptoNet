@@ -51,8 +51,8 @@ describe('documentação dos laboratórios (gerada por npm run docs:labs)', () =
       }
     }
   });
-  it('a Fundamentação de DAP, Diffie-Hellman e RSA traz o item 2.1 com os diagramas do protocolo', () => {
-    const esperado: Record<string, number> = { dap: 8, 'diffie-hellman': 4, rsa: 5 };
+  it('a Fundamentação de DAP, Diffie-Hellman, RSA, ECDH, TLS 1.3, ML-KEM, Hash/HMAC e AES traz o item 2.1 com os diagramas do protocolo', () => {
+    const esperado: Record<string, number> = { dap: 8, 'diffie-hellman': 4, rsa: 5, 'ecdh-assinaturas': 4, tls13: 3, 'ml-kem': 4, 'hash-hmac': 3, aes: 5 };
     for (const [id, n] of Object.entries(esperado)) {
       const text = read(`${id}.md`);
       const fund = text.slice(text.indexOf('## 2. Fundamentação'), text.indexOf('## 3. Participantes'));

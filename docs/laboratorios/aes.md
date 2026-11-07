@@ -21,6 +21,139 @@ As rodadas do AES operação por operação e a comparação de ECB, CBC, CTR e 
 
 O AES opera em blocos de 16 bytes e repete rodadas de SubBytes, ShiftRows, MixColumns e AddRoundKey (10 rodadas com chave de 128 bits). O modo de operação define como os blocos se combinam: o ECB vaza padrões (blocos iguais geram cifras iguais), o CBC e o CTR os ocultam, mas só o GCM, um modo autenticado, detecta a adulteração por Eva.
 
+**Artigos originais.**
+
+- Daemen, J.; Rijmen, V. *AES Proposal: Rijndael*. Documento enviado ao NIST no concurso do AES, versão revista, 1999. [Acessar o documento (PDF, NIST)](https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/aes-development/rijndael-ammended.pdf).
+- McGrew, D. A.; Viega, J. *The Security and Performance of the Galois/Counter Mode (GCM) of Operation*. In: INDOCRYPT 2004, Lecture Notes in Computer Science, v. 3348, p. 343-355. Springer, 2004. [Acessar o artigo (ePrint IACR 2004/193)](https://eprint.iacr.org/2004/193).
+
+### 2.1 Diagramas da cifragem de um bloco e dos modos de operação
+
+Os diagramas abaixo mostram o AES em uso, antes dos cenários executados da seção 5. Alice cifra, Bob decifra e Eva observa o canal e, quando indicado, altera a cifra. **K** é a chave secreta compartilhada, **P_i** é o bloco i do texto claro (16 bytes), **C_i** o bloco i da cifra, **E** a cifragem de um bloco com o AES e **D** a decifragem. A chave K foi combinada antes por um canal seguro.
+
+#### 2.1.1 Cifragem de um bloco com as rodadas do AES (AES-128, 10 rodadas)
+
+A chave é expandida em chaves de rodada. O bloco de 16 bytes entra em uma matriz de estado e recebe o AddRoundKey inicial. As rodadas 1 a 9 aplicam, em ordem, SubBytes (substituição não linear byte a byte pela caixa S), ShiftRows (deslocamento das linhas), MixColumns (mistura linear das colunas) e AddRoundKey (XOR com a chave da rodada). A rodada 10 é igual, mas sem MixColumns. Bob, que tem a mesma chave, aplica as operações inversas em ordem inversa e recupera o bloco. Uma única cifragem de bloco, sozinha, não define como cifrar uma mensagem longa: isso é papel do modo de operação.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    A->>A: Expande K nas chaves de rodada
+    A->>A: Estado = bloco de 16 bytes
+    A->>A: AddRoundKey com a chave da rodada 0
+    A->>A: Rodadas 1 a 9: SubBytes, ShiftRows, MixColumns, AddRoundKey
+    A->>A: Rodada 10: SubBytes, ShiftRows, AddRoundKey
+    A->>B: Bloco cifrado de 16 bytes
+    Note over E: Eva vê o bloco cifrado
+    B->>B: Expande K nas mesmas chaves de rodada
+    B->>B: Aplica as operações inversas em ordem inversa
+    B->>B: Recupera o bloco original
+```
+
+*Figura 2.1.1 (sequência).* Cifragem de um bloco com as rodadas do AES.
+
+#### 2.1.2 Modo ECB: blocos iguais geram cifras iguais (o modo que vaza padrões)
+
+No ECB, cada bloco é cifrado de forma independente, com a mesma chave: C_i = E(K, P_i). Dois blocos de texto claro iguais produzem dois blocos cifrados iguais, de modo que Eva enxerga a estrutura da mensagem mesmo sem decifrar (o exemplo clássico é a imagem cifrada em ECB cujo contorno continua visível). Como os blocos são independentes, Eva também pode trocar, repetir ou remover blocos, e Bob decifra tudo sem perceber. O ECB não deve ser usado para mensagens com mais de um bloco.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant E as Eva
+    participant B as Bob
+    A->>A: C1 = E(K, P1)
+    A->>A: C2 = E(K, P2)
+    A->>A: C3 = E(K, P3), com P3 igual a P1
+    A->>E: C1, C2, C3
+    Note over E: C3 é igual a C1, então Eva<br/>sabe que P3 é igual a P1
+    E->>E: Troca a ordem dos blocos
+    E->>B: C3, C2, C1
+    B->>B: Decifra cada bloco de forma independente
+    Note over B: Bob aceita o texto<br/>reordenado, sem erro algum
+```
+
+*Figura 2.1.2 (sequência).* Modo ECB: blocos iguais geram cifras iguais.
+
+#### 2.1.3 Modo CBC: encadeamento com vetor de inicialização (cada bloco depende do anterior)
+
+No CBC, Alice sorteia um vetor de inicialização (IV) imprevisível e cifra cada bloco após um XOR com a cifra anterior: C_i = E(K, P_i ⊕ C_(i-1)), com C_0 = IV. Blocos iguais deixam de gerar cifras iguais. Bob decifra cada bloco e aplica o XOR com a cifra anterior. Se Eva inverte um bit de C_i, o bloco P_i sai totalmente embaralhado e o bloco seguinte, P_(i+1), sofre a inversão do mesmo bit. O CBC oculta padrões, mas não autentica: a alteração passa sem que Bob receba um aviso.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant E as Eva
+    participant B as Bob
+    A->>A: Sorteia o IV imprevisível
+    A->>A: C1 = E(K, P1 ⊕ IV)
+    A->>A: C2 = E(K, P2 ⊕ C1)
+    A->>E: IV, C1, C2
+    E->>E: Inverte um bit de C1, obtendo C1'
+    E->>B: IV, C1', C2
+    B->>B: P1' = D(K, C1') ⊕ IV, bloco totalmente corrompido
+    B->>B: P2' = D(K, C2) ⊕ C1', com o mesmo bit invertido
+    Note over B: Nenhum erro é sinalizado:<br/>Eva alterou P2 de modo<br/>previsível
+```
+
+*Figura 2.1.3 (sequência).* Modo CBC: encadeamento com vetor de inicialização.
+
+#### 2.1.4 Modo CTR: fluxo de chaves gerado pelo contador (cifra de fluxo construída com o AES)
+
+No CTR, o AES não cifra o texto: cifra um contador, produzindo um fluxo de chaves que é combinado com o texto por XOR. Alice usa um nonce único por mensagem e um contador que cresce a cada bloco: C_i = P_i ⊕ E(K, nonce ‖ i). Bob gera o mesmo fluxo e repete o XOR. Não há preenchimento e os blocos podem ser calculados em paralelo. Mas, como a cifragem é um XOR, inverter um bit de C_i inverte o mesmo bit de P_i, e Eva faz mudanças previsíveis sem conhecer K. O nonce nunca pode se repetir com a mesma chave, pois a repetição revela P_1 ⊕ P_2.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant E as Eva
+    participant B as Bob
+    A->>A: Escolhe um nonce único para a mensagem
+    A->>A: F1 = E(K, nonce e contador 1)
+    A->>A: C1 = P1 ⊕ F1
+    A->>E: nonce e C1
+    E->>E: Inverte o bit j de C1, obtendo C1'
+    E->>B: nonce e C1'
+    B->>B: F1 = E(K, nonce e contador 1)
+    B->>B: P1' = C1' ⊕ F1
+    Note over B: O bit j de P1' está<br/>invertido, sem aviso: o CTR<br/>é maleável
+```
+
+*Figura 2.1.4 (sequência).* Modo CTR: fluxo de chaves gerado pelo contador.
+
+#### 2.1.5 Modo GCM: cifragem autenticada (a etiqueta detecta a adulteração)
+
+O GCM combina o CTR, para a confidencialidade, com uma função de autenticação sobre o corpo finito GF(2^128) (GHASH), que produz uma etiqueta de autenticação. Alice usa um nonce único, cifra e calcula a etiqueta sobre a cifra e sobre os dados associados (cabeçalhos em claro, quando houver). Bob recalcula a etiqueta antes de liberar qualquer texto claro. Se Eva alterou um bit da cifra, do nonce ou dos dados associados, as etiquetas diferem e Bob rejeita a mensagem. O GCM é o modo recomendado quando se quer sigilo e integridade juntos, com o mesmo cuidado de nunca repetir o nonce com a mesma chave.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant E as Eva
+    participant B as Bob
+    A->>A: Escolhe um nonce único
+    A->>A: C = cifra em CTR do texto claro P
+    A->>A: t = GHASH sobre os dados associados e C, com a chave
+    A->>E: nonce, C e t
+    alt Eva não altera
+        E->>B: nonce, C e t
+    else Eva inverte um bit de C
+        E->>B: nonce, C' e t
+    end
+    B->>B: Recalcula a etiqueta t' sobre o que recebeu
+    alt t' é igual a t
+        B->>B: Decifra e entrega P
+    else t' é diferente de t
+        B->>B: Rejeita sem decifrar
+    end
+```
+
+*Figura 2.1.5 (sequência).* Modo GCM: cifragem autenticada.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

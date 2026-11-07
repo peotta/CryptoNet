@@ -20,6 +20,93 @@ SHA-2 reais, efeito avalanche visualizado bit a bit e HMAC calculado passo a pas
 
 Uma função hash produz um resumo de tamanho fixo e tem o efeito avalanche: trocar um bit da entrada altera cerca de metade dos bits da saída. Hash não é cifragem nem autentica quem enviou. O HMAC combina o hash com uma chave secreta em duas passagens (ipad e opad), e só quem tem a chave calcula a etiqueta correta, o que impede Eva de alterar a mensagem sem ser notada.
 
+**Artigos originais.**
+
+- Bellare, M.; Canetti, R.; Krawczyk, H. *Keying hash functions for message authentication*. In: CRYPTO 1996, Lecture Notes in Computer Science, v. 1109, p. 1-15. Springer, 1996. [Acessar o artigo (PDF, página de Mihir Bellare)](https://cseweb.ucsd.edu/~mihir/papers/kmd5.pdf).
+- Krawczyk, H.; Bellare, M.; Canetti, R. *HMAC: Keyed-Hashing for Message Authentication*. [RFC 2104](https://www.rfc-editor.org/rfc/rfc2104), IETF, 1997.
+
+### 2.1 Diagramas da integridade e da autenticação de mensagens
+
+Os diagramas abaixo mostram o uso do hash e do HMAC, antes do cenário executado da seção 5. Alice e Bob são os participantes legítimos e Eva controla o canal. **H** é uma função hash, como a SHA-256; **K** é uma chave secreta compartilhada por Alice e Bob; **ipad** e **opad** são constantes do HMAC. O hash é público: qualquer um o calcula.
+
+#### 2.1.1 Um hash sem chave não autentica (Eva recalcula o resumo)
+
+Alice envia a mensagem m e o seu hash H(m). Bob recalcula H sobre o que recebeu e compara. Isso detecta erros acidentais, mas não protege contra Eva, que controla o canal: ela troca m por m', calcula H(m') e envia os dois. Bob recalcula, o hash confere e ele aceita a mensagem adulterada. O hash garante integridade só se o resumo chegar por um canal que Eva não altera.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant E as Eva
+    participant B as Bob
+    A->>A: h = H(m)
+    A->>E: m e h
+    E->>E: Troca m por m' e calcula h' = H(m')
+    E->>B: m' e h'
+    B->>B: Recalcula H(m') e compara com h'
+    Note over B: Confere, então Bob aceita m'<br/>sem perceber a troca
+```
+
+*Figura 2.1.1 (sequência).* Um hash sem chave não autentica.
+
+#### 2.1.2 Autenticação de mensagem com HMAC (a chave secreta impede a falsificação)
+
+Alice e Bob compartilham a chave K, combinada antes por um canal seguro. Alice calcula a etiqueta t = HMAC(K, m), que aplica o hash em duas passagens: um hash interno sobre a mensagem precedida de K ⊕ ipad e um hash externo sobre o resultado precedido de K ⊕ opad. Bob refaz o cálculo com a sua cópia de K e compara as etiquetas em tempo constante. Eva, sem K, não calcula a etiqueta correta para m' e, com isso, não consegue alterar a mensagem sem ser notada. Isso garante integridade e autenticidade da origem, mas não confidencialidade nem não repúdio, pois Bob também conhece K.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant E as Eva
+    participant B as Bob
+    Note over A,B: Chave secreta K já combinada
+    A->>A: interno = H((K ⊕ ipad) ‖ m)
+    A->>A: t = H((K ⊕ opad) ‖ interno)
+    A->>E: m e t
+    alt Eva não altera
+        E->>B: m e t
+    else Eva altera a mensagem
+        E->>B: m' e t (Eva não conhece K)
+    end
+    B->>B: Recalcula t' = HMAC(K, mensagem recebida)
+    alt t' é igual a t (tempo constante)
+        B->>B: Mensagem autêntica e íntegra
+    else t' é diferente de t
+        B->>B: Rejeita a mensagem
+    end
+```
+
+*Figura 2.1.2 (sequência).* Autenticação de mensagem com HMAC.
+
+#### 2.1.3 Autenticação por desafio e resposta com HMAC (a repetição de respostas antigas falha)
+
+O HMAC também prova posse da chave sem revelá-la. Bob quer saber se fala com Alice: envia um desafio aleatório (nonce) que nunca usou antes. Alice responde com HMAC(K, nonce). Bob calcula o mesmo valor e compara. Eva pode gravar a resposta, mas, em uma nova tentativa, Bob envia outro nonce e a resposta antiga não confere. Por isso o nonce deve ser imprevisível e usado uma única vez. Este é um esquema didático: protocolos reais também amarram as identidades à resposta, como mostra o laboratório do Needham-Schroeder.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: Chave secreta K já combinada
+    B->>B: Sorteia o nonce n1
+    B->>A: Desafio n1
+    A->>A: resposta = HMAC(K, n1)
+    A->>B: resposta
+    Note over E: Eva grava n1 e a resposta
+    B->>B: Calcula HMAC(K, n1) e compara
+    Note over B: Confere, então Bob autentica<br/>Alice
+    B->>B: Em outra tentativa, sorteia n2
+    B->>E: Desafio n2
+    E->>B: Resposta antiga a n1
+    B->>B: Compara com HMAC(K, n2), que é diferente
+    Note over B: Não confere, então Bob<br/>rejeita Eva
+```
+
+*Figura 2.1.3 (sequência).* Autenticação por desafio e resposta com HMAC.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

@@ -21,6 +21,133 @@ Aritmética de curvas elípticas passo a passo, ECDH e ECDSA em uma curva didát
 
 Numa curva elíptica sobre um corpo finito, somar pontos e multiplicar por um escalar (dobrar e somar) são operações fáceis, mas descobrir k a partir de k·G é o logaritmo discreto elíptico. O ECDH acorda um segredo; o ECDSA assina com um nonce k que não pode se repetir (repetir k revela a chave privada, como no caso do PlayStation 3). O Ed25519 deriva o nonce da chave e da mensagem, sem sorteio.
 
+**Artigos originais.**
+
+- Miller, V. S. *Use of elliptic curves in cryptography*. In: CRYPTO 1985, Lecture Notes in Computer Science, v. 218, p. 417-426. Springer, 1986. [DOI 10.1007/3-540-39799-X_31](https://doi.org/10.1007/3-540-39799-X_31).
+- Koblitz, N. *Elliptic curve cryptosystems*. Mathematics of Computation, v. 48, n. 177, p. 203-209, jan. 1987. [DOI 10.1090/S0025-5718-1987-0866109-5](https://doi.org/10.1090/S0025-5718-1987-0866109-5).
+- Bernstein, D. J. *Curve25519: new Diffie-Hellman speed records*. In: PKC 2006, Lecture Notes in Computer Science, v. 3958, p. 207-228. Springer, 2006. [Acessar o artigo (PDF, página do autor)](https://cr.yp.to/ecdh/curve25519-20060209.pdf).
+- Bernstein, D. J.; Duif, N.; Lange, T.; Schwabe, P.; Yang, B.-Y. *High-speed high-security signatures*. Journal of Cryptographic Engineering, v. 2, n. 2, p. 77-89, 2012. [Acessar o artigo (PDF, página do Ed25519)](https://ed25519.cr.yp.to/ed25519-20110926.pdf).
+- Johnson, D.; Menezes, A.; Vanstone, S. *The Elliptic Curve Digital Signature Algorithm (ECDSA)*. International Journal of Information Security, v. 1, n. 1, p. 36-63, 2001. [DOI 10.1007/s102070100002](https://doi.org/10.1007/s102070100002).
+
+### 2.1 Diagramas da geração de chaves, do acordo e das assinaturas em curvas elípticas
+
+Os diagramas abaixo mostram o protocolo em si, antes dos cenários executados da seção 5. Alice e Bob são os participantes legítimos e Eva observa (ou, quando indicado, altera) o canal. Nas mensagens, **G** é o ponto gerador da curva, de ordem prima **n**; **d** é uma chave privada (um escalar) e **Q = d·G** a chave pública correspondente; **x(P)** é a coordenada x do ponto P. Recuperar d a partir de Q é o logaritmo discreto elíptico.
+
+#### 2.1.1 Geração das chaves e acordo ECDH (visão de Eva, observadora passiva)
+
+Alice e Bob usam a mesma curva e o mesmo ponto G, públicos. Cada um sorteia uma chave privada (d_A e d_B) e calcula a chave pública multiplicando G pelo escalar (Q_A = d_A·G e Q_B = d_B·G). Trocam as chaves públicas pelo canal aberto e cada um multiplica a chave pública recebida pela sua chave privada: d_A·Q_B = d_A·d_B·G = d_B·Q_A. O ponto S é o mesmo nos dois lados e a sua coordenada x é o segredo compartilhado, que na prática passa por uma função de derivação antes de virar chave simétrica. Eva conhece a curva, G, Q_A e Q_B, mas obter d_A ou d_B exige resolver o logaritmo discreto elíptico.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: Curva e ponto G públicos
+    A->>A: Sorteia a chave privada d_A
+    B->>B: Sorteia a chave privada d_B
+    A->>A: Q_A = d_A · G
+    B->>B: Q_B = d_B · G
+    A->>B: Q_A
+    B->>A: Q_B
+    Note over E: Eva copia Q_A e Q_B, mas não<br/>conhece d_A nem d_B
+    A->>A: S = d_A · Q_B
+    B->>B: S = d_B · Q_A
+    Note over A,B: Os dois obtêm o mesmo ponto<br/>S = d_A · d_B · G
+    A->>A: Segredo = x(S), depois derivação
+    B->>B: Segredo = x(S), depois derivação
+    Note over E: Obter S exige resolver o<br/>logaritmo discreto elíptico
+```
+
+*Figura 2.1.1 (sequência).* Geração das chaves e acordo ECDH.
+
+#### 2.1.2 Assinatura e verificação com ECDSA (o nonce k deve ser secreto e único)
+
+Alice tem o par (d, Q = d·G). Para assinar, calcula o hash h da mensagem, sorteia um nonce k, calcula o ponto R = k·G e toma r = x(R) mod n; depois s = k⁻¹·(h + r·d) mod n. A assinatura é o par (r, s). Bob recebe a mensagem e a assinatura, calcula w = s⁻¹, u1 = h·w e u2 = r·w, e então o ponto P = u1·G + u2·Q. A assinatura é válida se x(P) mod n for igual a r, pois P = k·G. Se Eva altera a mensagem, o hash muda e a verificação falha; sem d, ela não refaz (r, s).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice (signatária)
+    participant B as Bob (verificador)
+    participant E as Eva
+    A->>B: Chave pública Q
+    A->>A: h = Hash(m)
+    A->>A: Sorteia o nonce k
+    A->>A: R = k · G e r = x(R) mod n
+    A->>A: s = k⁻¹ · (h + r · d) mod n
+    A->>E: m e a assinatura (r, s)
+    alt Eva não altera
+        E->>B: m e (r, s)
+    else Eva altera a mensagem
+        E->>B: m' e (r, s)
+    end
+    B->>B: h = Hash(mensagem recebida)
+    B->>B: w = s⁻¹, u1 = h · w, u2 = r · w mod n
+    B->>B: P = u1 · G + u2 · Q
+    alt x(P) mod n é igual a r
+        B->>B: Assinatura válida
+    else x(P) mod n é diferente de r
+        B->>B: Assinatura inválida
+    end
+```
+
+*Figura 2.1.2 (sequência).* Assinatura e verificação com ECDSA.
+
+#### 2.1.3 O ataque ao nonce reutilizado no ECDSA (como a chave privada vaza)
+
+Se Alice usa o mesmo nonce k em duas assinaturas, o valor r é o mesmo nas duas, e Eva, que vê as duas assinaturas e os hashes das mensagens, resolve duas equações lineares. Subtraindo s1 = k⁻¹·(h1 + r·d) e s2 = k⁻¹·(h2 + r·d), obtém k = (h1 - h2)·(s1 - s2)⁻¹ mod n e, com k, a chave privada: d = (s1·k - h1)·r⁻¹ mod n. É o erro de implementação que expôs a chave de assinatura do console PlayStation 3. O Ed25519 evita o problema derivando o nonce da chave e da mensagem.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice (signatária)
+    participant B as Bob
+    participant E as Eva
+    A->>A: Assina m1 com o nonce k, obtendo (r, s1)
+    A->>B: m1 e (r, s1)
+    Note over E: Eva copia m1 e (r, s1)
+    A->>A: Assina m2 com o MESMO nonce k, obtendo (r, s2)
+    A->>B: m2 e (r, s2)
+    Note over E: Eva copia m2 e (r, s2)
+    E->>E: Percebe que o valor r é igual nas duas assinaturas
+    E->>E: k = (h1 - h2) · (s1 - s2)⁻¹ mod n
+    E->>E: d = (s1 · k - h1) · r⁻¹ mod n
+    Note over E: Eva obtém a chave privada de<br/>Alice e forja assinaturas
+```
+
+*Figura 2.1.3 (sequência).* O ataque ao nonce reutilizado no ECDSA.
+
+#### 2.1.4 Assinatura e verificação com Ed25519 (nonce determinístico)
+
+No Ed25519, Alice deriva da semente secreta um escalar a e um prefixo; a chave pública é A = a·B, em que B é o ponto base da curva. Para assinar, calcula o nonce r como o hash do prefixo seguido da mensagem, sem sorteio algum, e então R = r·B e S = r + H(R, A, m)·a (mod L). Bob verifica a equação S·B = R + H(R, A, m)·A. Como o nonce depende da chave e da mensagem, mensagens diferentes nunca reutilizam o mesmo nonce e uma falha do gerador de números aleatórios não compromete a chave.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice (signatária)
+    participant B as Bob (verificador)
+    participant E as Eva
+    A->>A: Deriva a e o prefixo da semente secreta
+    A->>A: A = a · B (chave pública)
+    A->>B: Chave pública A
+    A->>A: r = Hash(prefixo e m), sem sorteio
+    A->>A: R = r · B
+    A->>A: S = r + Hash(R, A, m) · a mod L
+    A->>E: m e a assinatura (R, S)
+    E->>B: m' e (R, S) se Eva alterar a mensagem
+    B->>B: h = Hash(R, A, m recebida)
+    alt S · B é igual a R + h · A
+        B->>B: Assinatura válida
+    else a equação não fecha
+        B->>B: Assinatura inválida
+    end
+```
+
+*Figura 2.1.4 (sequência).* Assinatura e verificação com Ed25519.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

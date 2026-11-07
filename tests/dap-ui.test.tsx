@@ -38,11 +38,11 @@ const steps = (n: number) => {
 };
 
 describe('laboratório do DAP', () => {
-  it('está na categoria Autenticação, com link no menu', () => {
-    renderAt('/categoria/autenticacao');
-    expect(screen.getByRole('heading', { level: 1, name: 'Autenticação e Protocolos Seguros' })).toBeTruthy();
+  it('está na categoria própria do DAP, com link no menu', () => {
+    renderAt('/categoria/dap');
+    expect(screen.getByRole('heading', { level: 1, name: 'DAP: Autorização de Transações' })).toBeTruthy();
     expect(screen.getAllByRole('link', { name: /Abrir laboratório\s*: DAP/ })).toHaveLength(1);
-    expect(screen.getByRole('link', { name: 'Autenticação' }).getAttribute('href')).toBe('/categoria/autenticacao');
+    expect(screen.getByRole('link', { name: 'DAP' }).getAttribute('href')).toBe('/categoria/dap');
   });
 
   it('Parte A: o MD guarda k, Eva vê só k1 e o QR 001 aparece depois do envio', async () => {
