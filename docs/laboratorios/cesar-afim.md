@@ -20,6 +20,83 @@ Disco de cifra, aritmética modular e a criptoanálise de Eva por força bruta e
 
 As cifras de César e afim substituem cada letra por outra por meio de uma função módulo 26 (C = a·P + b mod 26; no César, a = 1). O espaço de chaves é minúsculo (26 chaves no César, 312 no afim), e a distribuição das letras do português continua visível no texto cifrado. Eva quebra a cifra por força bruta e confirma a chave pela frequência das letras (teste χ²).
 
+**Fonte histórica.** Não há artigo original do autor da cifra afim; o registro mais antigo do César é o relato de Suetônio.
+
+- Suetônio. *Vidas dos Doze Césares*, Júlio César, cap. 56: descreve o deslocamento de três letras (D no lugar de A) usado por César em cartas confidenciais. Texto em tradução inglesa. [Acessar o texto (LacusCurtius, Universidade de Chicago)](https://penelope.uchicago.edu/Thayer/E/Roman/Texts/Suetonius/12Caesars/Julius%2A.html).
+
+### 2.1 Diagramas das cifras de César e afim
+
+Os diagramas abaixo mostram as cifras antes dos cenários executados da seção 5. Alice cifra, Bob decifra e Eva observa o canal e, quando indicado, altera a cifra ou testa as chaves. As letras são numeradas de 0 (A) a 25 (Z). **P** é uma letra do texto claro, **C** a letra cifrada, **a** e **b** os parâmetros da chave. O último diagrama é um fluxograma da função de cifragem.
+
+#### 2.1.1 César e a busca por força bruta (deslocamento de b letras)
+
+Alice e Bob combinam o deslocamento b. Alice desloca cada letra do texto claro b posições no alfabeto (C = P + b, módulo 26) e Bob desloca de volta (P = C - b). Com apenas 26 chaves, Eva não precisa conhecer b: ela decifra a cifra interceptada com cada deslocamento possível e escolhe o resultado que se parece com o português, o que ela confirma pelo teste χ² (qui-quadrado) da distribuição de letras.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: Deslocamento b<br/>combinado antes
+    A->>A: C = (P + b) mod 26
+    A->>E: Texto cifrado pelo canal
+    Note over E: Eva intercepta<br/>o texto cifrado
+    loop Para cada b' de 0 a 25
+        E->>E: Decifra com b'
+        E->>E: Mede a distância às<br/>frequências do português
+    end
+    Note over E: O menor valor de χ²<br/>indica a chave b
+    E->>B: Texto cifrado segue a Bob
+    B->>B: P = (C - b) mod 26
+```
+
+*Figura 2.1.1 (sequência).* César e a busca por força bruta.
+
+#### 2.1.2 Cifra afim e a alteração do texto cifrado (C = a·P + b mod 26)
+
+Na cifra afim, a chave é o par (a, b). Para que Bob consiga decifrar, a deve ser coprimo de 26 (12 valores possíveis), o que dá 12 × 26 = 312 chaves. Alice calcula C = a·P + b módulo 26 e Bob usa o inverso multiplicativo de a: P = a⁻¹·(C - b) módulo 26. A cifra não autentica: Eva troca letras do texto cifrado e Bob as decifra sem perceber, obtendo letras diferentes das enviadas. Continua válida a força bruta, agora sobre 312 chaves.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: Chave (a, b), com a<br/>coprimo de 26
+    A->>A: C = (a·P + b) mod 26
+    A->>E: Texto cifrado pelo canal
+    Note over E: Eva troca letras<br/>do texto cifrado
+    E->>B: Texto cifrado alterado
+    B->>B: Calcula o inverso de a
+    B->>B: P' = a⁻¹·(C' - b) mod 26
+    Note over B: Bob obtém letras<br/>diferentes das enviadas<br/>e não percebe
+```
+
+*Figura 2.1.2 (sequência).* Cifra afim e a alteração do texto cifrado.
+
+#### 2.1.3 Estrutura interna: função de cifragem e de decifragem (fluxograma)
+
+A letra é convertida em um número de 0 a 25, passa pela função afim e volta a ser letra. O César é o caso particular a = 1. Para decifrar, o inverso multiplicativo de a módulo 26 é encontrado (existe apenas quando a é coprimo de 26) e a função inversa é aplicada.
+
+```mermaid
+flowchart TD
+    L["Letra do texto claro"] --> N["Converte para número x, de 0 a 25"]
+    N --> F["y = a·x + b, módulo 26"]
+    F --> M["Converte y em letra"]
+    M --> C["Letra do texto cifrado"]
+    CH["Chave: a coprimo de 26 e b de 0 a 25"] --> F
+    CH --> INV["Calcula o inverso a⁻¹ módulo 26"]
+    C --> D["Converte a letra cifrada em número y"]
+    D --> G["x = a⁻¹·(y - b), módulo 26"]
+    INV --> G
+    G --> R["Letra do texto claro recuperada"]
+```
+
+*Figura 2.1.3 (estrutura interna).* Estrutura interna: função de cifragem e de decifragem.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

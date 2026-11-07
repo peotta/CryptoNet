@@ -21,6 +21,81 @@ Enigma I: rotores, refletor, anéis e plugues, o caminho do sinal tecla a tecla 
 
 A Enigma I cifra tecla a tecla: o sinal atravessa o painel de plugues, três rotores, o refletor e volta. O refletor torna a máquina recíproca (decifrar é cifrar de novo), mas impede que uma letra seja cifrada nela mesma, e essa fraqueza permite a Eva descartar alinhamentos de um texto provável (crib). Com 3 rotores escolhidos entre 5, 17.576 posições iniciais e 10 pares de plugues, há cerca de 1,6 × 10²⁰ configurações.
 
+**Artigos originais e documento histórico.**
+
+- Rejewski, M. *An application of the theory of permutations in breaking the Enigma cipher*. Applicationes Mathematicae, v. 16, n. 4, p. 543-559, 1980. [Acessar o artigo (PDF digitalizado, Crypto Cellar)](https://cryptocellar.org/enigma/files/rew80.pdf); [DOI 10.4064/am-16-4-543-559](https://doi.org/10.4064/am-16-4-543-559).
+- Turing, A. M. *Mathematical theory of ENIGMA machine* (o "Prof's Book", ou *Treatise on the Enigma*), c. 1939-1942. The National Archives, Reino Unido, HW 25/3. [Registro no catálogo do National Archives](https://beta.nationalarchives.gov.uk/catalogue/id/C6136633).
+
+### 2.1 Diagramas da Enigma e do ataque por texto provável
+
+Os diagramas abaixo mostram a Enigma I antes dos cenários executados da seção 5. Alice cifra, Bob decifra com uma máquina na mesma configuração e Eva observa o canal. A **configuração** reúne a ordem dos três rotores, a posição inicial de cada um e as ligações do painel de plugues. O último diagrama é um fluxograma do caminho do sinal elétrico.
+
+#### 2.1.1 Cifragem tecla a tecla e reciprocidade (a máquina é recíproca)
+
+Alice e Bob ajustam suas máquinas com a mesma configuração. A cada tecla pressionada o rotor da direita avança antes de o sinal passar, de modo que a substituição muda a cada letra. Por causa do refletor, que devolve o sinal por outro caminho, a máquina é recíproca: se com uma posição o sinal A vira L, nessa mesma posição L vira A. Assim, Bob decifra digitando a cifra em sua máquina, ajustada igual. Uma consequência do refletor é que nenhuma letra é cifrada nela mesma.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: Mesma configuração:<br/>rotores, posições e plugues
+    A->>A: Cada tecla avança os rotores<br/>e acende a letra cifrada
+    A->>E: Mensagem cifrada pelo rádio
+    Note over E: Eva intercepta<br/>a mensagem cifrada
+    E->>B: Mensagem cifrada segue a Bob
+    B->>B: Digita a cifra na máquina<br/>ajustada igual
+    Note over B: A reciprocidade devolve<br/>o texto claro
+```
+
+*Figura 2.1.1 (sequência).* Cifragem tecla a tecla e reciprocidade.
+
+#### 2.1.2 Eva usa um texto provável para descartar posições (a letra nunca vira ela mesma)
+
+Eva supõe que a mensagem contém um trecho conhecido (um texto provável, ou *crib*, como um cabeçalho padronizado) e o alinha com a cifra em cada posição possível. Se, em algum alinhamento, uma letra do trecho coincidir com a letra cifrada na mesma posição, esse alinhamento é impossível, pois a Enigma nunca cifra uma letra nela mesma. Os alinhamentos que sobram são os candidatos, e a posição correta do texto provável serve de entrada para o ataque da Bombe.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    A->>E: Mensagem cifrada pelo rádio
+    Note over E: Eva supõe um trecho<br/>conhecido (crib)
+    loop Para cada alinhamento do crib
+        E->>E: Alguma letra coincide<br/>com a cifra?
+        E->>E: Se sim, descarta<br/>o alinhamento
+    end
+    Note over E: Os alinhamentos restantes<br/>são os candidatos
+    E->>B: Mensagem cifrada segue a Bob
+```
+
+*Figura 2.1.2 (sequência).* Eva usa um texto provável para descartar posições.
+
+#### 2.1.3 Estrutura interna: caminho do sinal na Enigma I (fluxograma)
+
+Ao pressionar uma tecla, o rotor da direita avança (e, em posições determinadas, também o do meio e o da esquerda) e o circuito se fecha. O sinal atravessa o painel de plugues, os três rotores da direita para a esquerda, chega ao refletor, volta pelos três rotores da esquerda para a direita, passa de novo pelo painel de plugues e acende a lâmpada da letra cifrada. O refletor liga as letras em pares, o que torna a máquina recíproca.
+
+```mermaid
+flowchart TD
+    TK["Tecla pressionada"] --> AV["Os rotores avançam antes de o circuito fechar"]
+    AV --> PL1["Painel de plugues"]
+    PL1 --> RD["Rotor da direita"]
+    RD --> RM["Rotor do meio"]
+    RM --> RE["Rotor da esquerda"]
+    RE --> REF["Refletor: liga as letras em pares"]
+    REF --> RE2["Rotor da esquerda, em sentido inverso"]
+    RE2 --> RM2["Rotor do meio, em sentido inverso"]
+    RM2 --> RD2["Rotor da direita, em sentido inverso"]
+    RD2 --> PL2["Painel de plugues"]
+    PL2 --> LM["Lâmpada da letra cifrada"]
+```
+
+*Figura 2.1.3 (estrutura interna).* Estrutura interna: caminho do sinal na Enigma I.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

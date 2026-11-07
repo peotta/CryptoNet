@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { FUNDAMENTACAO_DIAGRAMAS } from './diagramas-fundamentacao.mjs';
 import { ARTIGOS_FUNDAMENTACAO, FUNDAMENTACAO_FASE1 } from './diagramas-fase1.mjs';
 import { FUNDAMENTACAO_FASE2 } from './diagramas-fase2.mjs';
+import { FUNDAMENTACAO_FASE3 } from './diagramas-fase3.mjs';
 import { DAP_RFC_INTRO, DAP_RFC_ATORES, DAP_RFC_DIAGRAMAS } from './dap-rfc-diagramas.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -724,7 +725,7 @@ async function labDocument(lab) {
   sec++;
 
   O.push(`## ${sec}. Fundamentação`, '', spec.resumo, '');
-  const extra = FUNDAMENTACAO_DIAGRAMAS[lab.id] ?? FUNDAMENTACAO_FASE1[lab.id] ?? FUNDAMENTACAO_FASE2[lab.id];
+  const extra = FUNDAMENTACAO_DIAGRAMAS[lab.id] ?? FUNDAMENTACAO_FASE1[lab.id] ?? FUNDAMENTACAO_FASE2[lab.id] ?? FUNDAMENTACAO_FASE3[lab.id];
   const artigos = extra?.artigos ?? ARTIGOS_FUNDAMENTACAO[lab.id];
   if (artigos?.length) {
     O.push(extra?.rotuloArtigos ?? (artigos.length === 1 ? '**Artigo original.**' : '**Artigos originais.**'), '');

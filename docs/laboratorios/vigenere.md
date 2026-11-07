@@ -21,6 +21,79 @@ Cifra polialfabética, tabela de Vigenère e como Eva descobre o tamanho e as le
 
 A cifra de Vigenère usa uma palavra como chave e aplica um César diferente a cada posição, o que achata as frequências. Eva descobre o tamanho da chave pela repetição de trechos (Kasiski) e pelo índice de coincidência por tamanho candidato, e então resolve cada coluna como um César.
 
+**Artigos originais.**
+
+- Vigenère, B. de. *Traicté des chiffres, ou secretes manieres d'escrire*. Paris: Abel L'Angelier, 1586. [Registro bibliográfico (Universidade de Liège)](https://hdl.handle.net/2268.1/9711).
+- Kasiski, F. W. *Die Geheimschriften und die Dechiffrir-Kunst*. Berlim: E. S. Mittler und Sohn, 1863. [Acessar o livro (Google Livros)](https://books.google.com/books?id=fB5dAAAAcAAJ).
+- Friedman, W. F. *The Index of Coincidence and Its Applications in Cryptography*. Geneva, Illinois: Riverbank Laboratories, Publicação n. 22, 1922.
+
+### 2.1 Diagramas do Vigenère e do ataque de Kasiski
+
+Os diagramas abaixo mostram a cifra e o ataque antes dos cenários executados da seção 5. Alice cifra, Bob decifra e Eva observa o canal. A **chave** é uma palavra de n letras que se repete ao longo do texto. O último diagrama é um fluxograma do ataque.
+
+#### 2.1.1 Cifragem de Vigenère com uma palavra-chave (César variável)
+
+Alice e Bob combinam uma palavra-chave. A i-ésima letra do texto claro é deslocada pela letra da chave na posição i módulo n, de modo que a mesma letra clara vira letras cifradas diferentes e as frequências ficam achatadas. Bob desfaz o deslocamento com a mesma chave. Como a chave se repete, a cifra é, em cada coluna, um César, e é essa regularidade que Eva explora.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: Palavra-chave de n<br/>letras combinada antes
+    A->>A: Ci = (Pi + K(i mod n)) mod 26
+    A->>E: Texto cifrado pelo canal
+    Note over E: Eva intercepta<br/>o texto cifrado
+    E->>B: Texto cifrado segue a Bob
+    B->>B: Pi = (Ci - K(i mod n)) mod 26
+```
+
+*Figura 2.1.1 (sequência).* Cifragem de Vigenère com uma palavra-chave.
+
+#### 2.1.2 Eva descobre o tamanho da chave e resolve cada coluna (Kasiski e índice de coincidência)
+
+Trechos repetidos no texto claro que caem na mesma posição da chave produzem trechos repetidos na cifra: a distância entre eles é múltiplo do tamanho da chave (teste de Kasiski). Eva confirma o tamanho pelo índice de coincidência calculado para cada tamanho candidato, que sobe ao valor do idioma quando o candidato é correto. Conhecido o tamanho n, ela separa o texto em n colunas, cada uma cifrada por um César, e resolve cada coluna por análise de frequências.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    A->>E: Texto cifrado pelo canal
+    E->>E: Procura trechos repetidos<br/>e mede as distâncias
+    Note over E: O tamanho da chave<br/>divide as distâncias
+    loop Para cada tamanho n candidato
+        E->>E: Separa em n colunas<br/>e calcula o índice<br/>de coincidência
+    end
+    E->>E: Resolve cada coluna<br/>como um César
+    Note over E: Eva obtém a palavra-chave<br/>e lê o texto
+    E->>B: Texto cifrado segue a Bob
+```
+
+*Figura 2.1.2 (sequência).* Eva descobre o tamanho da chave e resolve cada coluna.
+
+#### 2.1.3 Estrutura interna: do tamanho da chave à palavra-chave (fluxograma)
+
+O ataque tem duas fases: descobrir o tamanho da chave (Kasiski e índice de coincidência) e, com o tamanho conhecido, quebrar cada coluna como um César, o que recai na análise de frequências ou no teste χ² das 26 letras possíveis para cada posição da chave.
+
+```mermaid
+flowchart TD
+    T["Texto cifrado"] --> K["Kasiski: distâncias entre trechos repetidos"]
+    K --> C["Candidatos a tamanho: divisores comuns"]
+    C --> IC["Índice de coincidência por tamanho candidato"]
+    IC --> N["Escolhe o tamanho n da chave"]
+    N --> S["Separa o texto em n colunas"]
+    S --> Q["Para cada coluna: testa as 26 letras de chave com χ²"]
+    Q --> W["Junta as n letras: palavra-chave"]
+    W --> D["Decifra o texto inteiro"]
+```
+
+*Figura 2.1.3 (estrutura interna).* Estrutura interna: do tamanho da chave à palavra-chave.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

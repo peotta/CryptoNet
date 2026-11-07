@@ -21,6 +21,82 @@ Cifras poligráficas: digrafos em uma grade 5 × 5 e multiplicação por matriz 
 
 O Playfair cifra pares de letras (digrafos) sobre uma grade 5 × 5 montada com uma palavra-chave (I e J compartilham a célula). O Hill cifra blocos de n letras multiplicando-os por uma matriz n × n invertível módulo 26. O Hill é linear e, por isso, cai diante de um ataque de texto claro conhecido: com n pares independentes, Eva resolve a matriz.
 
+**Artigos originais do Hill.** O Playfair, popularizado por Lord Playfair a partir de uma invenção de Charles Wheatstone (1854), não tem artigo original com cópia pública conferida.
+
+- Hill, L. S. *Cryptography in an algebraic alphabet*. The American Mathematical Monthly, v. 36, n. 6, p. 306-312, 1929. [DOI 10.1080/00029890.1929.11986963](https://doi.org/10.1080/00029890.1929.11986963).
+- Hill, L. S. *Concerning certain linear transformation apparatus of cryptography*. The American Mathematical Monthly, v. 38, n. 3, p. 135-154, 1931. [DOI 10.1080/00029890.1931.11987161](https://doi.org/10.1080/00029890.1931.11987161).
+
+### 2.1 Diagramas do Playfair e do Hill
+
+Os diagramas abaixo mostram as cifras antes dos cenários executados da seção 5. Alice cifra, Bob decifra e Eva observa o canal e, quando indicado, ataca a cifra. O último diagrama é um fluxograma das regras de cifragem de um par de letras no Playfair.
+
+#### 2.1.1 Playfair: grade 5 por 5 e cifragem de digrafos (cifragem de pares de letras)
+
+Alice e Bob montam a mesma grade 5 × 5 a partir de uma palavra-chave (I e J compartilham a célula). Alice divide o texto em pares de letras, separando letras iguais com um preenchimento, e cifra cada par conforme a posição na grade. Bob usa as regras inversas. Como cifra pares, o Playfair oculta as frequências de letras isoladas, mas preserva as de digrafos, o que Eva explora com bem mais texto.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: Palavra-chave monta<br/>a grade 5 por 5
+    A->>A: Divide o texto em pares<br/>de letras
+    A->>A: Cifra cada par pelas<br/>regras da grade
+    A->>E: Texto cifrado pelo canal
+    Note over E: Eva intercepta<br/>o texto cifrado
+    E->>B: Texto cifrado segue a Bob
+    B->>B: Aplica as regras inversas<br/>a cada par
+```
+
+*Figura 2.1.1 (sequência).* Playfair: grade 5 por 5 e cifragem de digrafos.
+
+#### 2.1.2 Hill: a linearidade e o ataque de texto claro conhecido (C = K·P mod 26)
+
+No Hill, blocos de n letras viram vetores e são multiplicados por uma matriz-chave K, n por n, invertível módulo 26: C = K·P. Bob usa K⁻¹. Por ser linear, a cifra cai diante de um ataque de texto claro conhecido: se Eva conhece n blocos de texto claro com as cifras correspondentes, monta a matriz P dos claros e a matriz C das cifras, e resolve K = C·P⁻¹ módulo 26. Com a chave, lê todo o tráfego.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: Matriz K n por n,<br/>invertível mod 26
+    A->>A: C = K·P mod 26<br/>para cada bloco
+    A->>E: Texto cifrado pelo canal
+    Note over E: Eva conhece n blocos<br/>de texto claro
+    E->>E: Monta as matrizes P e C
+    E->>E: Resolve K = C·P⁻¹ mod 26
+    E->>B: Texto cifrado segue a Bob
+    B->>B: P = K⁻¹·C mod 26
+    Note over E: Com K, Eva decifra<br/>todo o tráfego
+```
+
+*Figura 2.1.2 (sequência).* Hill: a linearidade e o ataque de texto claro conhecido.
+
+#### 2.1.3 Estrutura interna: regras do Playfair para um par de letras (fluxograma)
+
+Cada par é cifrado conforme as posições das duas letras na grade: na mesma linha, cada letra é substituída pela da direita; na mesma coluna, pela de baixo (com retorno ao início); nos demais casos, formam-se os vértices de um retângulo e cada letra é trocada pela da mesma linha e da coluna da outra. Para decifrar, os deslocamentos são para a esquerda e para cima.
+
+```mermaid
+flowchart TD
+    P["Par de letras X e Y"] --> I{"X e Y são iguais?"}
+    I -->|"sim"| PAD["Insere uma letra de preenchimento"]
+    PAD --> P
+    I -->|"não"| L{"Mesma linha da grade?"}
+    L -->|"sim"| R["Cada letra vira a da direita"]
+    L -->|"não"| C{"Mesma coluna da grade?"}
+    C -->|"sim"| D["Cada letra vira a de baixo"]
+    C -->|"não"| RET["Retângulo: cada letra vira a da própria linha e da coluna da outra"]
+    R --> O["Par cifrado"]
+    D --> O
+    RET --> O
+```
+
+*Figura 2.1.3 (estrutura interna).* Estrutura interna: regras do Playfair para um par de letras.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

@@ -21,6 +21,81 @@ Cerca de trilhos, transposição colunar e a combinação com substituição (co
 
 Na transposição as letras não mudam, apenas de lugar (cerca de trilhos e transposição colunar com palavra-chave). Como a frequência das letras permanece a do português, Eva reconhece a cifra e a quebra por anagramação, escolhendo a ordem que produz o texto mais legível. Combinar substituição (confusão) com transposição (difusão) resulta na cifra produto, a ideia por trás das cifras modernas.
 
+**Artigo original.** A ideia de combinar substituição e transposição (confusão e difusão), base da cifra produto, vem de Shannon.
+
+- Shannon, C. E. *Communication theory of secrecy systems*. Bell System Technical Journal, v. 28, n. 4, p. 656-715, out. 1949. [Acessar o artigo (Internet Archive)](https://archive.org/details/bstj28-4-656); [PDF hospedado pela Universidade de Virgínia](https://www.cs.virginia.edu/~evans/greatworks/shannon1949.pdf).
+
+### 2.1 Diagramas da transposição e da cifra produto
+
+Os diagramas abaixo mostram as cifras antes dos cenários executados da seção 5. Alice cifra, Bob decifra e Eva observa o canal e tenta reordenar o texto. Na transposição as letras não mudam, apenas de posição. O último diagrama é um fluxograma da transposição colunar.
+
+#### 2.1.1 Transposição e a anagramação feita pela Eva (cerca de trilhos e transposição colunar)
+
+Alice reordena as letras do texto: nos trilhos, escreve em zigue-zague e lê trilho a trilho; na transposição colunar, escreve em linhas sob uma palavra-chave e lê as colunas na ordem alfabética das letras da chave. As letras permanecem as mesmas, então a frequência continua a do português e Eva reconhece que se trata de uma transposição. Ela testa as ordens possíveis das colunas e escolhe a que produz o texto mais legível. Bob desfaz a reordenação com a chave.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: Número de trilhos ou<br/>palavra-chave combinados
+    A->>A: Reordena as letras<br/>do texto
+    A->>E: Texto cifrado pelo canal
+    Note over E: A frequência das letras<br/>é a do português
+    E->>E: Reconhece uma transposição
+    loop Para cada ordem candidata
+        E->>E: Reordena e mede<br/>a legibilidade
+    end
+    Note over E: A ordem mais legível<br/>revela a chave
+    E->>B: Texto cifrado segue a Bob
+    B->>B: Desfaz a reordenação
+```
+
+*Figura 2.1.1 (sequência).* Transposição e a anagramação feita pela Eva.
+
+#### 2.1.2 Cifra produto: substituição seguida de transposição (confusão e difusão)
+
+Alice aplica primeiro uma substituição, que esconde a relação entre letra clara e letra cifrada (confusão), e depois uma transposição, que espalha a posição das letras (difusão). Eva, que sozinha quebraria cada etapa, enfrenta as duas ao mesmo tempo: a frequência das letras já não se parece com a do idioma e a ordem também foi embaralhada. Bob desfaz as etapas em ordem inversa. A repetição desse par de operações é a ideia por trás das cifras modernas, como o DES e o AES.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    Note over A,B: Chave de substituição<br/>e chave de transposição
+    A->>A: Substitui as letras<br/>(confusão)
+    A->>A: Reordena as letras<br/>(difusão)
+    A->>E: Texto cifrado pelo canal
+    Note over E: Frequências alteradas<br/>e ordem embaralhada
+    E->>B: Texto cifrado segue a Bob
+    B->>B: Desfaz a transposição
+    B->>B: Desfaz a substituição
+```
+
+*Figura 2.1.2 (sequência).* Cifra produto: substituição seguida de transposição.
+
+#### 2.1.3 Estrutura interna: transposição colunar com palavra-chave (fluxograma)
+
+O texto é escrito em linhas, em uma grade com tantas colunas quanto letras da palavra-chave. As colunas são numeradas pela ordem alfabética das letras da chave e lidas nessa ordem para formar o texto cifrado. Para decifrar, Bob calcula o tamanho de cada coluna, preenche as colunas na ordem da chave e lê a grade por linhas.
+
+```mermaid
+flowchart TD
+    T["Texto claro"] --> G["Escreve em linhas, com tantas colunas quantas as letras da chave"]
+    K["Palavra-chave"] --> O["Numera as colunas pela ordem alfabética da chave"]
+    G --> RD["Lê as colunas na ordem numerada"]
+    O --> RD
+    RD --> C["Texto cifrado"]
+    C --> BD["Bob separa o texto em colunas pela mesma ordem"]
+    BD --> BL["Lê a grade por linhas"]
+    BL --> P["Texto claro recuperado"]
+```
+
+*Figura 2.1.3 (estrutura interna).* Estrutura interna: transposição colunar com palavra-chave.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.

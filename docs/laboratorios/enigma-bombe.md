@@ -21,6 +21,85 @@ O ataque de Turing e Welchman: menu do texto provável, hipótese de plugue, pro
 
 A Bombe testa as 17.576 posições iniciais dos rotores contra um texto provável. O menu liga as letras do texto claro às da cifra; uma hipótese de plugue para a letra de teste se propaga pelos laços do menu, e uma contradição elimina a posição. As posições que sobrevivem (paradas) são verificadas, e as paradas falsas são descartadas pelos laços.
 
+**Documento histórico e artigo original.**
+
+- Turing, A. M. *Mathematical theory of ENIGMA machine* (o "Prof's Book", ou *Treatise on the Enigma*), c. 1939-1942. The National Archives, Reino Unido, HW 25/3. [Registro no catálogo do National Archives](https://beta.nationalarchives.gov.uk/catalogue/id/C6136633).
+- Rejewski, M. *An application of the theory of permutations in breaking the Enigma cipher*. Applicationes Mathematicae, v. 16, n. 4, p. 543-559, 1980. [Acessar o artigo (PDF digitalizado, Crypto Cellar)](https://cryptocellar.org/enigma/files/rew80.pdf); [DOI 10.4064/am-16-4-543-559](https://doi.org/10.4064/am-16-4-543-559).
+
+### 2.1 Diagramas da Bombe
+
+Os diagramas abaixo mostram a Bombe antes dos cenários executados da seção 5. Alice cifra com a Enigma, Bob decifra e Eva observa o canal e tenta recuperar a posição dos rotores. A **Bombe** é a máquina eletromecânica que testa, para um texto provável, todas as posições iniciais dos rotores. O último diagrama é um fluxograma do procedimento.
+
+#### 2.1.1 Do texto provável ao menu (menu da Bombe)
+
+Eva alinha um texto provável (crib) com a cifra, em uma posição que a regra da letra que nunca vira ela mesma não descartou. Cada par de letras (claro, cifra) em uma posição da mensagem é uma ligação entre duas letras do alfabeto, associada ao avanço dos rotores naquele ponto. O conjunto dessas ligações é o menu, um grafo cujos laços, quando existem, são o que permite à Bombe encontrar contradições. Menus com mais laços eliminam mais posições falsas.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    A->>E: Mensagem cifrada pelo rádio
+    Note over E: Eva supõe um trecho<br/>conhecido (crib)
+    E->>E: Alinha o crib com a cifra
+    E->>E: Descarta alinhamentos em<br/>que uma letra se cifra<br/>nela mesma
+    E->>E: Liga a letra clara à letra<br/>cifrada em cada posição
+    Note over E: As ligações formam<br/>o menu, com laços
+    E->>B: Mensagem cifrada segue a Bob
+```
+
+*Figura 2.1.1 (sequência).* Do texto provável ao menu.
+
+#### 2.1.2 Propagação, contradição e paradas (teste das 17.576 posições)
+
+Para cada uma das 17.576 posições iniciais dos rotores, a Bombe adota uma hipótese sobre o plugue de uma letra de teste e a propaga pelas ligações do menu. Se em algum ponto a hipótese gera uma contradição (a mesma letra ligada a duas letras diferentes), a posição é eliminada. As posições em que não há contradição são paradas: elas são verificadas por Eva, e as paradas falsas são descartadas pelos laços do menu. A posição que resiste revela a configuração dos rotores e, com ela, Eva decifra a mensagem.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Alice
+    participant B as Bob
+    participant E as Eva
+    A->>E: Mensagem cifrada pelo rádio
+    loop Para cada posição inicial dos rotores
+        E->>E: Supõe o plugue de<br/>uma letra de teste
+        E->>E: Propaga pelos laços<br/>do menu
+        E->>E: Há contradição?<br/>Se sim, elimina a posição
+    end
+    Note over E: As posições sem contradição<br/>são as paradas
+    E->>E: Verifica as paradas<br/>e descarta as falsas
+    Note over E: A posição restante revela<br/>a configuração dos rotores
+    E->>B: Mensagem cifrada segue a Bob
+```
+
+*Figura 2.1.2 (sequência).* Propagação, contradição e paradas.
+
+#### 2.1.3 Estrutura interna: o procedimento da Bombe (fluxograma)
+
+O procedimento começa pelo texto provável e pelo menu, percorre as posições dos rotores e, em cada uma, propaga a hipótese do plugue pelo menu até encontrar uma contradição ou esgotar os laços. As paradas passam por uma verificação final: a configuração candidata decifra a mensagem e o resultado é conferido com o texto esperado.
+
+```mermaid
+flowchart TD
+    CR["Texto provável alinhado com a cifra"] --> MN["Monta o menu de ligações entre letras"]
+    MN --> PO["Escolhe uma posição inicial dos rotores"]
+    PO --> HP["Hipótese de plugue para a letra de teste"]
+    HP --> PR["Propaga a hipótese pelos laços do menu"]
+    PR --> CT{"Contradição?"}
+    CT -->|"sim"| EL["Elimina a posição"]
+    EL --> PX{"Há outra posição?"}
+    CT -->|"não"| PA["Parada: posição candidata"]
+    PA --> VF["Verifica a parada: decifra e confere com o texto esperado"]
+    VF --> OK{"Confere?"}
+    OK -->|"sim"| FIM["Configuração dos rotores encontrada"]
+    OK -->|"não"| PX
+    PX -->|"sim"| PO
+```
+
+*Figura 2.1.3 (estrutura interna).* Estrutura interna: o procedimento da Bombe.
+
+> **Aviso:** a partir deste ponto são apresentados os cenários para simulação em laboratório, com Alice, Bob e Eva como participantes.
+
 ## 3. Participantes
 
 Alice e Bob são os participantes legítimos; Eva é a atacante (observadora passiva ou, quando há adulteração, ativa). As tabelas abaixo listam o que cada um mantém em cada cenário.
