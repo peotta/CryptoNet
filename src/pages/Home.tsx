@@ -62,8 +62,22 @@ export function Home() {
             const labs = labsByCategory(c.id);
             const soon = labs.filter((l) => l.status === 'planned').length;
             return (
-              <Link key={c.id} to={`/categoria/${c.id}`} className="block rounded-xl border border-line bg-surface p-5 hover:bg-surface2">
-                <h3 className="text-xl font-bold">{c.title}</h3>
+              <Link
+                key={c.id}
+                to={`/categoria/${c.id}`}
+                className={`block rounded-xl border p-5 ${c.id === 'dap' ? 'border-2 border-warn bg-warn/15 hover:bg-warn/25' : 'border-line bg-surface hover:bg-surface2'}`}
+              >
+                <h3 className="flex items-start gap-2 text-xl font-bold">
+                  {c.id === 'dap' && (
+                    <>
+                      <svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24" className="mt-0.5 shrink-0 text-warn" fill="currentColor">
+                        <path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6L2.5 9.4l6.6-.8z" />
+                      </svg>
+                      <span className="sr-only">Em destaque: </span>
+                    </>
+                  )}
+                  {c.title}
+                </h3>
                 <p className="mt-1 text-base">{c.description}</p>
                 <p className="mt-2 text-base font-semibold text-accent">
                   {labs.filter((l) => l.status === 'available').length} disponível(is){soon > 0 ? ` · ${soon} em breve` : ''}
